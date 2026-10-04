@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70" width="240" height="70">
+  <defs>
+    <linearGradient id="sponsorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8a00"/>
+      <stop offset="100%" stop-color="#e06d00"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="236" height="66" rx="10" fill="#0d1520" stroke="rgba(255,138,0,0.4)" stroke-width="1.5" filter="url(#dropShadow)"/>
+  <!-- Sponsor Icon -->
+  <circle cx="36" cy="35" r="18" fill="url(#sponsorGrad)"/>
+  <path d="M30 35 L34 39 L43 30" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="66" y="28" font-family="'DM Sans', 'Space Grotesk', sans-serif" font-size="10" font-weight="700" fill="#ff8a00" letter-spacing="1.5">OFFICIAL PARTNER</text>
+  <text x="66" y="49" font-family="'Space Grotesk', sans-serif" font-size="16" font-weight="800" fill="#ffffff" letter-spacing="0.5">VELOX ENERGY</text>
+</svg>

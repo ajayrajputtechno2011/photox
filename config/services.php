@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'yoco' => [
+        'public_key' => env('YOCO_PUBLIC_KEY', 'pk_test_51816363AVr2NXD875f4'),
+        'secret_key' => env('YOCO_SECRET_KEY', 'sk_test_43f7c7607L9OKx8167446f29392a'),
+    ],
+
 ];

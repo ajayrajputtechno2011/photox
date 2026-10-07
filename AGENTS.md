@@ -13,6 +13,9 @@ Before relying on a package's API, confirm its installed version:
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
 - JS packages: check `package.json` for the installed versions.
 
+## Project Handover & State Reference
+Always refer to `PROJECT_HANDOVER.md` in the workspace root for complete infrastructure status, production VPS details (`168.231.79.67`), Cloudflare R2 bucket, Yoco gateway sandbox, Nginx live vs holding configuration, and task history.
+
 ## Skills Activation
 
 This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.

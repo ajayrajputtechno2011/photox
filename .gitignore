@@ -25,3 +25,13 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.zip
+backups/
+scratch/
+test.php
+blueprint_extracted.txt
+client_task_status.txt
+newa/
+newpadminpage/
+*.docx
+*database_backup.sql

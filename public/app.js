@@ -57,12 +57,13 @@ const heroSlides = [
     ]
   }
 ];
-const heroImageElements = [document.getElementById('heroMainImage')];
+const heroImageElements = [...document.querySelectorAll('#heroMainImage')];
 const heroImageCaption = document.getElementById('heroImageCaption');
 const heroDots = [...document.querySelectorAll('[data-hero-slide]')];
 let heroImageIndex = 0;
 
 function showHeroImage(index) {
+  if (!heroImageElements.length || !heroImageCaption || !heroDots.length) return;
   heroImageIndex = (index + heroSlides.length) % heroSlides.length;
   const nextSlide = heroSlides[heroImageIndex];
   heroImageElements.forEach((image) => image.classList.add('is-changing'));
@@ -77,10 +78,14 @@ function showHeroImage(index) {
   heroDots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === heroImageIndex));
 }
 
-document.getElementById('heroPrev').addEventListener('click', () => showHeroImage(heroImageIndex - 1));
-document.getElementById('heroNext').addEventListener('click', () => showHeroImage(heroImageIndex + 1));
-heroDots.forEach((dot) => dot.addEventListener('click', () => showHeroImage(Number(dot.dataset.heroSlide))));
-window.setInterval(() => showHeroImage(heroImageIndex + 1), 7000);
+const heroPrevious = document.getElementById('heroPrev');
+const heroNext = document.getElementById('heroNext');
+if (heroPrevious && heroNext && heroImageElements.length && heroImageCaption && heroDots.length) {
+  heroPrevious.addEventListener('click', () => showHeroImage(heroImageIndex - 1));
+  heroNext.addEventListener('click', () => showHeroImage(heroImageIndex + 1));
+  heroDots.forEach((dot) => dot.addEventListener('click', () => showHeroImage(Number(dot.dataset.heroSlide))));
+  window.setInterval(() => showHeroImage(heroImageIndex + 1), 7000);
+}
 
 function visibleEventItems() {
   return eventItems.filter((item) => !item.classList.contains('d-none'));
@@ -93,6 +98,7 @@ function eventItemsPerView() {
 }
 
 function moveEvents(direction = 0) {
+  if (!eventTrack || !eventPrev || !eventNext || !eventProgress) return;
   const visibleItems = visibleEventItems();
   const perView = eventItemsPerView();
   const maxSlide = Math.max(0, visibleItems.length - perView);
@@ -105,8 +111,8 @@ function moveEvents(direction = 0) {
   eventNext.disabled = eventSlide === maxSlide;
 }
 
-eventPrev.addEventListener('click', () => moveEvents(-1));
-eventNext.addEventListener('click', () => moveEvents(1));
+eventPrev?.addEventListener('click', () => moveEvents(-1));
+eventNext?.addEventListener('click', () => moveEvents(1));
 window.addEventListener('resize', () => moveEvents());
 
 const sponsorSlides = [...document.querySelectorAll('.sponsor-slide')];
@@ -115,6 +121,7 @@ let activeSponsor = 0;
 let sponsorFormat = 'responsive';
 
 function showSponsor(index) {
+  if (!sponsorSlides.length) return;
   activeSponsor = (index + sponsorSlides.length) % sponsorSlides.length;
   sponsorSlides.forEach((slide, slideIndex) => {
     slide.classList.toggle('active', slideIndex === activeSponsor);
@@ -135,8 +142,8 @@ document.querySelectorAll('.format-button').forEach((button) => {
 });
 
 sponsorDots.forEach((dot) => dot.addEventListener('click', () => showSponsor(Number(dot.dataset.slideTo))));
-document.getElementById('sponsorPrev').addEventListener('click', () => showSponsor(activeSponsor - 1));
-document.getElementById('sponsorNext').addEventListener('click', () => showSponsor(activeSponsor + 1));
+document.getElementById('sponsorPrev')?.addEventListener('click', () => showSponsor(activeSponsor - 1));
+document.getElementById('sponsorNext')?.addEventListener('click', () => showSponsor(activeSponsor + 1));
 document.querySelectorAll('.sponsor-cta').forEach((link) => link.addEventListener('click', () => showToast('Sponsor campaign opened.')));
 window.setInterval(() => showSponsor(activeSponsor + 1), 6500);
 
@@ -151,8 +158,10 @@ document.querySelectorAll('.finder-tab').forEach((tab) => {
   });
 });
 
-document.getElementById('searchButton').addEventListener('click', () => {
-  const value = document.getElementById('searchInput').value.trim();
+const searchButton = document.getElementById('searchButton');
+const searchInput = document.getElementById('searchInput');
+searchButton?.addEventListener('click', () => {
+  const value = searchInput?.value.trim() || '';
   showToast(value ? `Searching PhotoX for “${value}”.` : 'Try an event, school, location or number.');
 });
 
@@ -178,7 +187,7 @@ document.querySelectorAll('.save-button').forEach((button) => {
 });
 
 document.querySelectorAll('a[href="#find"]').forEach((link) => {
-  link.addEventListener('click', () => setTimeout(() => document.getElementById('searchInput').focus(), 500));
+  link.addEventListener('click', () => setTimeout(() => searchInput?.focus(), 500));
 });
 
 moveEvents();
@@ -194,6 +203,7 @@ function testimonialsPerView() {
 }
 
 function showTestimonial(index) {
+  if (!testimonialSlides.length || !testimonialDots.length) return;
   const maxIndex = Math.max(0, testimonialSlides.length - testimonialsPerView());
   activeTestimonial = Math.min(Math.max(index, 0), maxIndex);
   const firstSlide = testimonialSlides[0];
@@ -203,8 +213,8 @@ function showTestimonial(index) {
   testimonialDots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === activeTestimonial));
 }
 
-document.getElementById('testimonialPrev').addEventListener('click', () => showTestimonial(activeTestimonial - 1));
-document.getElementById('testimonialNext').addEventListener('click', () => showTestimonial(activeTestimonial + 1));
+document.getElementById('testimonialPrev')?.addEventListener('click', () => showTestimonial(activeTestimonial - 1));
+document.getElementById('testimonialNext')?.addEventListener('click', () => showTestimonial(activeTestimonial + 1));
 testimonialDots.forEach((dot) => dot.addEventListener('click', () => showTestimonial(Number(dot.dataset.testimonial))));
 window.addEventListener('resize', () => showTestimonial(activeTestimonial));
 window.setInterval(() => {

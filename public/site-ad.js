@@ -1,7 +1,7 @@
 (() => {
   const isDashboardPage = !!document.querySelector('.workspace-sidebar');
-  const isHomePage = /(?:^|\/)index\.html$/i.test(window.location.pathname) || window.location.pathname.endsWith('/');
-  const isAuthPage = /(?:^|\/)(?:login|signup)\.html$/i.test(window.location.pathname);
+  const isHomePage = window.location.pathname === '/' || /(?:^|\/)index(?:\.html)?$/i.test(window.location.pathname);
+  const isAuthPage = /(?:^|\/)(?:login|signup)(?:\.html)?$/i.test(window.location.pathname);
 
   document.querySelectorAll('.hero-ad-carousel').forEach((carousel) => {
     const slides = [...carousel.querySelectorAll('.hero-ad-slide')];
@@ -23,12 +23,14 @@
     window.setInterval(() => showSlide(activeIndex + 1), 5200);
   });
 
-  if (isHomePage || isAuthPage) return;
+  const isPhotographerDetails = document.body.classList.contains('page-photographer-details');
+
+  if (isHomePage || isAuthPage || isPhotographerDetails) return;
 
   const adClass = isDashboardPage ? ' dashboard-ad' : '';
   const adMarkup = `
     <aside class="site-ad-banner${adClass}" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="events.html">
+      <a class="site-ad-link" href="/events">
         <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
         <span class="site-ad-overlay"></span>
         <span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span>
@@ -63,7 +65,7 @@
 
   const hero = page.classList.contains('page-photographers')
     ? document.querySelector('.people-hero')
-    : document.querySelector('.photographer-cover, .events-page-hero, .hero-section');
+    : document.querySelector('.events-page-hero, .hero-section');
   if (hero) {
     hero.insertAdjacentHTML('afterend', adMarkup);
     return;

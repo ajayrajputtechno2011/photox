@@ -8,17 +8,17 @@
 
 ---
 
-## 1. Quick Switch to Take Website Live on `photox.co.za`
-The live website is currently in **Holding / Under Construction Mode** (serving a branded "Server Setup & Deployment in Progress" splash screen for all routes).  
-To switch the website **LIVE** tomorrow, run this single command:
+## 1. Production Website Status
+The live website is **LIVE & ACTIVE** serving the full PhotoX Explore marketplace, events, galleries, photographer portals, and Yoco payments.
 
-```bash
-ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.live /etc/nginx/conf.d/photox.conf && nginx -s reload"
-```
-
-To switch it back to holding mode anytime:
+To switch back to holding mode anytime if needed:
 ```bash
 ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.holding /etc/nginx/conf.d/photox.conf && nginx -s reload"
+```
+
+To switch back to live mode:
+```bash
+ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.live /etc/nginx/conf.d/photox.conf && nginx -s reload"
 ```
 
 ---

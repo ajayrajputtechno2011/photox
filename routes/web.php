@@ -14,18 +14,11 @@ use App\Http\Controllers\Web\MembershipController as WebMembershipController;
 use App\Http\Controllers\Web\PhotographerController as WebPhotographerController;
 use App\Http\Controllers\Web\YocoTestController;
 use App\Models\WatermarkSetting;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Home page (Work in Progress on production photox.co.za; full gallery on staging or with ?preview=1 or /home)
-Route::get('/', function (Request $request) {
-    if (str_contains($request->getHost(), 'photox.co.za') && ! $request->has('preview')) {
-        return view('web.work-in-progress');
-    }
-
-    return app(DemoController::class)->dummyHome($request);
-})->name('home');
+// Home page (Live full Explore & Showcase Homepage)
+Route::get('/', [DemoController::class, 'dummyHome'])->name('home');
 
 Route::get('/home', [DemoController::class, 'dummyHome'])->name('home.preview');
 

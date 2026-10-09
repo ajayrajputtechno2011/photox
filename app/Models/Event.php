@@ -14,6 +14,8 @@ class Event extends Model
     protected $fillable = [
         'title',
         'slug',
+        'photographer_id',
+        'photographer_name',
         'category_id',
         'category_name',
         'location',
@@ -35,6 +37,11 @@ class Event extends Model
         'total_photos' => 'integer',
         'photographers_count' => 'integer',
     ];
+
+    public function photographer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'photographer_id');
+    }
 
     public function category(): BelongsTo
     {

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -59,6 +60,16 @@ class User extends Authenticatable
     public function membership(): BelongsTo
     {
         return $this->belongsTo(Membership::class);
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class, 'photographer_id');
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(EventPhoto::class, 'photographer_id');
     }
 
     public function isCustomer(): bool

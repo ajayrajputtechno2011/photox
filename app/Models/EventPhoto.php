@@ -12,6 +12,7 @@ class EventPhoto extends Model
 
     protected $fillable = [
         'event_id',
+        'photographer_id',
         'file_path',
         'watermarked_path',
         'original_name',
@@ -46,5 +47,10 @@ class EventPhoto extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function photographer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'photographer_id');
     }
 }

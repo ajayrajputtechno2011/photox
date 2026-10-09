@@ -156,7 +156,10 @@
                 </div>
                 <h3>{{ $creator->name }}</h3>
                 <p>{{ Str::limit($creator->bio ?: 'Sports & action photographer covering moments that matter.', 75) }}</p>
-                <a aria-label="{{ $creator->name }} profile" href="{{ route('photographers.show', $creator->id) }}"><i class="bi bi-arrow-up-right"></i></a>
+                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top border-dark border-opacity-10">
+                  <span class="text-secondary small fw-medium"><i class="bi bi-calendar-event me-1"></i> {{ $creator->events_count ?? $creator->events->count() }} events</span>
+                  <a aria-label="{{ $creator->name }} profile" href="{{ route('photographers.show', $creator->id) }}"><i class="bi bi-arrow-up-right"></i></a>
+                </div>
               </div>
             </article>
           @empty

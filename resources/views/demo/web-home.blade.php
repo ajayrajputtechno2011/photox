@@ -276,7 +276,15 @@
                     <span class="date">{{ $item->event_date ? \Carbon\Carbon::parse($item->event_date)->format('d M Y') : '' }}</span>
                   </div>
                   <h3>{{ $item->title }}</h3>
-                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos · {{ $item->photographers_count ?? 1 }} photographers</p>
+                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos</p>
+                  @if($item->photographer || $item->photographer_name)
+                    <div class="d-flex align-items-center gap-2 mb-2 pb-1 text-muted small">
+                      <img src="{{ $item->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=80&q=80' }}" class="rounded-circle object-fit-cover shadow-sm" width="22" height="22" alt="{{ $item->photographer?->name }}">
+                      <a href="/photographer-details/{{ $item->photographer_id }}" onclick="event.stopPropagation();" class="text-white text-decoration-none fw-medium text-truncate" style="max-width: 200px;">
+                        {{ $item->photographer?->name ?? $item->photographer_name }}
+                      </a>
+                    </div>
+                  @endif
                   <div class="card-bottom">
                     <span class="price">{{ $item->starting_price ?? 'From R50' }}</span>
                     <a class="cta text-decoration-none text-center" href="/event-details/{{ $item->slug }}" onclick="event.stopPropagation();">
@@ -483,6 +491,66 @@
               <p>Download selected photos instantly with secure access links and protected originals.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6B. THE VERIFIED PHOTOGRAPHERS (Dynamic 6 Photographers Showcase) -->
+    <section class="content-section" id="featured-photographers" style="background: #ffffff; padding: 70px 0;">
+      <div class="container-xl">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+          <div>
+            <div class="section-kicker" style="background:#eaf3ff;color:#0b2d5b;border-color:rgba(11,45,91,.08);">
+              PhotoX Creators
+            </div>
+            <h2 class="section-title mb-1">Meet our verified photographers</h2>
+            <p class="text-muted small mb-0">Professional sports & action creators capturing live moments across South Africa.</p>
+          </div>
+          <a href="/photographers" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-semibold">
+            View all photographers <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+
+        <div class="row g-4">
+          @if(isset($photographers) && $photographers->isNotEmpty())
+            @foreach($photographers as $creator)
+              @php
+                $isGuild = strtolower($creator->tier ?? '') === 'photoguild' || ($creator->membership && $creator->membership->slug === 'photoguild');
+                $isPro = strtolower($creator->tier ?? '') === 'pro' || ($creator->membership && $creator->membership->slug === 'pro');
+                $isStandard = strtolower($creator->tier ?? '') === 'standard' || ($creator->membership && $creator->membership->slug === 'standard');
+              @endphp
+              <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative p-3" style="background: #f8fafc; transition: transform 0.2s, box-shadow 0.2s;">
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="position-relative">
+                      <img src="{{ $creator->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=200&q=90' }}" alt="{{ $creator->name }}" class="rounded-circle object-fit-cover shadow-sm" width="64" height="64">
+                      @if($isGuild)
+                        <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-white" title="PhotoGuild SA Member"><i class="bi bi-award-fill"></i></span>
+                      @elseif($isPro)
+                        <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success border border-white" title="Pro Member"><i class="bi bi-patch-check-fill"></i></span>
+                      @endif
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                      <h4 class="h6 mb-0 fw-bold text-truncate">{{ $creator->name }}</h4>
+                      <p class="small text-muted mb-1 text-truncate">{{ $creator->specialty ?: 'Sports & Action' }}</p>
+                      <span class="badge {{ $isGuild ? 'bg-warning text-dark' : ($isPro ? 'bg-success' : 'bg-primary') }} py-1 px-2 rounded-pill" style="font-size: 0.65rem;">
+                        {{ $creator->effective_badge_heading }}
+                      </span>
+                    </div>
+                  </div>
+                  <p class="small text-muted mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.45;">
+                    {{ $creator->bio ?: 'Documentary sports photography covering race days, finals and high energy moments.' }}
+                  </p>
+                  <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
+                    <span class="small text-secondary"><i class="bi bi-calendar-event me-1"></i> {{ $creator->events_count ?? $creator->events->count() }} active events</span>
+                    <a href="/photographer-details/{{ $creator->id }}" class="btn btn-sm btn-lime rounded-pill px-3 fw-semibold">
+                      View profile <i class="bi bi-arrow-up-right ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          @endif
         </div>
       </div>
     </section>

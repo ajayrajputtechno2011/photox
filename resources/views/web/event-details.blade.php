@@ -407,7 +407,17 @@
           <div>
             <h1 class="h3 fw-bold text-white mb-0">{{ $event->title }}</h1>
             <p class="text-white-50 small mb-0 mt-1">
-              <i class="bi bi-camera me-1 text-warning"></i> {{ $photos->first()->photographer_name ?? 'Aiden Daniels' }} 
+              @php
+                $evPhotographer = $event->photographer ?? ($photos->first()?->photographer ?? null);
+              @endphp
+              <i class="bi bi-camera me-1 text-warning"></i>
+              @if($evPhotographer)
+                <a href="{{ route('photographers.show', $evPhotographer->id) }}" class="text-warning text-decoration-none fw-semibold">
+                  {{ $evPhotographer->name }}
+                </a>
+              @else
+                <span>{{ $event->photographer_name ?? ($photos->first()?->photographer_name ?? 'PhotoX Pro') }}</span>
+              @endif
               &nbsp;·&nbsp; 
               <i class="bi bi-calendar-event me-1"></i> {{ $event->event_date ? \Carbon\Carbon::parse($event->event_date)->format('d M, Y') : 'Oct 6, 2026' }}
               &nbsp;·&nbsp; 
@@ -512,8 +522,8 @@
           <div class="anti-theft-overlay"></div>
 
           <!-- Top-Left: Photographer Avatar Circle -->
-          <div class="card-avatar-pill">
-            <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80" alt="Photographer">
+          <div class="card-avatar-pill" title="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'PhotoX Creator') }}">
+            <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80') }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}">
           </div>
 
           <!-- Top-Right: Price Tag (Matching Screenshot 2: e.g. R50.00) -->
@@ -573,13 +583,14 @@
               <i class="bi bi-x-lg"></i>
             </button>
             <div class="d-flex align-items-center gap-2">
-              <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80" 
+              <img src="{{ $event->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80' }}" 
                    alt="Creator" 
                    class="rounded-circle border border-warning" 
+                   id="lbPhotographerAvatar"
                    style="width: 36px; height: 36px; object-fit: cover;">
               <div>
-                <strong class="d-block text-white small" id="lbPhotographerName">Aiden Daniels</strong>
-                <span class="text-white-50" style="font-size: 0.70rem;">@aiden_photox</span>
+                <strong class="d-block text-white small" id="lbPhotographerName">{{ $event->photographer?->name ?? ($photos->first()?->photographer_name ?? 'Aiden Daniels') }}</strong>
+                <span class="text-white-50" style="font-size: 0.70rem;" id="lbPhotographerBadge">{{ $event->photographer?->effective_badge_heading ?? 'Verified Creator' }}</span>
               </div>
             </div>
           </div>

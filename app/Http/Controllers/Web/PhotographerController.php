@@ -22,9 +22,10 @@ class PhotographerController extends Controller
     {
         $photographers = User::where('role', 'photographer')
             ->where('status', 'active')
-            ->with('membership')
+            ->with(['membership', 'events'])
+            ->withCount('events')
             ->orderByRaw("CASE WHEN tier = 'photoguild' THEN 0 WHEN tier = 'pro' THEN 1 WHEN tier = 'standard' THEN 2 ELSE 3 END")
-            ->latest('id')
+            ->orderBy('id', 'asc')
             ->get();
 
         $pageHeroes = PageHero::all()->keyBy('page_key');
@@ -49,33 +50,31 @@ class PhotographerController extends Controller
         }
 
         if (! $photographer) {
-            $photographer = new User([
-                'name' => 'Aiden Daniels',
-                'email' => 'aiden@photox.com',
-                'role' => 'photographer',
-                'status' => 'active',
-                'tier' => 'pro',
-                'phone' => '+27 21 555 0192',
-                'avatar' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=90',
-                'bio' => 'Documentary sports photography for the split second, the quiet build-up and everything that happens after the finish line. Based in Cape Town, covering marathons, rugby, track & cycling.',
-            ]);
+            abort(404, 'Photographer not found');
         }
 
-        // 2. Real Albums from database (Events with photos)
-        $albums = Event::where('status', 'published')
+        // 2. Real Albums from database (Events belonging to this photographer)
+        $albums = Event::where('photographer_id', $photographer->id)
+            ->where('status', 'published')
             ->withCount('photos')
             ->with('photos')
-            ->orderByRaw('CASE WHEN photos_count > 0 THEN 0 ELSE 1 END ASC')
             ->latest('event_date')
-            ->take(12)
             ->get();
 
         if ($albums->isEmpty()) {
-            $albums = Event::with('photos')->latest()->take(12)->get();
+            $albums = Event::where('status', 'published')
+                ->withCount('photos')
+                ->latest('event_date')
+                ->take(4)
+                ->get();
         }
 
-        // 3. Real Gallery Photos (Secure watermarked photos)
-        $photosQuery = EventPhoto::with('event.category')->where('is_demo', true)->latest();
+        // 3. Real Gallery Photos for this photographer
+        $photosQuery = EventPhoto::where(function ($q) use ($photographer) {
+            $q->where('photographer_id', $photographer->id)
+                ->orWhereIn('event_id', $photographer->events()->pluck('id'))
+                ->orWhere('photographer_name', $photographer->name);
+        })->with('event.category')->latest();
 
         if ($request->filled('event_id')) {
             $photosQuery->where('event_id', (int) $request->input('event_id'));
@@ -90,7 +89,7 @@ class PhotographerController extends Controller
 
         $photos = $photosQuery->get();
         if ($photos->isEmpty()) {
-            $photos = EventPhoto::with('event.category')->latest()->take(24)->get();
+            $photos = EventPhoto::with('event.category')->latest()->take(12)->get();
         }
 
         // 4. Categories for filtering

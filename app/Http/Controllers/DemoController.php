@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Event;
 use App\Models\EventPhoto;
 use App\Models\PageHero;
+use App\Models\User;
 use App\Models\WatermarkSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -920,22 +921,23 @@ class DemoController extends Controller
             ->take(8)
             ->get();
 
-        // 1. Latest Events added via /admin/dummy-event
-        $latestEvents = Event::where('is_demo', true)
+        // 1. Latest Events with Photographer and photos count
+        $latestEvents = Event::where('status', 'published')
+            ->with(['photographer', 'category', 'photos'])
             ->withCount('photos')
-            ->latest()
+            ->latest('event_date')
             ->get();
 
         if ($latestEvents->isEmpty()) {
-            $latestEvents = Event::where('status', 'published')
+            $latestEvents = Event::with(['photographer', 'category', 'photos'])
                 ->withCount('photos')
-                ->latest('event_date')
+                ->latest()
                 ->take(6)
                 ->get();
         }
 
         // 2. Browse every gallery (photos added to demo events with watermark)
-        $photosQuery = EventPhoto::where('is_demo', true)->with('event.category')->latest();
+        $photosQuery = EventPhoto::where('is_demo', true)->with(['event.category', 'photographer'])->latest();
 
         if ($request->filled('event_id')) {
             $photosQuery->where('event_id', (int) $request->input('event_id'));
@@ -950,8 +952,18 @@ class DemoController extends Controller
 
         $galleryPhotos = $photosQuery->get();
         if ($galleryPhotos->isEmpty()) {
-            $galleryPhotos = EventPhoto::with('event.category')->latest()->take(24)->get();
+            $galleryPhotos = EventPhoto::with(['event.category', 'photographer'])->latest()->take(24)->get();
         }
+
+        // 3. The 6 Verified Photographers for the Showcase Section
+        $photographers = User::where('role', 'photographer')
+            ->where('status', 'active')
+            ->with(['membership', 'events'])
+            ->withCount('events')
+            ->orderByRaw("CASE WHEN tier = 'photoguild' THEN 0 WHEN tier = 'pro' THEN 1 WHEN tier = 'standard' THEN 2 ELSE 3 END")
+            ->orderBy('id', 'asc')
+            ->take(6)
+            ->get();
 
         $watermarkSetting = WatermarkSetting::firstOrCreate(['user_id' => null]);
 
@@ -963,6 +975,7 @@ class DemoController extends Controller
             'popularCategories',
             'latestEvents',
             'galleryPhotos',
+            'photographers',
             'watermarkSetting'
         ));
     }

@@ -39,10 +39,22 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 | 3.2 | **Delete Test Dummy Events** | ✅ **DONE** | Dummy events (#12 "this is testing", #13 "new event check") database se delete kar diye gaye. |
 | 3.3 | **Assign 2 Real Events Per Photographer** | ✅ **DONE** | Har photographer ke 2 real events link ho chuke hain (`photographer_id` foreign key ke sath). Total 12 events. |
 | 3.4 | **Connect Event Galleries & Photos** | ✅ **DONE** | Har event ke andar 3 se 12 real sports photos EXIF, bib numbers aur pricing ke sath photographer se link ho chuki hain. |
-| 3.5 | **Dynamic Home Page Showcase** | ⏳ **IN PROGRESS** | Home page par verified photographers ka showcase card aur event cards par photographer ka name/avatar link karna. |
-| 3.6 | **Dynamic Photographers Roster (`/photographers`)** | ⏳ **IN PROGRESS** | Roster page par real dynamic counts (`$creator->events_count`) aur category filters lagana. |
-| 3.7 | **Dynamic Photographer Details (`/photographer-details/{id}`)** | ⏳ **IN PROGRESS** | Photographer details page par sirf usi photographer ke 2 events aur usi ki gallery photos load karwana. |
-| 3.8 | **Deploy & Sync to Both Servers** | ⏳ **IN PROGRESS** | Local dev aur client live VPS (`photox.co.za`) dono par migration aur data sync complete karna. |
+| 3.5 | **Dynamic Home Page Showcase** | ✅ **DONE** | Home page par verified photographers ka showcase card aur event cards par photographer ka name/avatar link ho chuka hai. |
+| 3.6 | **Dynamic Photographers Roster (`/photographers`)** | ✅ **DONE** | Card height fix ki gayi, dynamic events count pill add kiya gaya, aur real 6 photographers load ho rahe hain. |
+| 3.7 | **Dynamic Photographer Details & Vanity URLs** | ✅ **DONE** | PhotoFrog style storefront: Custom hero banner, `@username` grey handle, vanity URL (`photox.co.za/aidendaniels` & `/@aidendaniels`), live album search bar. |
+| 3.8 | **Deploy & Sync to Both Servers** | ✅ **DONE** | Local dev (`photox.aitechnotech.in`) aur live VPS (`photox.co.za` - `168.231.79.67`) dono par code and DB synced. |
+
+---
+
+### 7. Storefront, Search & Platform Security (Latest Client Feedback - 10 Oct 2026)
+| Point # | Requirement / Client Feedback | Status | Description & Implementation Details |
+|---|---|---|---|
+| 7.1 | **Watermark Re-render Performance** | ✅ **DONE** | Watermark dynamic overlay mode me chalta hai; watermark badalne par 50,000 photos re-run karne ki zaroorat nahi hoti, instantly site-wide update ho jata hai. |
+| 7.2 | **Password Protect photox.co.za** | ✅ **DONE** | Nginx Basic Auth (`photox` / `photox2026!`) ready taaki public visitors premature stage me site access na karein. |
+| 7.3 | **Business Name & Logo vs Face Photo** | ✅ **DONE** | Profile page par personal face ke sath-sath business/studio name aur business logo/action photo upload karne ka support. |
+| 7.4 | **Default Fallback Banner if Not Uploaded** | ✅ **DONE** | Agar photographer ne custom banner upload nahi kiya, toh automatically PhotoX branded dark sports hero banner / latest event cover display hoga. |
+| 7.5 | **Search Photographers by Sport (e.g. Rugby)** | ✅ **DONE** | `/photographers` par user sport (Rugby, Running, Cycling) search kar sakta hai. Jab photographer us category me gallery upload karega, wo automatic search me aa jayega. |
+| 7.6 | **Clean Storefront Design (PhotoFrog Style)** | ✅ **DONE** | Hardcoded generic text ("The eye behind the moment") hatakar clean hero banner, `@username` grey handle, aur album search bar lagaya gaya. |
 
 ---
 

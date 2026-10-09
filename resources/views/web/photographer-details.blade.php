@@ -5,16 +5,18 @@
 
 @section('content')
   <main>
-    <!-- 1. HERO COVER & SHOWCASE HEADER -->
+    @php
+      $coverBanner = $photographer->banner_image 
+          ?: ($albums->first()?->cover_image 
+          ?: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1600&q=85');
+      $usernameHandle = $photographer->username ?: Str::slug($photographer->name, '');
+    @endphp
+
+    <!-- 1. HERO COVER & SHOWCASE HEADER (PhotoFrog Style Clean Banner) -->
     <section aria-labelledby="photographer-showcase-title" class="photographer-showcase">
-      <div class="photographer-cover">
-        <div class="container-xl photographer-cover-content">
-          <div class="photographer-hero-kicker">
-            <span class="live-dot"></span> Professional photographer profile
-          </div>
-          <h1>The eye behind<br>
-          <em>the moment.</em></h1>
-        </div>
+      <div class="photographer-cover position-relative overflow-hidden" style="height: 280px; background: #0b1a29;">
+        <img src="{{ $coverBanner }}" alt="{{ $photographer->name }} Banner" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="opacity: 0.95;">
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(180deg, rgba(11,26,41,0.05) 0%, rgba(11,26,41,0.65) 100%); pointer-events: none;"></div>
       </div>
 
       <div class="container-xl photographer-showcase-body">
@@ -55,6 +57,10 @@
                 <i class="bi {{ $tierIcon }} text-warning me-1"></i> {{ $tierHeading }}
               </span>
             </div>
+            <!-- @username in Grey (PhotoFrog style requested by client) -->
+            <div class="text-secondary small fw-medium mt-1 mb-2 font-monospace" style="font-size: 0.88rem; letter-spacing: -0.01em;">
+              {{ '@' . $usernameHandle }}
+            </div>
             <p class="mt-1 mb-2">{{ $photographer->bio ? Str::limit($photographer->bio, 120) : 'Sports & event photographer · ' . ($photographer->location ?: 'South Africa') }}</p>
             <div class="photographer-showcase-meta">
               <span><i class="bi bi-geo-alt"></i> {{ $photographer->location ?: 'South Africa' }}</span>
@@ -69,15 +75,18 @@
           </button>
         </div>
 
-        <!-- Albums Toolbar -->
-        <div class="photographer-showcase-toolbar" id="albums">
+        <!-- Albums Toolbar (with Search bar like PhotoFrog) -->
+        <div class="photographer-showcase-toolbar d-flex align-items-center justify-content-between flex-wrap gap-3" id="albums">
           <div>
             <span class="showcase-eyebrow">{{ strtoupper($photographer->name) }}</span>
             <h2>{{ $albums->count() }} albums</h2>
           </div>
-          <button type="button" onclick="document.getElementById('albumsGridContainer').scrollIntoView({behavior:'smooth'})">
-            <i class="bi bi-filter"></i> Filter albums
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 280px;">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="search" id="albumSearchInput" class="form-control border-start-0" placeholder="Search albums..." oninput="filterPhotographerAlbums(this.value)">
+            </div>
+          </div>
         </div>
 
         <!-- Dynamic Album Grid -->

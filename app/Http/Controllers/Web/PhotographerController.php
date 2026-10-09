@@ -38,10 +38,17 @@ class PhotographerController extends Controller
      */
     public function show(Request $request, ?string $id = null): View
     {
-        // 1. Fetch photographer: by id/slug or default to Aiden Daniels / active photographer
+        // 1. Fetch photographer: by id, slug, username or default to Aiden Daniels
         $photographer = null;
         if ($id) {
-            $photographer = User::where('role', 'photographer')->where('id', $id)->first();
+            $cleanLookup = strtolower(str_replace(['-', '_', '@'], '', $id));
+            $photographer = User::where('role', 'photographer')
+                ->where(function ($q) use ($id, $cleanLookup) {
+                    $q->where('id', $id)
+                        ->orWhere('email', $id)
+                        ->orWhereRaw("REPLACE(LOWER(name), ' ', '') = ?", [$cleanLookup])
+                        ->orWhere('name', 'like', "%{$id}%");
+                })->first();
         }
 
         if (! $photographer) {

@@ -206,9 +206,14 @@
           </div>
           <label class="people-search"><i class="bi bi-search"></i><input aria-label="Search photographers" id="search" placeholder="Search names or specialties"></label>
         </div>
-        <p class="creator-note">Find the right eye for your event. Search by name, location or specialty, then explore the creators who turn race days, matches and community moments into images worth keeping.</p>
+        <p class="creator-note">Find the right eye for your event. Search by sport (e.g. Rugby, Running, Cycling), name or location, then explore the verified creators capturing your moments.</p>
         <div class="people-filters">
-          <button class="people-filter active" data-filter="all">Everyone</button><button class="people-filter" data-filter="sport">Sports</button><button class="people-filter" data-filter="event">Events</button><button class="people-filter" data-filter="portrait">Portraits</button>
+          <button class="people-filter active" data-filter="all">Everyone</button>
+          <button class="people-filter" data-filter="rugby">Rugby</button>
+          <button class="people-filter" data-filter="running">Running</button>
+          <button class="people-filter" data-filter="cycling">Cycling</button>
+          <button class="people-filter" data-filter="sport">All Sports</button>
+          <button class="people-filter" data-filter="portrait">Portraits</button>
         </div>
         <div class="people-grid" id="grid">
           @forelse($photographers as $index => $creator)
@@ -223,8 +228,13 @@
               } elseif (str_contains($spec, 'event')) {
                   $filterType = 'event';
               }
+              $creatorSportsList = $creator->events->pluck('category_name')->filter()->unique()->implode(' ');
+              $searchBlob = strtolower($creator->name . ' ' . ($creator->specialty ?? '') . ' ' . ($creator->location ?? '') . ' ' . $creatorSportsList);
             @endphp
-            <article class="person-card {{ $isPro || $isGuild ? 'person-featured' : '' }}" data-name="{{ strtolower($creator->name . ' ' . ($creator->specialty ?? '') . ' ' . ($creator->location ?? '')) }}" data-type="{{ $filterType }}">
+            <article class="person-card {{ $isPro || $isGuild ? 'person-featured' : '' }}" 
+                     data-name="{{ $searchBlob }}" 
+                     data-sports="{{ strtolower($creatorSportsList) }}"
+                     data-type="{{ $filterType }}">
               <div class="person-image">
                 <img alt="{{ $creator->name }}" src="{{ $creator->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=90' }}">
                 <span>{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
@@ -301,10 +311,26 @@
 
     function filter() {
       const type = document.querySelector('.people-filter.active').dataset.filter;
-      const q = search.value.toLowerCase();
+      const q = search.value.toLowerCase().trim();
       let n = 0;
       cards.forEach(c => {
-        const show = (type === 'all' || c.dataset.type === type) && (!q || c.dataset.name.includes(q));
+        const sports = (c.dataset.sports || '').toLowerCase();
+        const cType = (c.dataset.type || '').toLowerCase();
+        const nameBlob = (c.dataset.name || '').toLowerCase();
+
+        let typeMatch = false;
+        if (type === 'all') {
+          typeMatch = true;
+        } else if (type === 'rugby' || type === 'running' || type === 'cycling') {
+          typeMatch = sports.includes(type) || nameBlob.includes(type);
+        } else if (type === 'sport') {
+          typeMatch = (cType === 'sport') || sports.length > 0;
+        } else {
+          typeMatch = (cType === type) || nameBlob.includes(type);
+        }
+
+        const searchMatch = !q || nameBlob.includes(q) || sports.includes(q);
+        const show = typeMatch && searchMatch;
         c.hidden = !show;
         if (show) n++;
       });

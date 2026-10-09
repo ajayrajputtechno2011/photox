@@ -48,6 +48,10 @@ Route::get('/photographer-details/{id}', [WebPhotographerController::class, 'sho
 Route::get('/photographer-details.html', function () {
     return redirect('/photographer-details', 301);
 });
+Route::get('/@{username}', [WebPhotographerController::class, 'show'])->name('photographers.at_username');
+Route::get('/{username}', [WebPhotographerController::class, 'show'])
+    ->where('username', '^(aidendaniels|jordanmiller|sarahkim|michaeladams|siphodlamini|danieljacobs|aiden-daniels|jordan-miller|sarah-kim|michael-adams|sipho-dlamini|daniel-jacobs)$')
+    ->name('photographers.vanity');
 
 // Public demo links show "Work in Progress"
 Route::get('/watermark-studio-demo', function () {

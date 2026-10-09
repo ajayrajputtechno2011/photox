@@ -10,6 +10,154 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('admin-assets/css/style.css') }}" rel="stylesheet">
+  <style>
+    /* Dark Theme High-Contrast Text Overrides for Photographer Directory */
+    .photographer-table {
+      --bs-table-bg: transparent !important;
+      --bs-table-color: #f8fafc !important;
+    }
+    .photographer-table th {
+      color: #94a3b8 !important;
+      font-size: 0.76rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.06em !important;
+      text-transform: uppercase !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+    .photographer-table td {
+      color: #e2e8f0 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    .photographer-table td strong {
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      font-size: 0.92rem !important;
+    }
+    .photographer-table td small,
+    .photographer-table .subtext,
+    .photographer-table .text-muted,
+    .photographer-person small {
+      color: #94a3b8 !important; /* Crisp, easily readable light slate silver */
+      font-size: 0.82rem !important;
+      font-weight: 400 !important;
+    }
+    .photographer-location {
+      color: #94a3b8 !important;
+      font-size: 0.8rem !important;
+    }
+
+    /* Modern, High-Contrast Status Pills */
+    .status-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      padding: 4px 10px !important;
+      border-radius: 20px !important;
+      font-size: 0.76rem !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.02em !important;
+      white-space: nowrap !important;
+    }
+    .status-pill.status-verified {
+      background: rgba(16, 185, 129, 0.18) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    }
+    .status-pill.status-pending {
+      background: rgba(245, 158, 11, 0.18) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.45) !important;
+    }
+    .status-pill.status-suspended {
+      background: rgba(239, 68, 68, 0.18) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    }
+
+    /* High-Contrast Membership Badges */
+    .badge-tier-guild {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    .badge-tier-pro {
+      background: rgba(16, 185, 129, 0.22) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      font-weight: 600 !important;
+    }
+    .badge-tier-standard {
+      background: rgba(59, 130, 246, 0.22) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      font-weight: 600 !important;
+    }
+    .badge-tier-starter {
+      background: rgba(148, 163, 184, 0.2) !important;
+      color: #cbd5e1 !important;
+      border: 1px solid rgba(148, 163, 184, 0.35) !important;
+      font-weight: 600 !important;
+    }
+    .badge-vip {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+      color: #0f172a !important;
+      font-weight: 700 !important;
+      font-size: 0.68rem !important;
+      padding: 2px 7px !important;
+      border-radius: 6px !important;
+    }
+
+    /* Privilege stats styling */
+    .privilege-label {
+      color: #94a3b8 !important;
+      font-size: 0.8rem !important;
+    }
+    .privilege-val {
+      color: #38bdf8 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Table Action Buttons */
+    .table-actions .row-action {
+      color: #cbd5e1 !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .table-actions .row-action:hover {
+      color: #ffffff !important;
+      background: rgba(59, 130, 246, 0.28) !important;
+      border-color: rgba(59, 130, 246, 0.55) !important;
+    }
+    .table-actions .row-action.text-danger:hover {
+      color: #ffffff !important;
+      background: rgba(239, 68, 68, 0.28) !important;
+      border-color: rgba(239, 68, 68, 0.55) !important;
+    }
+
+    /* Filter & Search Bar */
+    .management-toolbar .search-field input {
+      color: #ffffff !important;
+    }
+    .management-toolbar .search-field input::placeholder {
+      color: #64748b !important;
+    }
+    .management-toolbar .management-select {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    .management-toolbar .management-select option {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+    }
+  </style>
 </head>
 <body>
   
@@ -214,57 +362,57 @@
                   <tr>
                     <td>
                       <div class="photographer-person">
-                        <img alt="{{ $p->name }}" src="{{ $p->avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=96&q=80' }}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15);">
+                        <img alt="{{ $p->name }}" src="{{ $p->avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=96&q=80' }}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.18);">
                         <span>
-                          <strong>{{ $p->name }}</strong>
-                          <small>
+                          <strong style="color: #ffffff !important; font-size: 0.95rem;">{{ $p->name }}</strong>
+                          <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
                             @if($isGuild)
-                              <span class="badge" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700;">PhotoGuild SA</span>
+                              <span class="badge badge-tier-guild py-1 px-2 rounded-pill">PhotoGuild SA</span>
                             @elseif($isPro)
-                              <span class="badge bg-success">Pro Member</span>
+                              <span class="badge badge-tier-pro py-1 px-2 rounded-pill">Pro Member</span>
                             @elseif($isStandard)
-                              <span class="badge bg-primary">Standard</span>
+                              <span class="badge badge-tier-standard py-1 px-2 rounded-pill">Standard</span>
                             @else
-                              <span class="badge bg-secondary">{{ $p->effective_badge_heading }}</span>
+                              <span class="badge badge-tier-starter py-1 px-2 rounded-pill">{{ $p->effective_badge_heading }}</span>
                             @endif
-                            · {{ $p->location ?: 'South Africa' }}
-                          </small>
+                            <small class="photographer-location">· {{ $p->location ?: 'South Africa' }}</small>
+                          </div>
                         </span>
                       </div>
                     </td>
                     <td>
-                      <strong>{{ $p->email }}</strong>
-                      <small class="d-block text-muted">{{ $p->phone ?: 'No phone added' }}</small>
+                      <strong class="d-block text-white" style="font-size: 0.92rem;">{{ $p->email }}</strong>
+                      <small class="subtext d-block mt-0.5" style="color: #94a3b8 !important;">{{ $p->phone ?: 'No phone added' }}</small>
                     </td>
                     <td>
                       @if($p->status === 'active')
                         <span class="status-pill status-verified"><i class="bi bi-check-circle-fill"></i> Active</span>
-                        <small class="d-block text-muted">Verified creator</small>
+                        <small class="subtext d-block mt-1" style="color: #94a3b8 !important;">Verified creator</small>
                       @elseif($p->status === 'pending_approval')
                         <span class="status-pill status-pending"><i class="bi bi-clock-fill"></i> Pending</span>
-                        <small class="d-block text-muted">Review required</small>
+                        <small class="subtext d-block mt-1" style="color: #94a3b8 !important;">Review required</small>
                       @else
                         <span class="status-pill status-suspended"><i class="bi bi-pause-circle-fill"></i> Suspended</span>
-                        <small class="d-block text-muted">Access locked</small>
+                        <small class="subtext d-block mt-1" style="color: #94a3b8 !important;">Access locked</small>
                       @endif
                     </td>
                     <td>
-                      <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <strong class="text-white">{{ $p->membership?->name ?: ucfirst($p->tier ?: 'Starter') }}</strong>
+                      <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                        <strong class="text-white" style="font-size: 0.92rem;">{{ $p->membership?->name ?: ucfirst($p->tier ?: 'Starter') }}</strong>
                         @if($p->custom_storage_limit || $p->custom_commission_rate || !empty($p->custom_features))
-                          <span class="badge bg-warning text-dark" title="Admin Custom Override" style="font-size: 0.68rem; font-weight: 700;">
+                          <span class="badge badge-vip" title="Admin Custom Override">
                             <i class="bi bi-sliders"></i> Custom VIP
                           </span>
                         @endif
                       </div>
-                      <small class="d-block text-muted">
-                        Storage: <span class="text-white fw-semibold">{{ $p->effective_storage_limit }}</span> · 
-                        Comm: <span class="text-white fw-semibold">{{ $p->effective_commission_rate }}</span>
-                      </small>
+                      <div class="privilege-label" style="color: #94a3b8 !important;">
+                        Storage: <span class="privilege-val">{{ $p->effective_storage_limit }}</span> · 
+                        Comm: <span class="privilege-val">{{ $p->effective_commission_rate }}</span>
+                      </div>
                     </td>
                     <td>
-                      <strong>{{ $p->created_at ? $p->created_at->format('d M Y') : 'N/A' }}</strong>
-                      <small class="d-block text-muted">{{ $p->created_at ? $p->created_at->diffForHumans() : '' }}</small>
+                      <strong class="text-white d-block" style="font-size: 0.92rem;">{{ $p->created_at ? $p->created_at->format('d M Y') : 'N/A' }}</strong>
+                      <small class="subtext d-block mt-0.5" style="color: #94a3b8 !important;">{{ $p->created_at ? $p->created_at->diffForHumans() : '' }}</small>
                     </td>
                     <td class="text-end">
                       <div class="table-actions justify-content-end">

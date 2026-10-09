@@ -10,6 +10,45 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('admin-assets/css/style.css') }}" rel="stylesheet">
+  <style>
+    /* Dark Theme High-Contrast Text Overrides for Photographer Detail */
+    .detail-card, .profile-hero, .stat-card {
+      color: #f8fafc !important;
+    }
+    .text-muted, small.text-muted, span.text-muted {
+      color: #94a3b8 !important; /* Crisp, easily readable silver-slate */
+      font-weight: 400 !important;
+    }
+    .profile-hero p {
+      color: #94a3b8 !important;
+    }
+    .profile-title-row p {
+      color: #cbd5e1 !important;
+    }
+    .stat-card p {
+      color: #94a3b8 !important;
+      font-size: 0.8rem !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.05em !important;
+    }
+    .form-label {
+      color: #e2e8f0 !important;
+      font-weight: 500 !important;
+    }
+    .form-select, .form-control {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    .form-select option {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+    }
+    .form-control::placeholder {
+      color: #64748b !important;
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">

@@ -78,6 +78,98 @@
         max-width: 100% !important;
       }
     }
+
+    body.page-photographers .person-card {
+      display: flex !important;
+      flex-direction: column !important;
+      background: #ffffff !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      box-shadow: 0 10px 25px rgba(11, 45, 91, .06) !important;
+      border: 1px solid rgba(11, 45, 91, .08) !important;
+      height: 100% !important;
+      transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+    }
+    body.page-photographers .person-card:hover {
+      transform: translateY(-5px) !important;
+      box-shadow: 0 16px 36px rgba(11, 45, 91, .12) !important;
+    }
+    body.page-photographers .person-image {
+      height: 310px !important;
+      padding: 12px !important;
+      background: #f8fafc !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+    body.page-photographers .person-image img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 10px !important;
+    }
+    body.page-photographers .person-info {
+      height: auto !important;
+      min-height: 175px !important;
+      padding: 18px 20px 20px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      flex-grow: 1 !important;
+      justify-content: space-between !important;
+      background: #ffffff !important;
+      position: relative !important;
+      box-sizing: border-box !important;
+    }
+    body.page-photographers .person-info h3 {
+      font-size: 1.45rem !important;
+      margin-bottom: 6px !important;
+      line-height: 1.2 !important;
+      color: #0b2d5b !important;
+    }
+    body.page-photographers .person-info p {
+      font-size: 0.82rem !important;
+      line-height: 1.45 !important;
+      color: #64748b !important;
+      margin-bottom: 14px !important;
+      flex-grow: 1 !important;
+    }
+    body.page-photographers .person-footer-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding-top: 12px !important;
+      border-top: 1px solid rgba(11, 45, 91, 0.1) !important;
+      margin-top: auto !important;
+      width: 100% !important;
+    }
+    body.page-photographers .events-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      color: #0b2d5b !important;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      background: #eaf3ff !important;
+      padding: 5px 12px !important;
+      border-radius: 20px !important;
+      border: 1px solid rgba(11, 45, 91, 0.12) !important;
+    }
+    body.page-photographers .person-footer-row a {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      background: #0b2d5b !important;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      transition: all 0.2s ease !important;
+    }
+    body.page-photographers .person-footer-row a:hover {
+      background: #ff8a00 !important;
+      color: #ffffff !important;
+      transform: scale(1.1) !important;
+    }
   </style>
 @endsection
 
@@ -156,9 +248,13 @@
                 </div>
                 <h3>{{ $creator->name }}</h3>
                 <p>{{ Str::limit($creator->bio ?: 'Sports & action photographer covering moments that matter.', 75) }}</p>
-                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top border-dark border-opacity-10">
-                  <span class="text-secondary small fw-medium"><i class="bi bi-calendar-event me-1"></i> {{ $creator->events_count ?? $creator->events->count() }} events</span>
-                  <a aria-label="{{ $creator->name }} profile" href="{{ route('photographers.show', $creator->id) }}"><i class="bi bi-arrow-up-right"></i></a>
+                <div class="person-footer-row">
+                  <span class="events-pill">
+                    <i class="bi bi-calendar-event text-primary"></i> {{ $creator->events_count ?? $creator->events->count() }} events
+                  </span>
+                  <a aria-label="{{ $creator->name }} profile" href="{{ route('photographers.show', $creator->id) }}">
+                    <i class="bi bi-arrow-up-right"></i>
+                  </a>
                 </div>
               </div>
             </article>

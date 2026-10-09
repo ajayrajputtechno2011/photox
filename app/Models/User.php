@@ -30,6 +30,7 @@ use Illuminate\Notifications\Notifiable;
     'location',
     'specialty',
     'avatar',
+    'banner_image',
     'bio',
     'payout_email',
     'payout_method',

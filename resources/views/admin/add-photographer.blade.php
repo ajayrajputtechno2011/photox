@@ -129,9 +129,23 @@
                 <input class="form-control" name="specialty" id="specialty" value="{{ old('specialty', $photographer->specialty ?? '') }}" placeholder="e.g. Running, Rugby &amp; Cycling">
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="avatar">Avatar Image URL</label>
+                <label class="form-label" for="avatar">Avatar / Profile Photo URL</label>
                 <input class="form-control" name="avatar" id="avatar" value="{{ old('avatar', $photographer->avatar ?? '') }}" placeholder="https://images.unsplash.com/...">
+                <small class="text-muted">Circular profile avatar shown across the platform.</small>
               </div>
+              <div class="col-md-6">
+                <label class="form-label" for="banner_image">Storefront Header Banner Image URL</label>
+                <input class="form-control" name="banner_image" id="banner_image" value="{{ old('banner_image', $photographer->banner_image ?? '') }}" placeholder="https://images.unsplash.com/... (recommended 1600x450)">
+                <small class="text-muted">Hero cover banner at the top of their public storefront. Leave empty to fallback to event cover.</small>
+              </div>
+              @if(!empty($photographer?->banner_image))
+              <div class="col-12 mt-2">
+                <div class="p-2 rounded border border-secondary" style="background: rgba(0,0,0,0.25);">
+                  <small class="text-warning fw-semibold d-block mb-1"><i class="bi bi-image me-1"></i> Current Banner Preview:</small>
+                  <img src="{{ $photographer->banner_image }}" alt="Current Banner" class="rounded w-100 object-fit-cover" style="height: 120px;">
+                </div>
+              </div>
+              @endif
               <div class="col-12">
                 <label class="form-label" for="bio">Profile bio</label>
                 <textarea class="form-control" name="bio" id="bio" placeholder="Short introduction shown on the photographer profile" rows="3">{{ old('bio', $photographer->bio ?? '') }}</textarea>

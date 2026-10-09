@@ -136,13 +136,16 @@
         </div>
 
         <!-- Photographer Profile Hero -->
-        <section class="profile-hero panel">
+        <section class="profile-hero panel position-relative overflow-hidden" @if(!empty($photographer->banner_image)) style="background: linear-gradient(180deg, rgba(15,23,42,0.8), rgba(15,23,42,0.95)), url('{{ $photographer->banner_image }}') center/cover no-repeat; border-top: 3px solid #f59e0b;" @endif>
           <img alt="{{ $photographer->name }}" src="{{ $photographer->avatar ?: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=180&q=80' }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.2);">
           <div class="profile-hero-copy">
             <div class="profile-title-row">
               <div>
                 <h2>{{ $photographer->name }}</h2>
                 <p>{{ $photographer->email }} · {{ $photographer->location ?: 'South Africa' }} · {{ $photographer->phone ?: 'No phone' }}</p>
+                @if(!empty($photographer->banner_image))
+                  <span class="badge bg-secondary text-white-50 mt-1"><i class="bi bi-image me-1"></i> Custom Storefront Banner Active</span>
+                @endif
               </div>
               <div>
                 <span class="badge py-2 px-3 rounded-pill" style="font-size: 0.85rem; {{ strtolower($photographer->tier ?? '') === 'photoguild' ? 'background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700;' : (strtolower($photographer->tier ?? '') === 'pro' ? 'background: #198754; color: #fff;' : 'background: #0d6efd; color: #fff;') }}">

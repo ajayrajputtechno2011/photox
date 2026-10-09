@@ -14,7 +14,7 @@
       </div>
       <div class="col-6 col-lg-2">
         <p class="footer-label">Explore</p>
-        <a href="{{ url('/events') }}">Events</a>
+        {{-- <a href="{{ url('/events') }}">Events</a> --}}
         <a href="{{ url('/photographers') }}">Photographers</a>
         <a href="{{ url('/blog') }}">Journal</a>
         <a href="{{ url('/sponsors') }}">Sponsors</a>

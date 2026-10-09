@@ -61,6 +61,8 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 | 7.9 | **Default Face/Avatar & Cover to PhotoX Logo** | ✅ **DONE** | Agar photographer ne apna face/avatar ya cover photo upload nahi kiya, toh random stock photo ki jagah official PhotoX logo (`/logo.png`) show hoga. |
 | 7.10 | **Photo Lightbox: Commercial License & Sponsor Banner** | ✅ **DONE** | Photo preview modal me Personal vs Commercial License options aur Sponsor Banner ko top par place kar diya gaya hai, aur mobile view par hidden (`d-none`) hata kar completely visible kar diya gaya hai. |
 | 7.11 | **Hide Events from Footer** | ✅ **DONE** | Footer ke Explore column se "Events" link hide kar diya gaya hai kyunki homepage par latest events already showcase hote hain. |
+| 7.12 | **Link Event Title to Gallery in Modal** | ✅ **DONE** | Lightbox modal me `EVENT GALLERY` box ke andar event ka title ab clickable link hai (`LINK TO THAT GALLERY`), jo direct us event/gallery page par le jata hai. |
+| 7.13 | **"Buy Complete Gallery" & "Selfie Bundle" Options** | ✅ **DONE** | Modal selector me **Buy Complete Gallery (R450)** aur **Selfie Bundle Flat Rate (R150)** options add kiye gaye. Saath hi event toolbar par direct `[ Buy Complete Gallery · R450 ]` button add kiya gaya. |
 
 ---
 

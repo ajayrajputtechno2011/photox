@@ -626,6 +626,10 @@
             <i class="bi bi-camera-fill"></i>
             <span>Search by Selfie</span>
           </button>
+          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap" style="height: 38px;" onclick="openZebraLightbox(0); setLightboxLicense('full_gallery');">
+            <i class="bi bi-box-seam-fill"></i>
+            <span>Buy Complete Gallery · R450</span>
+          </button>
         </div>
       </div>
     </div>
@@ -885,38 +889,70 @@
             <div class="col-lg-5 modal-info-col p-4 d-flex flex-column justify-content-between" style="background: #091724; border-left: 1px solid #1a3248;">
               <div>
                 
-                <!-- License Usage Selector (Commercial vs Personal) -->
+                <!-- License & Bundle Selector (Single Personal, Single Commercial, Selfie Bundle, Buy Complete Gallery) -->
                 <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
                   <label class="form-label text-warning small fw-bold text-uppercase mb-2 d-flex align-items-center gap-1" style="letter-spacing: 0.05em; font-size: 0.82rem;">
-                    <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
+                    <i class="bi bi-tag-fill me-1"></i> SELECT PURCHASE OPTION
                   </label>
                   
                   <div class="d-flex flex-column gap-2">
-                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <!-- Option 1: Personal Single Photo -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="personal" checked onchange="updateModalPrice('personal')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
-                          <strong class="d-block text-white" style="font-size: 0.95rem;">Personal License</strong>
-                          <small style="font-size: 0.78rem; color: #cbd5e1;">Social media, phone wallpaper, prints for personal use</small>
+                          <strong class="d-block text-white" style="font-size: 0.92rem;">Personal License (Single Photo)</strong>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Social media, phone wallpaper, prints for personal use</small>
                         </div>
                       </div>
                       <span class="fs-6 fw-bold text-warning" id="modalPersonalPriceLabel">R75.00</span>
                     </label>
 
-                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <!-- Option 2: Commercial Single Photo -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="commercial" onchange="updateModalPrice('commercial')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
-                          <strong class="d-block text-white" style="font-size: 0.95rem;">Commercial License</strong>
-                          <small style="font-size: 0.78rem; color: #cbd5e1;">Editorial, websites, sponsors, brand marketing rights</small>
+                          <strong class="d-block text-white" style="font-size: 0.92rem;">Commercial License (Single Photo)</strong>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Editorial, websites, sponsors, brand marketing rights</small>
                         </div>
                       </div>
                       <span class="fs-6 fw-bold text-success" id="modalCommercialPriceLabel">R350.00</span>
                     </label>
+
+                    <!-- Option 3: Selfie / Athlete Bundle (Flat Rate for 1 or 100+ images) -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="selfie" onchange="updateModalPrice('selfie')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <div class="d-flex align-items-center gap-2">
+                            <strong class="text-white" style="font-size: 0.92rem;">Selfie / Athlete Bundle</strong>
+                            <span class="badge bg-warning text-dark px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">FLAT RATE</span>
+                          </div>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">All your matched photos from bib/selfie search (1 or 100+)</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-info" id="modalSelfieBundlePriceLabel">R150.00</span>
+                    </label>
+
+                    <!-- Option 4: Buy Complete Gallery (All Photos in Event) -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="full_gallery" onchange="updateModalPrice('full_gallery')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <div class="d-flex align-items-center gap-2">
+                            <strong class="text-white" style="font-size: 0.92rem;">Buy Complete Gallery</strong>
+                            <span class="badge bg-success text-white px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">ALL PHOTOS</span>
+                          </div>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Instant high-res bundle of all captures in this event</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-warning" id="modalFullGalleryPriceLabel">R450.00</span>
+                    </label>
                   </div>
                 </div>
 
-                <!-- Clean Event & Protection Note -->
+                <!-- Clean Event & Clickable Link to Gallery (Matching Client Handwriting: LINK TO THAT GALLERY) -->
                 <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
                   <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-warning small text-uppercase fw-bold" style="font-size: 0.78rem; letter-spacing: 0.05em;">
@@ -924,8 +960,13 @@
                     </span>
                     <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.70rem;">Full Resolution Hi-Res</span>
                   </div>
-                  <strong class="text-white d-block fs-6 mb-1" id="modalEventName">{{ $event->title }}</strong>
-                  <span class="small d-block" id="modalCopyright" style="font-size: 0.78rem; color: #cbd5e1;">© {{ date('Y') }} {{ $event->photographer?->name ?? 'PhotoX' }} / PhotoX</span>
+                  <a href="/event-details/{{ $event->slug }}" id="modalEventLink" class="text-white text-decoration-none d-flex align-items-center justify-content-between fs-6 fw-bold mb-1 p-2 rounded" style="background: rgba(255,255,255,0.05); transition: all 0.2s; border: 1px solid rgba(255,138,0,0.3);" onmouseover="this.style.background='rgba(255,138,0,0.18)'; this.style.borderColor='#ff8a00';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,138,0,0.3)';" title="Click to view full event gallery page">
+                    <span id="modalEventName">{{ $event->title }}</span>
+                    <span class="badge bg-warning text-dark d-flex align-items-center gap-1" style="font-size: 0.72rem; font-weight: 700;">
+                      View Gallery <i class="bi bi-box-arrow-up-right"></i>
+                    </span>
+                  </a>
+                  <span class="small d-block mt-2" id="modalCopyright" style="font-size: 0.78rem; color: #cbd5e1;">© {{ date('Y') }} {{ $event->photographer?->name ?? 'PhotoX' }} / PhotoX</span>
                 </div>
 
               </div>
@@ -1094,11 +1135,31 @@
     const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
     const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
     const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
-    const chosenPrice = type === 'commercial' ? commercialPrice : personalPrice;
+    const selfieBundlePrice = (150).toFixed(2);
+    const fullGalleryPrice = (450).toFixed(2);
+
+    let chosenPrice = personalPrice;
+    let buttonLabel = 'Purchase Hi-Res';
+
+    if (type === 'commercial') {
+      chosenPrice = commercialPrice;
+      buttonLabel = 'Purchase Commercial License';
+    } else if (type === 'selfie') {
+      chosenPrice = selfieBundlePrice;
+      buttonLabel = 'Purchase Selfie Bundle (All My Photos)';
+    } else if (type === 'full_gallery') {
+      chosenPrice = fullGalleryPrice;
+      buttonLabel = 'Purchase Complete Gallery Bundle';
+    }
 
     const actionPriceEl = document.getElementById('modalActionPrice');
     if (actionPriceEl) {
       actionPriceEl.textContent = `R${chosenPrice}`;
+    }
+
+    const btnPurchase = document.getElementById('btnPurchaseModal');
+    if (btnPurchase) {
+      btnPurchase.innerHTML = `<i class="bi bi-bag-check-fill fs-5"></i> <span>${buttonLabel}</span>`;
     }
 
     const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);

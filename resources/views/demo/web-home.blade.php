@@ -276,15 +276,7 @@
                     <span class="date">{{ $item->event_date ? \Carbon\Carbon::parse($item->event_date)->format('d M Y') : '' }}</span>
                   </div>
                   <h3>{{ $item->title }}</h3>
-                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos</p>
-                  @if($item->photographer || $item->photographer_name)
-                    <div class="d-flex align-items-center gap-2 mb-2 pb-1 text-muted small">
-                      <img src="{{ $item->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=80&q=80' }}" class="rounded-circle object-fit-cover shadow-sm" width="22" height="22" alt="{{ $item->photographer?->name }}">
-                      <a href="/photographer-details/{{ $item->photographer_id }}" onclick="event.stopPropagation();" class="text-white text-decoration-none fw-medium text-truncate" style="max-width: 200px;">
-                        {{ $item->photographer?->name ?? $item->photographer_name }}
-                      </a>
-                    </div>
-                  @endif
+                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos @if($item->photographer || $item->photographer_name) · {{ $item->photographer?->name ?? $item->photographer_name }} @endif</p>
                   <div class="card-bottom">
                     <span class="price">{{ $item->starting_price ?? 'From R50' }}</span>
                     <a class="cta text-decoration-none text-center" href="/event-details/{{ $item->slug }}" onclick="event.stopPropagation();">

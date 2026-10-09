@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
 use App\Http\Controllers\Admin\PageBannerController as AdminPageBannerController;
+use App\Http\Controllers\Admin\PhotographerController as AdminPhotographerController;
 use App\Http\Controllers\Admin\WatermarkController;
 use App\Http\Controllers\Admin\WatermarkController as AdminWatermarkController;
 use App\Http\Controllers\AuthController;
@@ -39,7 +40,9 @@ Route::get('/membership.html', function () {
     return redirect('/membership', 301);
 });
 
-// Dynamic Photographer details route
+// Dynamic Photographers directory & details routes
+Route::get('/photographers', [WebPhotographerController::class, 'index'])->name('photographers.index');
+Route::get('/photographers.html', fn () => redirect('/photographers', 301));
 Route::get('/photographer-details', [WebPhotographerController::class, 'show'])->name('photographers.details');
 Route::get('/photographer-details/{id}', [WebPhotographerController::class, 'show'])->name('photographers.show');
 Route::get('/photographer-details.html', function () {
@@ -227,6 +230,18 @@ Route::prefix('admin')->group(function () {
         Route::get('/add-event', [AdminEventController::class, 'create'])->name('admin.events.create');
         Route::post('/events', [AdminEventController::class, 'store'])->name('admin.events.store');
         Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('admin.events.destroy');
+
+        // Photographers Management with dynamic membership overrides
+        Route::get('/photographers', [AdminPhotographerController::class, 'index'])->name('admin.photographers.index');
+        Route::get('/photographers/create', [AdminPhotographerController::class, 'create'])->name('admin.photographers.create');
+        Route::get('/add-photographer', [AdminPhotographerController::class, 'create'])->name('admin.photographers.create.alias');
+        Route::get('/add-photograper', [AdminPhotographerController::class, 'create'])->name('admin.photographers.create.legacy');
+        Route::post('/photographers', [AdminPhotographerController::class, 'store'])->name('admin.photographers.store');
+        Route::get('/photographers/{photographer}', [AdminPhotographerController::class, 'show'])->name('admin.photographers.show');
+        Route::get('/photographers/{photographer}/edit', [AdminPhotographerController::class, 'edit'])->name('admin.photographers.edit');
+        Route::put('/photographers/{photographer}', [AdminPhotographerController::class, 'update'])->name('admin.photographers.update');
+        Route::delete('/photographers/{photographer}', [AdminPhotographerController::class, 'destroy'])->name('admin.photographers.destroy');
+        Route::patch('/photographers/{photographer}/toggle-status', [AdminPhotographerController::class, 'toggleStatus'])->name('admin.photographers.toggle-status');
 
         Route::post('/watermarks/save', [AdminWatermarkController::class, 'save'])->name('admin.watermarks.save');
 

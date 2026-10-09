@@ -32,21 +32,18 @@
           <!-- Identity & Dynamic Verification Badge -->
           <div class="photographer-showcase-identity">
             @php
-              $tierSlug = strtolower($photographer->tier ?? 'pro');
-              if ($tierSlug === 'photoguild' || str_contains($tierSlug, 'guild')) {
-                  $tierHeading = 'Photo Guild Member';
+              $tierHeading = $photographer->effective_badge_heading;
+              $tierSlug = strtolower($photographer->tier ?? ($photographer->membership?->slug ?? 'pro'));
+              if ($tierSlug === 'photoguild' || str_contains(strtolower($tierHeading), 'guild')) {
                   $tierBadgeStyle = 'background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700;';
                   $tierIcon = 'bi-award-fill';
-              } elseif ($tierSlug === 'pro') {
-                  $tierHeading = 'Pro Member';
+              } elseif ($tierSlug === 'pro' || str_contains(strtolower($tierHeading), 'pro')) {
                   $tierBadgeStyle = 'background: rgba(25, 135, 84, 0.85); color: #fff; font-weight: 600;';
                   $tierIcon = 'bi-patch-check-fill';
-              } elseif ($tierSlug === 'standard') {
-                  $tierHeading = 'Standard Member';
+              } elseif ($tierSlug === 'standard' || str_contains(strtolower($tierHeading), 'standard')) {
                   $tierBadgeStyle = 'background: rgba(13, 110, 253, 0.85); color: #fff; font-weight: 600;';
                   $tierIcon = 'bi-shield-check';
               } else {
-                  $tierHeading = ucfirst($tierSlug) . ' Member';
                   $tierBadgeStyle = 'background: rgba(108, 117, 125, 0.85); color: #fff; font-weight: 600;';
                   $tierIcon = 'bi-person-check-fill';
               }
@@ -58,9 +55,9 @@
                 <i class="bi {{ $tierIcon }} text-warning me-1"></i> {{ $tierHeading }}
               </span>
             </div>
-            <p class="mt-1 mb-2">{{ $photographer->bio ? Str::limit($photographer->bio, 80) : 'Sports & event photographer · Cape Town' }}</p>
+            <p class="mt-1 mb-2">{{ $photographer->bio ? Str::limit($photographer->bio, 120) : 'Sports & event photographer · ' . ($photographer->location ?: 'South Africa') }}</p>
             <div class="photographer-showcase-meta">
-              <span><i class="bi bi-geo-alt"></i> Cape Town, South Africa</span>
+              <span><i class="bi bi-geo-alt"></i> {{ $photographer->location ?: 'South Africa' }}</span>
               <span><i class="bi bi-calendar-check"></i> Member since {{ $photographer->created_at ? $photographer->created_at->format('Y') : '2024' }}</span>
               <span><i class="bi bi-star-fill text-warning"></i> 4.9 rating</span>
             </div>

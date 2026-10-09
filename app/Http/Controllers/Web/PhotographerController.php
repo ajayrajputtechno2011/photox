@@ -7,6 +7,7 @@ use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\EventPhoto;
+use App\Models\PageHero;
 use App\Models\User;
 use App\Models\WatermarkSetting;
 use Illuminate\Http\Request;
@@ -14,6 +15,23 @@ use Illuminate\View\View;
 
 class PhotographerController extends Controller
 {
+    /**
+     * Display the dynamic roster of photographers.
+     */
+    public function index(): View
+    {
+        $photographers = User::where('role', 'photographer')
+            ->where('status', 'active')
+            ->with('membership')
+            ->orderByRaw("CASE WHEN tier = 'photoguild' THEN 0 WHEN tier = 'pro' THEN 1 WHEN tier = 'standard' THEN 2 ELSE 3 END")
+            ->latest('id')
+            ->get();
+
+        $pageHeroes = PageHero::all()->keyBy('page_key');
+
+        return view('web.photographers', compact('photographers', 'pageHeroes'));
+    }
+
     /**
      * Display a photographer's profile, real albums, and secure watermarked gallery.
      */

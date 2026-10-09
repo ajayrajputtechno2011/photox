@@ -119,66 +119,51 @@
           <button class="people-filter active" data-filter="all">Everyone</button><button class="people-filter" data-filter="sport">Sports</button><button class="people-filter" data-filter="event">Events</button><button class="people-filter" data-filter="portrait">Portraits</button>
         </div>
         <div class="people-grid" id="grid">
-          <article class="person-card" data-name="maya naidoo running cape town" data-type="sport">
-            <div class="person-image">
-              <img alt="Maya Naidoo" src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=90"><span>01</span>
+          @forelse($photographers as $index => $creator)
+            @php
+              $isGuild = strtolower($creator->tier ?? '') === 'photoguild' || ($creator->membership && $creator->membership->slug === 'photoguild');
+              $isPro = strtolower($creator->tier ?? '') === 'pro' || ($creator->membership && $creator->membership->slug === 'pro');
+              $isStandard = strtolower($creator->tier ?? '') === 'standard' || ($creator->membership && $creator->membership->slug === 'standard');
+              $spec = strtolower($creator->specialty ?? '');
+              $filterType = 'sport';
+              if (str_contains($spec, 'portrait')) {
+                  $filterType = 'portrait';
+              } elseif (str_contains($spec, 'event')) {
+                  $filterType = 'event';
+              }
+            @endphp
+            <article class="person-card {{ $isPro || $isGuild ? 'person-featured' : '' }}" data-name="{{ strtolower($creator->name . ' ' . ($creator->specialty ?? '') . ' ' . ($creator->location ?? '')) }}" data-type="{{ $filterType }}">
+              <div class="person-image">
+                <img alt="{{ $creator->name }}" src="{{ $creator->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=90' }}">
+                <span>{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+              </div>
+              <div class="person-info">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <small>{{ strtoupper($creator->specialty ?: 'SPORT') }} / {{ strtoupper(explode(',', $creator->location ?? 'South Africa')[0]) }}</small>
+                  @if($isGuild)
+                    <span class="badge py-1 px-2 rounded-pill" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-size: 0.65rem; font-weight: 700;">
+                      <i class="bi bi-award-fill"></i> Guild
+                    </span>
+                  @elseif($isPro)
+                    <span class="badge bg-success py-1 px-2 rounded-pill" style="font-size: 0.65rem;">
+                      <i class="bi bi-patch-check-fill"></i> Pro
+                    </span>
+                  @elseif($isStandard)
+                    <span class="badge bg-primary py-1 px-2 rounded-pill" style="font-size: 0.65rem;">
+                      <i class="bi bi-shield-check"></i> Standard
+                    </span>
+                  @endif
+                </div>
+                <h3>{{ $creator->name }}</h3>
+                <p>{{ Str::limit($creator->bio ?: 'Sports & action photographer covering moments that matter.', 75) }}</p>
+                <a aria-label="{{ $creator->name }} profile" href="{{ route('photographers.show', $creator->id) }}"><i class="bi bi-arrow-up-right"></i></a>
+              </div>
+            </article>
+          @empty
+            <div class="col-12 text-center py-5">
+              <p class="text-muted">No verified creators available right now.</p>
             </div>
-            <div class="person-info">
-              <small>SPORT / CAPE TOWN</small>
-              <h3>Aiden Daniels</h3>
-              <p>Running, endurance and the quiet drama before the finish.</p><a aria-label="Maya Naidoo profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
-          <article class="person-card person-featured" data-name="daniel jacobs rugby stellenbosch" data-type="event">
-            <div class="person-image">
-              <img alt="Daniel Jacobs" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=88"><span>02</span>
-            </div>
-            <div class="person-info">
-              <small>EVENTS / STELLENBOSCH</small>
-              <h3>Daniel Jacobs</h3>
-              <p>Match-day energy, honest reactions and the frame after the frame.</p><a aria-label="Daniel Jacobs profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
-          <article class="person-card" data-name="naledi williams portrait johannesburg" data-type="portrait">
-            <div class="person-image">
-              <img alt="Naledi Williams" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=90"><span>03</span>
-            </div>
-            <div class="person-info">
-              <small>PORTRAITS / JOHANNESBURG</small>
-              <h3>Naledi Williams</h3>
-              <p>Faces, focus and the details that make a team feel like one.</p><a aria-label="Naledi Williams profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
-          <article class="person-card" data-name="sipho dlamini rugby durban" data-type="sport">
-            <div class="person-image">
-              <img alt="Sipho Dlamini" src="https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=900&q=90"><span>04</span>
-            </div>
-            <div class="person-info">
-              <small>SPORT / DURBAN</small>
-              <h3>Sipho Dlamini</h3>
-              <p>Power, movement and the beautiful mess of competition.</p><a aria-label="Sipho Dlamini profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
-          <article class="person-card" data-name="ayesha khan cycling paarl" data-type="event">
-            <div class="person-image">
-              <img alt="Ayesha Khan" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=90"><span>05</span>
-            </div>
-            <div class="person-info">
-              <small>EVENTS / PAARL</small>
-              <h3>Ayesha Khan</h3>
-              <p>Long rides, open roads and stories found between the miles.</p><a aria-label="Ayesha Khan profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
-          <article class="person-card" data-name="thandi mokoena portrait cape town" data-type="portrait">
-            <div class="person-image">
-              <img alt="Thandi Mokoena" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=90"><span>06</span>
-            </div>
-            <div class="person-info">
-              <small>PORTRAITS / CAPE TOWN</small>
-              <h3>Thandi Mokoena</h3>
-              <p>Warm light and the real people inside every big event.</p><a aria-label="Thandi Mokoena profile" href="/photographer-details"><i class="bi bi-arrow-up-right"></i></a>
-            </div>
-          </article>
+          @endforelse
         </div>
         <p class="people-empty" hidden="" id="empty">No creators found.</p>
       </div>

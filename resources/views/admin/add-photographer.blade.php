@@ -92,7 +92,7 @@
           </div>
         @endif
 
-        <form action="{{ isset($photographer) ? route('admin.photographers.update', $photographer->id) : route('admin.photographers.store') }}" method="POST" class="photographer-form">
+        <form action="{{ isset($photographer) ? route('admin.photographers.update', $photographer->id) : route('admin.photographers.store') }}" method="POST" enctype="multipart/form-data" class="photographer-form">
           @csrf
           @if(isset($photographer))
             @method('PUT')
@@ -124,28 +124,90 @@
                 <label class="form-label" for="location">City / Location</label>
                 <input class="form-control" name="location" id="location" value="{{ old('location', $photographer->location ?? '') }}" placeholder="Cape Town, South Africa">
               </div>
-              <div class="col-md-6">
+              <div class="col-12">
                 <label class="form-label" for="specialty">Specialty / Coverage</label>
                 <input class="form-control" name="specialty" id="specialty" value="{{ old('specialty', $photographer->specialty ?? '') }}" placeholder="e.g. Running, Rugby &amp; Cycling">
               </div>
+
+              <!-- Media Option 1: Avatar / Profile Photo or Logo (Upload + URL) -->
               <div class="col-md-6">
-                <label class="form-label" for="avatar">Avatar / Profile Photo URL</label>
-                <input class="form-control" name="avatar" id="avatar" value="{{ old('avatar', $photographer->avatar ?? '') }}" placeholder="https://images.unsplash.com/...">
-                <small class="text-muted">Circular profile avatar shown across the platform.</small>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="banner_image">Storefront Header Banner Image URL</label>
-                <input class="form-control" name="banner_image" id="banner_image" value="{{ old('banner_image', $photographer->banner_image ?? '') }}" placeholder="https://images.unsplash.com/... (recommended 1600x450)">
-                <small class="text-muted">Hero cover banner at the top of their public storefront. Leave empty to fallback to event cover.</small>
-              </div>
-              @if(!empty($photographer?->banner_image))
-              <div class="col-12 mt-2">
-                <div class="p-2 rounded border border-secondary" style="background: rgba(0,0,0,0.25);">
-                  <small class="text-warning fw-semibold d-block mb-1"><i class="bi bi-image me-1"></i> Current Banner Preview:</small>
-                  <img src="{{ $photographer->banner_image }}" alt="Current Banner" class="rounded w-100 object-fit-cover" style="height: 120px;">
+                <div class="p-3 rounded border" style="background: rgba(15, 23, 42, 0.45); border-color: rgba(255,255,255,0.1) !important;">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <label class="form-label mb-0 fw-semibold text-white">
+                      <i class="bi bi-person-bounding-box text-warning me-1"></i> Avatar / Profile Photo or Logo
+                    </label>
+                    <span class="badge bg-secondary" style="font-size: 0.72rem;">Upload or URL</span>
+                  </div>
+                  
+                  <!-- File Upload Input -->
+                  <div class="mb-2">
+                    <label class="form-label text-muted small mb-1" for="avatar_file"><i class="bi bi-cloud-arrow-up me-1"></i> Choose file to upload:</label>
+                    <input class="form-control form-control-sm" type="file" name="avatar_file" id="avatar_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                  </div>
+
+                  <div class="d-flex align-items-center gap-2 my-2">
+                    <hr class="flex-grow-1 border-secondary m-0">
+                    <span class="text-muted small text-uppercase" style="font-size: 0.7rem;">OR</span>
+                    <hr class="flex-grow-1 border-secondary m-0">
+                  </div>
+
+                  <!-- Direct URL Input -->
+                  <div>
+                    <label class="form-label text-muted small mb-1" for="avatar"><i class="bi bi-link-45deg me-1"></i> Image / Logo Web URL:</label>
+                    <input class="form-control form-control-sm" name="avatar" id="avatar" value="{{ old('avatar', $photographer->avatar ?? '') }}" placeholder="https://images.unsplash.com/... or /storage/...">
+                  </div>
+
+                  @if(!empty($photographer?->avatar))
+                  <div class="d-flex align-items-center gap-3 mt-3 pt-2 border-top border-secondary">
+                    <img src="{{ $photographer->avatar }}" alt="Avatar Preview" class="rounded-circle object-fit-cover border border-warning" style="width: 50px; height: 50px;">
+                    <div>
+                      <small class="text-white-50 d-block">Current Avatar / Logo</small>
+                      <small class="text-truncate d-inline-block text-muted" style="max-width: 220px;">{{ basename($photographer->avatar) }}</small>
+                    </div>
+                  </div>
+                  @endif
                 </div>
               </div>
-              @endif
+
+              <!-- Media Option 2: Storefront Header Banner (Upload + URL) -->
+              <div class="col-md-6">
+                <div class="p-3 rounded border" style="background: rgba(15, 23, 42, 0.45); border-color: rgba(255,255,255,0.1) !important;">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <label class="form-label mb-0 fw-semibold text-white">
+                      <i class="bi bi-image-fill text-warning me-1"></i> Storefront Header Banner
+                    </label>
+                    <span class="badge bg-secondary" style="font-size: 0.72rem;">Upload or URL</span>
+                  </div>
+
+                  <!-- File Upload Input -->
+                  <div class="mb-2">
+                    <label class="form-label text-muted small mb-1" for="banner_file"><i class="bi bi-cloud-arrow-up me-1"></i> Choose file to upload:</label>
+                    <input class="form-control form-control-sm" type="file" name="banner_file" id="banner_file" accept="image/png,image/jpeg,image/webp">
+                  </div>
+
+                  <div class="d-flex align-items-center gap-2 my-2">
+                    <hr class="flex-grow-1 border-secondary m-0">
+                    <span class="text-muted small text-uppercase" style="font-size: 0.7rem;">OR</span>
+                    <hr class="flex-grow-1 border-secondary m-0">
+                  </div>
+
+                  <!-- Direct URL Input -->
+                  <div>
+                    <label class="form-label text-muted small mb-1" for="banner_image"><i class="bi bi-link-45deg me-1"></i> Banner Web URL:</label>
+                    <input class="form-control form-control-sm" name="banner_image" id="banner_image" value="{{ old('banner_image', $photographer->banner_image ?? '') }}" placeholder="https://images.unsplash.com/... (1600x450)">
+                  </div>
+
+                  @if(!empty($photographer?->banner_image))
+                  <div class="mt-3 pt-2 border-top border-secondary">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <small class="text-white-50">Current Banner Preview</small>
+                      <small class="text-warning small"><i class="bi bi-check-circle-fill me-1"></i> Active</small>
+                    </div>
+                    <img src="{{ $photographer->banner_image }}" alt="Banner Preview" class="rounded w-100 object-fit-cover border border-secondary" style="height: 50px;">
+                  </div>
+                  @endif
+                </div>
+              </div>
               <div class="col-12">
                 <label class="form-label" for="bio">Profile bio</label>
                 <textarea class="form-control" name="bio" id="bio" placeholder="Short introduction shown on the photographer profile" rows="3">{{ old('bio', $photographer->bio ?? '') }}</textarea>

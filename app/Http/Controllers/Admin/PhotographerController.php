@@ -98,7 +98,9 @@ class PhotographerController extends Controller
             'specialty' => 'nullable|string|max:150',
             'bio' => 'nullable|string|max:2000',
             'avatar' => 'nullable|string|max:500',
+            'avatar_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
             'banner_image' => 'nullable|string|max:500',
+            'banner_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'membership_id' => 'nullable|exists:memberships,id',
             'status' => 'required|in:active,pending_approval,suspended',
             'is_verified' => 'nullable|boolean',
@@ -112,6 +114,18 @@ class PhotographerController extends Controller
             'admin_notes' => 'nullable|string|max:2000',
             'password' => 'nullable|string|min:6',
         ]);
+
+        $avatar = $validated['avatar'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80';
+        if ($request->hasFile('avatar_file')) {
+            $path = $request->file('avatar_file')->store('photographers/avatars', 'public');
+            $avatar = '/storage/'.$path;
+        }
+
+        $bannerImage = $validated['banner_image'] ?? null;
+        if ($request->hasFile('banner_file')) {
+            $path = $request->file('banner_file')->store('photographers/banners', 'public');
+            $bannerImage = '/storage/'.$path;
+        }
 
         $membership = ! empty($validated['membership_id'])
             ? Membership::find($validated['membership_id'])
@@ -132,8 +146,8 @@ class PhotographerController extends Controller
             'location' => $validated['location'] ?? null,
             'specialty' => $validated['specialty'] ?? null,
             'bio' => $validated['bio'] ?? null,
-            'avatar' => $validated['avatar'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-            'banner_image' => $validated['banner_image'] ?? null,
+            'avatar' => $avatar,
+            'banner_image' => $bannerImage,
             'custom_storage_limit' => $validated['custom_storage_limit'] ?? null,
             'custom_commission_rate' => $validated['custom_commission_rate'] ?? null,
             'custom_features' => $validated['custom_features'] ?? null,
@@ -204,7 +218,9 @@ class PhotographerController extends Controller
             'specialty' => 'nullable|string|max:150',
             'bio' => 'nullable|string|max:2000',
             'avatar' => 'nullable|string|max:500',
+            'avatar_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
             'banner_image' => 'nullable|string|max:500',
+            'banner_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'membership_id' => 'nullable|exists:memberships,id',
             'status' => 'required|in:active,pending_approval,suspended',
             'is_verified' => 'nullable|boolean',
@@ -217,6 +233,18 @@ class PhotographerController extends Controller
             'payout_method' => 'nullable|string|max:150',
             'admin_notes' => 'nullable|string|max:2000',
         ]);
+
+        $avatar = $validated['avatar'] ?? $photographer->avatar;
+        if ($request->hasFile('avatar_file')) {
+            $path = $request->file('avatar_file')->store('photographers/avatars', 'public');
+            $avatar = '/storage/'.$path;
+        }
+
+        $bannerImage = $validated['banner_image'] ?? $photographer->banner_image;
+        if ($request->hasFile('banner_file')) {
+            $path = $request->file('banner_file')->store('photographers/banners', 'public');
+            $bannerImage = '/storage/'.$path;
+        }
 
         $membership = ! empty($validated['membership_id'])
             ? Membership::find($validated['membership_id'])
@@ -235,8 +263,8 @@ class PhotographerController extends Controller
             'location' => $validated['location'] ?? null,
             'specialty' => $validated['specialty'] ?? null,
             'bio' => $validated['bio'] ?? null,
-            'avatar' => $validated['avatar'] ?? $photographer->avatar,
-            'banner_image' => $validated['banner_image'] ?? $photographer->banner_image,
+            'avatar' => $avatar,
+            'banner_image' => $bannerImage,
             'custom_storage_limit' => ($validated['custom_storage_limit'] ?? null) ?: null,
             'custom_commission_rate' => ($validated['custom_commission_rate'] ?? null) ?: null,
             'custom_features' => $request->input('custom_features', []),

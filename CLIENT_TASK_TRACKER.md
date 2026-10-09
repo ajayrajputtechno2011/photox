@@ -55,6 +55,17 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 | 7.4 | **Default Fallback Banner if Not Uploaded** | ✅ **DONE** | Agar photographer ne custom banner upload nahi kiya, toh automatically PhotoX branded dark sports hero banner / latest event cover display hoga. |
 | 7.5 | **Search Photographers by Sport (e.g. Rugby)** | ✅ **DONE** | `/photographers` par user sport (Rugby, Running, Cycling) search kar sakta hai. Jab photographer us category me gallery upload karega, wo automatic search me aa jayega. |
 | 7.6 | **Clean Storefront Design (PhotoFrog Style)** | ✅ **DONE** | Hardcoded generic text ("The eye behind the moment") hatakar clean hero banner, `@username` grey handle, aur album search bar lagaya gaya. |
+| 7.7 | **Compact Header & @username Sizing** | ✅ **DONE** | Hero banner height 205px compact ki gayi aur `@username` font size sleek chhota kiya gaya taaki page par faltu space na khaye. |
+| 7.8 | **Albums Grid vs List View Toggle** | ✅ **DONE** | Albums toolbar me Grid view aur List view toggle buttons (`#btnViewGrid` & `#btnViewList`) live hain. List view me compact rows show hoti hain. |
+
+---
+
+### 8. Gallery Metadata & Capture Time Filters (Client Reference Screenshot)
+| Point # | Requirement / Client Feedback | Status | Description & Implementation Details |
+|---|---|---|---|
+| 8.1 | **Capture Time Hourly Filter** | ⏳ **PENDING** | Event gallery sidebar me photo ke EXIF capture time ke slots banana (e.g. 15:00 to 16:00, 16:00 to 17:00, Unknown time) taaki parents specific time par race/event photos filter kar sakein jab bib/AI detect na ho. |
+| 8.2 | **Resolution Filter** | ⏳ **PENDING** | Gallery filter me photo resolution options: Small (1500x1000), Medium (2500x1667), Large (3500x2333), Extra Large (full size). |
+| 8.3 | **Orientation Filter** | ⏳ **PENDING** | Gallery filter me Landscape vs Portrait orientation filter add karna. |
 
 ---
 

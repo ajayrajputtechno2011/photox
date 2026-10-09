@@ -3,6 +3,64 @@
 @section('title', 'PhotoX | ' . ($photographer->name ?? 'Aiden Daniels'))
 @section('body-class', 'page-photographer-details')
 
+@section('styles')
+  <style>
+    .photographer-cover {
+      height: 205px !important;
+      background: #0b1a29 !important;
+    }
+    .photographer-showcase-username {
+      font-size: 0.80rem !important;
+      color: #64748b !important;
+      letter-spacing: -0.01em !important;
+    }
+    /* Albums List View Layout */
+    .photographer-album-grid.is-list-view {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      padding: 10px 18px !important;
+      background: #ffffff !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 14px rgba(11, 45, 91, 0.05) !important;
+      border: 1px solid rgba(11, 45, 91, 0.08) !important;
+      gap: 16px !important;
+      text-decoration: none !important;
+      transition: all 0.2s ease !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card:hover {
+      transform: translateX(4px) !important;
+      box-shadow: 0 8px 20px rgba(11, 45, 91, 0.1) !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card img {
+      width: 76px !important;
+      height: 54px !important;
+      border-radius: 8px !important;
+      object-fit: cover !important;
+      flex-shrink: 0 !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card div {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card strong {
+      font-size: 1rem !important;
+      color: #0b2d5b !important;
+    }
+    .photographer-album-grid.is-list-view .photographer-album-card span {
+      font-size: 0.82rem !important;
+      color: #64748b !important;
+    }
+  </style>
+@endsection
+
 @section('content')
   <main>
     @php
@@ -14,7 +72,7 @@
 
     <!-- 1. HERO COVER & SHOWCASE HEADER (PhotoFrog Style Clean Banner) -->
     <section aria-labelledby="photographer-showcase-title" class="photographer-showcase">
-      <div class="photographer-cover position-relative overflow-hidden" style="height: 280px; background: #0b1a29;">
+      <div class="photographer-cover position-relative overflow-hidden">
         <img src="{{ $coverBanner }}" alt="{{ $photographer->name }} Banner" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="opacity: 0.95;">
         <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(180deg, rgba(11,26,41,0.05) 0%, rgba(11,26,41,0.65) 100%); pointer-events: none;"></div>
       </div>
@@ -57,8 +115,8 @@
                 <i class="bi {{ $tierIcon }} text-warning me-1"></i> {{ $tierHeading }}
               </span>
             </div>
-            <!-- @username in Grey (PhotoFrog style requested by client) -->
-            <div class="text-secondary small fw-medium mt-1 mb-2 font-monospace" style="font-size: 0.88rem; letter-spacing: -0.01em;">
+            <!-- @username in Grey (PhotoFrog style requested by client - compact size) -->
+            <div class="photographer-showcase-username fw-medium mt-1 mb-2 font-monospace">
               {{ '@' . $usernameHandle }}
             </div>
             <p class="mt-1 mb-2">{{ $photographer->bio ? Str::limit($photographer->bio, 120) : 'Sports & event photographer · ' . ($photographer->location ?: 'South Africa') }}</p>
@@ -75,16 +133,25 @@
           </button>
         </div>
 
-        <!-- Albums Toolbar (with Search bar like PhotoFrog) -->
+        <!-- Albums Toolbar (with Search bar & Grid/List View Toggle) -->
         <div class="photographer-showcase-toolbar d-flex align-items-center justify-content-between flex-wrap gap-3" id="albums">
           <div>
             <span class="showcase-eyebrow">{{ strtoupper($photographer->name) }}</span>
             <h2>{{ $albums->count() }} albums</h2>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <div class="input-group input-group-sm" style="max-width: 280px;">
+            <div class="input-group input-group-sm" style="max-width: 220px;">
               <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
               <input type="search" id="albumSearchInput" class="form-control border-start-0" placeholder="Search albums..." oninput="filterPhotographerAlbums(this.value)">
+            </div>
+            <!-- Grid / List Toggle Buttons -->
+            <div class="btn-group btn-group-sm" role="group" aria-label="Albums Layout Mode">
+              <button type="button" class="btn btn-outline-secondary active" id="btnViewGrid" onclick="setAlbumViewMode('grid')" title="Grid View">
+                <i class="bi bi-grid-fill"></i>
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="btnViewList" onclick="setAlbumViewMode('list')" title="List View">
+                <i class="bi bi-list-ul"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -341,6 +408,31 @@
          messageForm.innerHTML = '<div class="photographer-message-success text-center py-4"><i class="bi bi-check-circle-fill text-success fs-1 d-block mb-2"><\/i><h3 class="fw-bold">Message sent successfully!<\/h3><p class="text-muted small">{{ explode(" ", $photographer->name)[0] }} will receive your inquiry and reply via email shortly.<\/p><button class="btn btn-dark rounded-pill px-4 mt-2" data-close-message type="button">Close<\/button><\/div>';
          const closeBtn = messageForm.querySelector('[data-close-message]');
          if (closeBtn) closeBtn.addEventListener('click', closeMessageModal);
+       });
+     }
+
+     function setAlbumViewMode(mode) {
+       const grid = document.getElementById('albumsGridContainer');
+       const btnGrid = document.getElementById('btnViewGrid');
+       const btnList = document.getElementById('btnViewList');
+       if (!grid) return;
+       if (mode === 'list') {
+         grid.classList.add('is-list-view');
+         if (btnList) btnList.classList.add('active');
+         if (btnGrid) btnGrid.classList.remove('active');
+       } else {
+         grid.classList.remove('is-list-view');
+         if (btnGrid) btnGrid.classList.add('active');
+         if (btnList) btnList.classList.remove('active');
+       }
+     }
+
+     function filterPhotographerAlbums(q) {
+       const query = (q || '').toLowerCase().trim();
+       const cards = document.querySelectorAll('#albumsGridContainer .photographer-album-card');
+       cards.forEach(card => {
+         const text = card.innerText.toLowerCase();
+         card.style.display = (!query || text.includes(query)) ? '' : 'none';
        });
      }
   </script>

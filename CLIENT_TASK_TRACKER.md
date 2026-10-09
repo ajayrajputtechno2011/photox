@@ -103,7 +103,15 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 
 ---
 
+### 9. Gallery Upload Status & "Notify Me" Alerts (Latest Client Feedback - 10 Oct 2026)
+| Point # | Requirement / Client Feedback | Status | Description & Implementation Details |
+|---|---|---|---|
+| 9.1 | **Gallery Upload Status Badge on Event Cards** | ⏳ **PENDING** | Event cards ke bottom par status badge display karna (jaise client ke screenshot me hai): 🟢 `Upload complete` ya 🟡 `Uploading in progress`. Photographer/Admin panel me "Mark Gallery as Complete" toggle button hoga jisse parents ko pata chale ki upload chal raha hai ya complete ho gaya hai. |
+| 9.2 | **"Notify Me When Ready" Email Subscription** | ⏳ **PENDING** | Event page par email subscription input ("Notify me when photos are uploaded"). Jab photographer gallery ko "Complete" mark kare, system parents ko automated email alert bhejega ki photos live ho gayi hain. |
+
+---
+
 ## 🚀 Next Action Plan
 1. Home page, Photographers Roster, aur Photographer Details pages ke frontend views ko 100% dynamic finish karna.
 2. Changes ko dono servers (`photox.aitechnotech.in` & `168.231.79.67`) par sync karke live karna taaki client weekend me check kar sake.
-3. Weekend review ke baad Monday ko client ke feedback ke mutabiq pending items (AI toggle, Archiving cron, Yoco live split) ko ek-ek karke **DONE** me move karna.
+3. Weekend review ke baad Monday ko client ke feedback ke mutabiq pending items (Upload status badge, Notify me emails, AI toggle, Archiving cron, Yoco live split) ko ek-ek karke **DONE** me move karna.

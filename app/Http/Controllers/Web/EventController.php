@@ -177,13 +177,12 @@ class EventController extends Controller
             $relatedEvents = Event::where('id', '!=', $event->id ?? 0)->take(4)->get();
         }
 
-        $sponsorBanner = null;
-        if (! empty($event->category_id)) {
+        $sponsorBanner = Banner::where('is_active', true)->where('placement', 'image_preview')->first();
+        if (! $sponsorBanner && ! empty($event->category_id)) {
             $sponsorBanner = Banner::where('is_active', true)->where('category_id', $event->category_id)->first();
         }
         if (! $sponsorBanner) {
-            $sponsorBanner = Banner::where('is_active', true)->where('placement', 'image_preview')->first()
-                ?: Banner::where('is_active', true)->first();
+            $sponsorBanner = Banner::where('is_active', true)->first();
         }
 
         $watermarkSetting = WatermarkSetting::firstOrCreate(['user_id' => null]);

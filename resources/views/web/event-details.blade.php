@@ -315,71 +315,283 @@
     box-shadow: 0 0 0 1px #ff8a00;
   }
 
-  /* MOBILE RESPONSIVE LIGHTBOX (Screens under 992px) - Fixes Squeezed Photo Bug */
+  /* Responsive Scaling for High-Security Photo Inspector Modal (Matching Client Approved Reference) */
+  #photoInspectorModal .modal-dialog {
+    width: 95vw !important;
+    max-width: 1580px !important;
+    margin: 1.5rem auto !important;
+  }
+
+  @media (min-width: 1400px) {
+    #photoInspectorModal .modal-dialog {
+      width: 92vw !important;
+      max-width: 1720px !important;
+    }
+    #photoInspectorModal .modal-photo-col {
+      flex: 0 0 68% !important;
+      max-width: 68% !important;
+    }
+    #photoInspectorModal .modal-info-col {
+      flex: 0 0 32% !important;
+      max-width: 32% !important;
+    }
+  }
+
+  @media (min-width: 992px) and (max-width: 1399.98px) {
+    #photoInspectorModal .modal-dialog {
+      width: 94vw !important;
+      max-width: 1380px !important;
+    }
+    #photoInspectorModal .modal-photo-col {
+      flex: 0 0 65% !important;
+      max-width: 65% !important;
+    }
+    #photoInspectorModal .modal-info-col {
+      flex: 0 0 35% !important;
+      max-width: 35% !important;
+    }
+  }
+
+  #photoInspectorModal .modal-photo-col {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 520px !important;
+    padding: 1.5rem !important;
+    background: #02070d !important;
+    position: relative !important;
+  }
+
+  #photoInspectorModal #modalPhotoContainer {
+    position: relative !important;
+    display: inline-block !important;
+    max-height: 60vh !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    line-height: 0 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  #photoInspectorModal #modalPhotoImg {
+    max-height: 60vh !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    margin: 0 auto !important;
+  }
+
+  #photoInspectorModal .image-preview-ad-wrapper {
+    max-height: 110px !important;
+    width: 100%;
+    max-width: 100%;
+    transition: width 0.15s ease;
+    margin: 12px auto 0 !important;
+  }
+
+  #photoInspectorModal .image-preview-ad-wrapper img {
+    width: 100% !important;
+    max-height: 95px !important;
+    object-fit: cover !important;
+    display: block;
+    border-radius: 8px;
+  }
+
+  #photoInspectorModal #modalSecurityInfoBar {
+    max-width: 100%;
+    transition: width 0.15s ease;
+    margin: 12px auto 0 !important;
+  }
+
+  /* Anti-AI Opposing Triangle Frosted Shield (Professional 3.5px Soft Glass Filter) */
+  .anti-ai-triangle-blur-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    overflow: hidden;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    transition: clip-path 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: block;
+    border-radius: 8px;
+  }
+  .anti-ai-blurred-img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    filter: blur(3.5px) contrast(1.05) brightness(0.98);
+    pointer-events: none;
+    user-select: none;
+  }
+  .anti-ai-diagonal-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 16;
+  }
+  .anti-ai-shield-tag {
+    position: absolute;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(7, 19, 31, 0.82);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 138, 0, 0.45);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    pointer-events: none;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    z-index: 17;
+  }
+
+  /* WaterMotion Liquid Glass Dynamic Lens Layers */
+  .wm-motion-mask-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 14;
+    display: none;
+  }
+  .wm-motion-mask-layer.active {
+    display: block;
+  }
+  .wm-water-lens {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .wm-water-lens-primary {
+    width: 180px; height: 180px;
+    top: 25%; left: 30%;
+    animation: waterMotionFloat1 9s ease-in-out infinite;
+  }
+  .wm-water-lens-secondary {
+    width: 140px; height: 140px;
+    top: 55%; left: 55%;
+    animation: waterMotionFloat2 12s ease-in-out infinite;
+  }
+  .wm-lens-inner-glass {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(56, 189, 248, 0.12) 75%, rgba(255, 255, 255, 0.3) 100%);
+    backdrop-filter: blur(1.5px) contrast(1.18) saturate(1.22) brightness(1.06);
+    -webkit-backdrop-filter: blur(1.5px) contrast(1.18) saturate(1.22) brightness(1.06);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 
+      inset 0 0 25px rgba(255, 255, 255, 0.6),
+      inset 3px 5px 16px rgba(255, 255, 255, 0.95),
+      inset -2px -4px 14px rgba(186, 230, 253, 0.45),
+      0 14px 38px rgba(0, 0, 0, 0.28),
+      0 0 16px rgba(56, 189, 248, 0.35);
+  }
+  .wm-lens-glint {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .wm-lens-glint-top {
+    top: 8%; left: 14%; width: 46%; height: 28%;
+    background: radial-gradient(ellipse at 40% 30%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.6) 45%, rgba(255, 255, 255, 0) 80%);
+    transform: rotate(-32deg);
+    filter: blur(0.5px);
+  }
+  .wm-lens-glint-bottom {
+    bottom: 11%; right: 15%; width: 34%; height: 18%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0) 80%);
+    transform: rotate(-18deg);
+    filter: blur(0.5px);
+  }
+  .wm-lens-ring {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .wm-water-ripple-layer {
+    position: absolute;
+    top: 50%; left: 50%; width: 100%; height: 100%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .wm-ripple-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.4), inset 0 0 16px rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .wm-ripple-ring.ring-1 {
+    width: 260px; height: 260px;
+    animation: rippleWave 4s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  }
+  .wm-ripple-ring.ring-2 {
+    width: 260px; height: 260px;
+    animation: rippleWave 4s cubic-bezier(0.25, 1, 0.5, 1) infinite 1.35s;
+  }
+  .wm-ripple-ring.ring-3 {
+    width: 260px; height: 260px;
+    animation: rippleWave 4s cubic-bezier(0.25, 1, 0.5, 1) infinite 2.7s;
+  }
+  @keyframes rippleWave {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+    70% { opacity: 0.35; }
+    100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+  }
+  @keyframes waterMotionFloat1 {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    25% { transform: translate(75px, -45px) scale(1.06) rotate(4deg); }
+    50% { transform: translate(110px, 40px) scale(0.96) rotate(-3deg); }
+    75% { transform: translate(-60px, 55px) scale(1.05) rotate(5deg); }
+    100% { transform: translate(-30px, -35px) scale(0.98) rotate(-4deg); }
+  }
+  @keyframes waterMotionFloat2 {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(-80px, -55px) scale(1.08) rotate(-5deg); }
+    66% { transform: translate(55px, -30px) scale(0.94) rotate(4deg); }
+    100% { transform: translate(30px, 65px) scale(1.05) rotate(-3deg); }
+  }
+
+  /* MOBILE RESPONSIVE LIGHTBOX (Screens under 992px) */
   @media (max-width: 991.98px) {
-    #zebraLightboxModal .lightbox-topbar {
-      padding: 10px 14px !important;
-      flex-wrap: nowrap !important;
-      gap: 10px;
+    #photoInspectorModal .modal-dialog {
+      margin: 0.5rem auto !important;
+      width: 98vw !important;
     }
-    #zebraLightboxModal .lightbox-topbar .btn-group {
-      display: none !important; /* Hide desktop zoom buttons on mobile; native pinch-to-zoom is supported */
+    #photoInspectorModal .modal-photo-col {
+      min-height: auto !important;
+      padding: 1rem !important;
     }
-    #zebraLightboxModal .lightbox-stage {
-      flex-direction: column !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch;
-      flex: 1 1 auto;
+    #photoInspectorModal #modalPhotoContainer {
+      max-height: 48vh !important;
     }
-    #zebraLightboxModal .lightbox-image-container {
-      width: 100% !important;
-      min-height: 280px !important;
-      max-height: 50vh !important;
-      height: 48vh !important;
-      flex: 0 0 auto !important;
-      padding: 10px 8px !important;
-      background: #000000 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      position: relative !important;
+    #photoInspectorModal #modalPhotoImg {
+      max-height: 48vh !important;
     }
-    #zebraLightboxModal .lightbox-image-container img {
-      max-height: 100% !important;
-      max-width: 100% !important;
-      width: auto !important;
-      height: auto !important;
-      object-fit: contain !important;
-      display: block !important;
-      margin: 0 auto !important;
-    }
-    #zebraLightboxModal .lightbox-sidebar {
-      width: 100% !important;
-      max-width: 100% !important;
+    #photoInspectorModal .modal-info-col {
       border-left: none !important;
-      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-      padding: 20px 16px 28px !important;
-      overflow-y: visible !important;
-      flex: 1 0 auto !important;
-      background: #0c121a !important;
-    }
-    #zebraLightboxModal .lightbox-bottombar {
-      padding: 10px 14px !important;
-      flex-wrap: wrap !important;
-      gap: 10px;
-    }
-    #zebraLightboxModal .lightbox-bottombar > .d-flex:first-child {
-      display: none !important; /* Hide duplicate avatar pill to give full space to cart button */
-    }
-    #zebraLightboxModal .lightbox-bottombar > .d-flex:last-child {
-      width: 100% !important;
-      justify-content: space-between !important;
-    }
-    #zebraLightboxModal #lbAddToCartBtn {
-      flex: 1 !important;
-      text-align: center !important;
-      padding: 10px 14px !important;
-      font-size: 0.95rem !important;
+      border-top: 1px solid #1a3248 !important;
+      padding: 1.25rem !important;
     }
   }
 
@@ -571,210 +783,244 @@
 
   </div>
 
-  <!-- 4. FULLSCREEN DARK LIGHTBOX / INSPECTOR (Matching ZebraSnap Screenshots 3 & 5) -->
-  <div class="modal fade p-0" id="zebraLightboxModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
-      <div class="modal-content">
+  <!-- 4. HIGH-SECURITY PHOTO INSPECTOR MODAL (Matching Client Approved Reference) -->
+  <div class="modal fade" id="photoInspectorModal" tabindex="-1" aria-labelledby="modalPhotoTitle" aria-hidden="true" style="backdrop-filter: blur(8px);">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content border-0 shadow-2xl" style="background: #07131f; color: #fff; border-radius: 18px; overflow: hidden; border: 1px solid #1c354d !important;">
+        
+        <!-- Modal Top Bar -->
+        <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: #040c14;">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge" style="background: #ff8a00; color: #fff; font-size: 0.72rem; text-transform: uppercase;">
+              <i class="bi bi-shield-check me-1"></i> Anti-Theft Watermark
+            </span>
+            <h5 class="modal-title fs-6 fw-bold mb-0 text-white" id="modalPhotoTitle">Beach Sprint Splash</h5>
+            <span class="badge bg-dark border border-secondary text-warning font-monospace" id="modalIndexCounter">Photo 1 of {{ $photos->count() }}</span>
 
-        <!-- Top Bar: Close, Creator Info, Zoom, Navigation -->
-        <div class="lightbox-topbar">
-          <div class="d-flex align-items-center gap-3">
-            <button type="button" class="btn btn-outline-light rounded-circle p-2" data-bs-dismiss="modal" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
-              <i class="bi bi-x-lg"></i>
+            <!-- Anti-AI Triangle Blur Live Toggle -->
+            <button type="button" id="toggleAntiAiBlurBtn" class="btn btn-sm btn-outline-warning rounded-pill px-2 py-0 ms-md-2" style="font-size: 0.72rem; height: 26px;" onclick="toggleAntiAiBlur()" title="Toggle Opposing Triangle Anti-AI Blur Mask">
+              <i class="bi bi-shield-slash-fill me-1"></i> Anti-AI Blur: <span id="antiAiBlurStateText" class="fw-bold">ON</span>
             </button>
-            <div class="d-flex align-items-center gap-2">
-              <div class="rounded-circle border border-warning d-flex align-items-center justify-content-center bg-dark overflow-hidden shadow-sm" style="width: 36px; height: 36px; min-width: 36px;">
-                <img src="{{ $event->photographer?->avatar ?: asset('logo.png') }}" 
-                     alt="Creator" 
-                     id="lbPhotographerAvatar"
-                     style="width: 100%; height: 100%; object-fit: contain; padding: {{ $event->photographer?->avatar ? '0' : '4px' }};">
+
+            <!-- WaterMotion Live Toggle -->
+            <button type="button" id="toggleWaterMotionBtn" class="btn btn-sm {{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'btn-outline-info' : 'btn-outline-secondary' }} rounded-pill px-2 py-0" style="font-size: 0.72rem; height: 26px;" onclick="toggleWaterMotion()" title="Toggle WaterMotion Dynamic Liquid Glass Lens">
+              <i class="bi bi-droplet-half me-1"></i> WaterMotion: <span id="waterMotionStateText" class="fw-bold">{{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'ON' : 'OFF' }}</span>
+            </button>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closePhotoInspectorModal()" aria-label="Close" style="cursor: pointer; opacity: 0.95; z-index: 1056; position: relative;"></button>
+        </div>
+
+        <div class="modal-body p-0">
+          <div class="row g-0">
+            <!-- Left: Watermarked Image Viewer with Floating Next / Previous Buttons -->
+            <div class="col-lg-7 modal-photo-col d-flex flex-column align-items-center justify-content-center p-3 p-md-4 position-relative" style="background: #02070d; min-height: 560px;">
+              
+              <!-- Anti-theft Protected Photo Frame -->
+              <div class="position-relative overflow-hidden rounded-3 shadow" id="modalPhotoContainer" style="display: inline-block; line-height: 0; margin: 0 auto; max-height: 62vh; max-width: 100%; position: relative;">
+                
+                <!-- The Server-Watermarked Image -->
+                <img id="modalPhotoImg" 
+                     src="" 
+                     alt="Photo Preview" 
+                     class="img-fluid rounded" 
+                     style="max-height: 62vh; max-width: 100%; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto;" 
+                     draggable="false" 
+                     oncontextmenu="triggerProtectionToast(event); return false;">
+
+                <!-- 1. WaterMotion Liquid Glass Lenses & Fluid Waves -->
+                <div class="wm-motion-mask-layer {{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'active' : '' }}" id="modalWaterMotionLayer">
+                  <div class="wm-water-lens wm-water-lens-primary" id="modalWaterLens1">
+                    <div class="wm-lens-inner-glass"></div>
+                    <div class="wm-lens-glint wm-lens-glint-top"></div>
+                    <div class="wm-lens-glint wm-lens-glint-bottom"></div>
+                    <div class="wm-lens-ring"></div>
+                  </div>
+                  <div class="wm-water-lens wm-water-lens-secondary" id="modalWaterLens2">
+                    <div class="wm-lens-inner-glass"></div>
+                    <div class="wm-lens-glint wm-lens-glint-top"></div>
+                    <div class="wm-lens-ring"></div>
+                  </div>
+                  <div class="wm-water-ripple-layer">
+                    <div class="wm-ripple-ring ring-1"></div>
+                    <div class="wm-ripple-ring ring-2"></div>
+                    <div class="wm-ripple-ring ring-3"></div>
+                  </div>
+                </div>
+
+                <!-- 2. Interactive Anti-AI Opposing Triangle Blur Mask (Diagonal BD) -->
+                <div id="antiAiTriangleBlurLayer" class="anti-ai-triangle-blur-wrap active">
+                  <img id="modalPhotoImgBlur" 
+                       src="" 
+                       alt="Anti-AI Blurred Layer" 
+                       class="anti-ai-blurred-img" 
+                       draggable="false">
+                  <svg class="anti-ai-diagonal-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255, 138, 0, 0.45)" stroke-width="0.8" stroke-dasharray="4, 4" />
+                  </svg>
+                  <div class="anti-ai-shield-tag" id="antiAiShieldTag" style="bottom: 16px; right: 16px;">
+                    <i class="bi bi-shield-check text-warning me-1"></i> <span id="antiAiShieldTagText">Anti-AI Frosted Shield · Hover to Reveal</span>
+                  </div>
+                </div>
+
+                <!-- 3. Invisible Transparent Shield Overlay -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" 
+                     id="modalTransparentShield"
+                     style="z-index: 18; background: transparent; cursor: crosshair;" 
+                     oncontextmenu="triggerProtectionToast(event); return false;" 
+                     ondragstart="return false;" 
+                     onselectstart="return false;">
+                </div>
+
+                <!-- Floating PREVIOUS Button -->
+                <button type="button" 
+                        class="btn position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle d-flex align-items-center justify-content-center shadow-lg modal-nav-btn" 
+                        id="modalPrevBtn"
+                        onclick="prevLightboxPhoto()" 
+                        title="Previous Photo (Left Arrow Key)"
+                        style="width: 44px; height: 44px; background: rgba(13, 30, 46, 0.85); color: #fff; border: 1.5px solid rgba(255,138,0,0.5); backdrop-filter: blur(6px); z-index: 25; transition: all 0.2s;">
+                  <i class="bi bi-chevron-left fs-5"></i>
+                </button>
+
+                <!-- Floating NEXT Button -->
+                <button type="button" 
+                        class="btn position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle d-flex align-items-center justify-content-center shadow-lg modal-nav-btn" 
+                        id="modalNextBtn"
+                        onclick="nextLightboxPhoto()" 
+                        title="Next Photo (Right Arrow Key)"
+                        style="width: 44px; height: 44px; background: rgba(13, 30, 46, 0.85); color: #fff; border: 1.5px solid rgba(255,138,0,0.5); backdrop-filter: blur(6px); z-index: 25; transition: all 0.2s;">
+                  <i class="bi bi-chevron-right fs-5"></i>
+                </button>
+
+                <!-- Watermark corner emblem -->
+                <div class="position-absolute bottom-0 start-0 m-3 px-2 py-1 rounded" style="background: rgba(0,0,0,0.75); color: #ff8a00; font-size: 0.72rem; font-weight: 700; z-index: 19; pointer-events: none;">
+                  <i class="bi bi-shield-lock me-1"></i> PHOTOX PROOF · ANTI-THEFT
+                </div>
               </div>
+
+              <!-- Security Info Notification below preview -->
+              <div class="mt-3 px-3 py-2 rounded text-center" id="modalSecurityInfoBar" style="background: rgba(255,138,0,0.08); border: 1px dashed rgba(255,138,0,0.35); font-size: 0.76rem; color: #cbd5e1; width: 100%;">
+                <i class="bi bi-shield-fill-check text-warning me-1"></i>
+                <strong>Multi-Layer Defense Active:</strong> Server watermark + <strong>Anti-AI Opposing Triangle Blur</strong> (Hover blurred part to reveal) + <strong>WaterMotion Floating Glass Caustics</strong>. Clean master restricted to licensed purchase.
+              </div>
+
+              <!-- Keyboard navigation hint -->
+              <div class="text-muted small mt-2 d-none d-md-block" style="font-size: 0.72rem;">
+                <kbd class="bg-dark text-warning border border-secondary px-1">←</kbd> Previous Photo &nbsp;|&nbsp; 
+                <kbd class="bg-dark text-warning border border-secondary px-1">→</kbd> Next Photo &nbsp;|&nbsp; 
+                <kbd class="bg-dark text-warning border border-secondary px-1">Esc</kbd> Close
+              </div>
+
+              <!-- SPONSOR BANNER (Placement: Image Preview - Wide Banner Requested by Client) -->
+              @php
+                $previewAd = \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first() ?: ($sponsorBanner ?? null);
+              @endphp
+              <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 60px;">
+                @if($previewAd)
+                  <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-flex align-items-center justify-content-center w-100 position-relative text-decoration-none p-1" style="display: flex;">
+                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="max-width: 100%; max-height: 90px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto; border-radius: 6px;">
+                    @if(!empty($previewAd->badge_text))
+                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2;">
+                        {{ $previewAd->badge_text }}
+                      </span>
+                    @endif
+                    @if(!empty($previewAd->title))
+                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2;">
+                        <strong>{{ $previewAd->title }}</strong>
+                        @if(!empty($previewAd->subtitle))
+                          <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
+                        @endif
+                      </div>
+                    @endif
+                  </a>
+                @else
+                  <div class="p-2 d-flex align-items-center justify-content-center text-muted" style="min-height: 60px; font-size: 0.75rem;">
+                    <span><i class="bi bi-award text-warning me-1"></i> <strong>Official Event Sponsor</strong></span>
+                  </div>
+                @endif
+              </div>
+            </div>
+
+            <!-- Right: Commercial Pricing & License Panel -->
+            <div class="col-lg-5 modal-info-col p-4 d-flex flex-column justify-content-between" style="background: #091724; border-left: 1px solid #1a3248;">
               <div>
-                <strong class="d-block text-white small" id="lbPhotographerName">{{ $event->photographer?->name ?? ($photos->first()?->photographer_name ?? 'Aiden Daniels') }}</strong>
-                <span class="text-white-50" style="font-size: 0.70rem;" id="lbPhotographerBadge">{{ $event->photographer?->effective_badge_heading ?? 'Verified Creator' }}</span>
-              </div>
-            </div>
-          </div>
+                
+                <!-- License Usage Selector (Commercial vs Personal) -->
+                <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
+                  <label class="form-label text-warning small fw-bold text-uppercase mb-2 d-flex align-items-center gap-1" style="letter-spacing: 0.05em; font-size: 0.82rem;">
+                    <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
+                  </label>
+                  
+                  <div class="d-flex flex-column gap-2">
+                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="personal" checked onchange="updateModalPrice('personal')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <strong class="d-block text-white" style="font-size: 0.95rem;">Personal License</strong>
+                          <small style="font-size: 0.78rem; color: #cbd5e1;">Social media, phone wallpaper, prints for personal use</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-warning" id="modalPersonalPriceLabel">R75.00</span>
+                    </label>
 
-          <div class="d-flex align-items-center gap-3">
-            <!-- Zoom buttons -->
-            <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-secondary text-white" onclick="zoomLightbox(-0.15)"><i class="bi bi-zoom-out"></i></button>
-              <button type="button" class="btn btn-outline-secondary text-white" onclick="zoomLightbox(0.15)"><i class="bi bi-zoom-in"></i></button>
-            </div>
-
-            <!-- Previous / Next Counter (e.g. < 1 / 2008 >) -->
-            <div class="d-flex align-items-center gap-2 font-monospace text-white small">
-              <button type="button" class="btn btn-sm btn-outline-secondary text-white" onclick="prevLightboxPhoto()">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <span id="lbCounterDisplay">1 / {{ $photos->count() }}</span>
-              <button type="button" class="btn btn-sm btn-outline-secondary text-white" onclick="nextLightboxPhoto()">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Center Stage: Photo & Details Sidebar -->
-        <div class="lightbox-stage">
-          <!-- Main Photo Viewer Container -->
-          <div class="lightbox-image-container">
-            <img id="lbMainImage" 
-                 src="" 
-                 alt="Event Photo" 
-                 draggable="false" 
-                 oncontextmenu="triggerProtectionToast(event); return false;">
-
-            <!-- SPONSOR BANNER (Bottom of Photo Preview - Mobile & Desktop) -->
-            @php
-              $previewAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
-            @endphp
-            @if($previewAd)
-              <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-3 py-1 rounded-3 d-flex align-items-center gap-2 gap-md-3 shadow-lg" 
-                   style="background: rgba(6, 16, 25, 0.94); border: 1px solid rgba(255, 138, 0, 0.4); max-width: 95%; z-index: 15; backdrop-filter: blur(8px);">
-                <span class="badge bg-warning text-dark font-monospace text-uppercase" style="font-size: 0.60rem;">
-                  {{ $previewAd->badge_text ?: 'Sponsor' }}
-                </span>
-                <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-inline-flex align-items-center gap-2 text-white text-decoration-none">
-                  @if(!empty($previewAd->image_url))
-                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" style="height: 30px; width: auto; max-width: 120px; object-fit: contain; border-radius: 4px;">
-                  @endif
-                  <span class="small fw-semibold text-truncate" style="max-width: 220px; font-size: 0.78rem;">{{ $previewAd->title ?: 'Built for more than roads' }}</span>
-                  <i class="bi bi-box-arrow-up-right text-warning small ms-1"></i>
-                </a>
-              </div>
-            @endif
-          </div>
-
-          <!-- Right Details Sidebar (Matching Screenshot 3 & 5) -->
-          <div class="lightbox-sidebar">
-            <!-- 1. SELECT USAGE LICENSE (Prominently Placed at the Top) -->
-            <div class="mb-4">
-              <span class="text-warning small fw-bold text-uppercase d-flex align-items-center gap-1 mb-2" style="letter-spacing: 0.08em; font-size: 0.75rem;">
-                <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
-              </span>
-              <div class="d-flex flex-column gap-2">
-                <div class="license-option-card active" id="licenseOptPersonal" onclick="setLightboxLicense('personal')">
-                  <div class="d-flex align-items-center gap-2">
-                    <input type="radio" name="lb_license_choice" value="personal" checked style="accent-color: #ff8a00; transform: scale(1.15);">
-                    <div>
-                      <strong class="text-white d-block small">Personal License</strong>
-                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Social media, phone wallpaper, personal prints</span>
-                    </div>
+                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="commercial" onchange="updateModalPrice('commercial')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <strong class="d-block text-white" style="font-size: 0.95rem;">Commercial License</strong>
+                          <small style="font-size: 0.78rem; color: #cbd5e1;">Editorial, websites, sponsors, brand marketing rights</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-success" id="modalCommercialPriceLabel">R350.00</span>
+                    </label>
                   </div>
-                  <strong class="text-warning fs-6" id="lbPersonalPriceTag">R50.00</strong>
                 </div>
 
-                <div class="license-option-card" id="licenseOptCommercial" onclick="setLightboxLicense('commercial')">
-                  <div class="d-flex align-items-center gap-2">
-                    <input type="radio" name="lb_license_choice" value="commercial" style="accent-color: #a3e635; transform: scale(1.15);">
-                    <div>
-                      <strong class="text-white d-block small">Commercial License</strong>
-                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Marketing, brand sponsorships, editorial publishing</span>
-                    </div>
+                <!-- Clean Event & Protection Note -->
+                <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-warning small text-uppercase fw-bold" style="font-size: 0.78rem; letter-spacing: 0.05em;">
+                      <i class="bi bi-calendar-event me-1"></i> EVENT GALLERY
+                    </span>
+                    <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.70rem;">Full Resolution Hi-Res</span>
                   </div>
-                  <strong class="text-success fs-6" id="lbCommercialPriceTag">R250.00</strong>
+                  <strong class="text-white d-block fs-6 mb-1" id="modalEventName">{{ $event->title }}</strong>
+                  <span class="small d-block" id="modalCopyright" style="font-size: 0.78rem; color: #cbd5e1;">© {{ date('Y') }} {{ $event->photographer?->name ?? 'PhotoX' }} / PhotoX</span>
                 </div>
-              </div>
-            </div>
 
-            <!-- 2. SPONSOR BANNER PLACEMENT (Sidebar) -->
-            @if($previewAd)
-              <div class="mb-4 p-2 rounded bg-dark bg-opacity-75 border border-secondary border-opacity-25 text-center">
-                <span class="d-block text-white-50 text-uppercase fw-semibold mb-1" style="font-size: 0.65rem; letter-spacing: 0.08em;">
-                  {{ $previewAd->badge_text ?? 'Official Event Sponsor' }}
-                </span>
-                <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-block text-decoration-none">
-                  <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" class="img-fluid rounded" style="max-height: 75px; object-fit: contain;">
-                  @if(!empty($previewAd->title))
-                    <div class="text-white small fw-bold mt-1 text-truncate">{{ $previewAd->title }}</div>
-                  @endif
-                </a>
               </div>
-            @endif
 
-            <!-- 3. WHAT'S INCLUDED -->
-            <div class="mb-4 pt-2 border-top border-secondary border-opacity-25">
-              <span class="text-warning small fw-bold text-uppercase" style="letter-spacing: 0.08em; font-size: 0.75rem;">
-                WHAT'S INCLUDED
-              </span>
-              <ul class="list-unstyled mt-2 mb-0">
-                <li class="d-flex align-items-center gap-2 text-white small py-1">
-                  <i class="bi bi-check2 text-success fs-5"></i> Instant download
-                </li>
-                <li class="d-flex align-items-center gap-2 text-white small py-1">
-                  <i class="bi bi-check2 text-success fs-5"></i> Highest available resolution
-                </li>
-                <li class="d-flex align-items-center gap-2 text-white small py-1">
-                  <i class="bi bi-check2 text-success fs-5"></i> Clean original master without watermarks
-                </li>
-              </ul>
-            </div>
+              <!-- Action Footer with Next / Previous & Purchase Button -->
+              <div class="pt-3 border-top border-secondary border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="prevLightboxPhoto()">
+                      <i class="bi bi-chevron-left me-1"></i> Prev
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="nextLightboxPhoto()">
+                      Next <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                  </div>
+                  <div class="text-end">
+                    <span class="small d-block" style="font-size: 0.72rem; color: #cbd5e1; font-weight: 600;">TOTAL DUE</span>
+                    <span class="fs-4 fw-bold text-warning" id="modalActionPrice">R75.00</span>
+                  </div>
+                </div>
 
-            <!-- 4. DETAILS -->
-            <div class="pt-3 border-top border-secondary border-opacity-25 mb-3">
-              <span class="text-warning small fw-bold text-uppercase" style="letter-spacing: 0.08em; font-size: 0.75rem;">
-                DETAILS
-              </span>
-              <div class="mt-2 text-white-50 small">
-                <div class="d-flex justify-content-between py-1 border-bottom border-dark">
-                  <span>File</span>
-                  <strong class="text-white" id="lbMetaFile">IMG_9998.jpg</strong>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-dark">
-                  <span>Resolution</span>
-                  <strong class="text-white" id="lbMetaResolution">1667 × 2500</strong>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-dark">
-                  <span>Size</span>
-                  <strong class="text-white" id="lbMetaSize">1.96 MB</strong>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-dark">
-                  <span>Event</span>
-                  <strong class="text-white text-truncate ms-2" id="lbMetaEvent">{{ $event->title }}</strong>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-dark">
-                  <span>Bib Number</span>
-                  <strong class="text-warning" id="lbMetaBib">Not Assigned</strong>
-                </div>
+                <button class="btn btn-warning w-100 py-3 fw-bold rounded-pill text-dark d-flex align-items-center justify-content-center gap-2 shadow" id="btnPurchaseModal" onclick="triggerPurchase()">
+                  <i class="bi bi-bag-check-fill fs-5"></i> 
+                  <span>Purchase Hi-Res</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary rounded-pill w-100 py-2 mt-2 text-white" onclick="closePhotoInspectorModal()" style="border-color: rgba(255,255,255,0.25); font-size: 0.85rem;">
+                  <i class="bi bi-x-circle me-1"></i> Close / Cancel
+                </button>
+                <small class="text-center d-block mt-2" style="font-size: 0.75rem; color: #cbd5e1;">
+                  Licensed purchase unlocks full resolution without watermarks.
+                </small>
               </div>
+
             </div>
           </div>
         </div>
-
-        <!-- Bottom Bar: Person Icon, Wishlist, Share, Add to Cart (Matching Screenshot 3 & 5) -->
-        <div class="lightbox-bottombar">
-          <div class="d-flex align-items-center gap-2">
-            <div class="rounded-circle bg-dark border border-secondary border-opacity-50 d-flex align-items-center justify-content-center p-1" style="width: 28px; height: 28px;">
-              <img src="{{ asset('logo.png') }}" 
-                   class="rounded-circle" 
-                   style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-            <span class="text-white-50 small" id="lbPersonCount">1 person in the photo</span>
-          </div>
-
-          <div class="d-flex align-items-center gap-3">
-            <button type="button" class="btn btn-outline-secondary text-white rounded-circle" style="width: 38px; height: 38px;" onclick="toggleWishlist(this)">
-              <i class="bi bi-heart"></i>
-            </button>
-            <button type="button" class="btn btn-outline-secondary text-white rounded-circle" style="width: 38px; height: 38px;" onclick="shareCurrentModalPhoto()">
-              <i class="bi bi-share"></i>
-            </button>
-            <button type="button" class="btn btn-outline-secondary text-white rounded-circle" style="width: 38px; height: 38px;" onclick="alert('Multi-layer security: clean master delivered upon license purchase.')">
-              <i class="bi bi-info-circle"></i>
-            </button>
-            <button type="button" class="btn btn-outline-secondary text-white rounded-circle" style="width: 38px; height: 38px;" onclick="alert('Photo flagged for review.')">
-              <i class="bi bi-flag"></i>
-            </button>
-
-            <!-- Lime Green Cart Button (Matching Screenshot 3 & 5) -->
-            <button type="button" class="btn btn-lime rounded-3 px-4 py-2 fs-6 shadow" id="lbAddToCartBtn" onclick="triggerPurchase()">
-              <i class="bi bi-cart-fill me-1"></i> Add to cart - R50.00
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -899,30 +1145,30 @@
     }
   }
 
-  // Dynamic License Selection (Matching Prototype Screenshot 2)
+  // Dynamic License Selection (Matching Client Approved Reference)
   let currentLicenseChoice = 'personal';
 
-  function setLightboxLicense(type) {
+  function updateModalPrice(type) {
     currentLicenseChoice = type;
     const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
-    const personalPrice = parseFloat(photo.personal_price || 50).toFixed(2);
-    const commercialPrice = parseFloat(photo.commercial_price || 250).toFixed(2);
+    const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
     const chosenPrice = type === 'commercial' ? commercialPrice : personalPrice;
 
-    const cartBtn = document.getElementById('lbAddToCartBtn');
-    if (cartBtn) {
-      cartBtn.innerHTML = `<i class="bi bi-cart-fill me-1"></i> Add to cart - R${chosenPrice}`;
+    const actionPriceEl = document.getElementById('modalActionPrice');
+    if (actionPriceEl) {
+      actionPriceEl.textContent = `R${chosenPrice}`;
     }
 
-    document.querySelectorAll('.license-option-card').forEach(el => el.classList.remove('active'));
-    const targetCard = document.getElementById(type === 'commercial' ? 'licenseOptCommercial' : 'licenseOptPersonal');
-    if (targetCard) targetCard.classList.add('active');
-
-    const radio = document.querySelector(`input[name="lb_license_choice"][value="${type}"]`);
+    const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);
     if (radio) radio.checked = true;
   }
 
-  // Open the Lightbox modal (matching Screenshots 3 & 5)
+  function setLightboxLicense(type) {
+    updateModalPrice(type);
+  }
+
+  // Open the High-Security Lightbox modal (matching Client Approved Screenshots)
   function openZebraLightbox(index) {
     if (!currentEventPhotos || currentEventPhotos.length === 0) return;
     
@@ -931,47 +1177,125 @@
 
     currentPhotoIndex = index;
     const photo = currentEventPhotos[currentPhotoIndex];
-    currentZoom = 1;
 
-    // Load watermarked image without cache buster for ultra-fast browser caching
-    const mainImg = document.getElementById('lbMainImage');
-    mainImg.style.transform = 'scale(1)';
-    mainImg.src = `/protected-photo/${photo.id}`;
-
-    // Update Counter
-    document.getElementById('lbCounterDisplay').textContent = `${currentPhotoIndex + 1} / ${currentEventPhotos.length}`;
-
-    // Update Sidebar Meta
-    document.getElementById('lbPhotographerName').textContent = photo.photographer_name || 'Aiden Daniels';
-    const avatarEl = document.getElementById('lbPhotographerAvatar');
-    if (avatarEl) {
-      avatarEl.src = photo.photographer_avatar || '{{ asset("logo.png") }}';
+    // Clear any previous inline styles on container to allow natural responsive rendering
+    const container = document.getElementById('modalPhotoContainer');
+    if (container) {
+      container.style.width = '';
+      container.style.height = '';
     }
-    document.getElementById('lbMetaFile').textContent = photo.original_name || `IMG_${photo.id + 9000}.jpg`;
-    document.getElementById('lbMetaResolution').textContent = photo.dimensions || '1667 × 2500';
-    document.getElementById('lbMetaSize').textContent = photo.file_size || '1.96 MB';
-    document.getElementById('lbMetaBib').textContent = photo.bib_number ? `#${photo.bib_number}` : 'Not Assigned';
-    
-    const personalPrice = parseFloat(photo.personal_price || 50).toFixed(2);
-    const commercialPrice = parseFloat(photo.commercial_price || 250).toFixed(2);
+    const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
+    if (blurLayer) {
+      blurLayer.style.width = '';
+      blurLayer.style.height = '';
+    }
+    const shield = document.getElementById('modalTransparentShield');
+    if (shield) {
+      shield.style.width = '';
+      shield.style.height = '';
+    }
+    const photoImgBlurEl = document.getElementById('modalPhotoImgBlur');
+    if (photoImgBlurEl) {
+      photoImgBlurEl.style.width = '';
+      photoImgBlurEl.style.height = '';
+    }
 
-    const personalTag = document.getElementById('lbPersonalPriceTag');
+    // Update Header info
+    const titleEl = document.getElementById('modalPhotoTitle');
+    if (titleEl) {
+      titleEl.textContent = photo.title || 'Beach Sprint Splash';
+    }
+    const counterEl = document.getElementById('modalIndexCounter');
+    if (counterEl) {
+      counterEl.textContent = `Photo ${currentPhotoIndex + 1} of ${currentEventPhotos.length}`;
+    }
+
+    // Reset Anti-AI Blur state to default rest position
+    resetAntiAiBlurState();
+
+    // Load protected watermarked image
+    const photoImg = document.getElementById('modalPhotoImg');
+    const photoImgBlur = document.getElementById('modalPhotoImgBlur');
+    const photoSrc = `/protected-photo/${photo.id}`;
+    if (photoImg) {
+      photoImg.onload = function() {
+        requestAnimationFrame(syncPreviewAdWidth);
+      };
+      photoImg.src = photoSrc;
+      if (photoImg.complete && photoImg.naturalWidth > 0) {
+        requestAnimationFrame(syncPreviewAdWidth);
+      }
+    }
+    if (photoImgBlur) photoImgBlur.src = photoSrc;
+
+    // Fill Event Details & Rights info
+    const evNameEl = document.getElementById('modalEventName');
+    if (evNameEl) {
+      evNameEl.textContent = photo.event && photo.event.title ? photo.event.title : '{{ $event->title }}';
+    }
+    const copyEl = document.getElementById('modalCopyright');
+    if (copyEl) {
+      const photographerName = photo.photographer_name || '{{ $event->photographer?->name ?? "PhotoX" }}';
+      copyEl.textContent = `© {{ date('Y') }} ${photographerName} / PhotoX`;
+    }
+
+    // Pricing labels
+    const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
+    const personalTag = document.getElementById('modalPersonalPriceLabel');
     if (personalTag) personalTag.textContent = `R${personalPrice}`;
-
-    const commercialTag = document.getElementById('lbCommercialPriceTag');
+    const commercialTag = document.getElementById('modalCommercialPriceLabel');
     if (commercialTag) commercialTag.textContent = `R${commercialPrice}`;
 
-    setLightboxLicense(currentLicenseChoice || 'personal');
+    // Default to selected license
+    const personalRadio = document.querySelector(`input[name="license_type"][value="${currentLicenseChoice}"]`);
+    if (personalRadio) personalRadio.checked = true;
+    updateModalPrice(currentLicenseChoice || 'personal');
 
-    if (photo.bib_number) {
-      document.getElementById('lbPersonCount').textContent = `Bib #${photo.bib_number} detected in frame`;
+    // Update Nav Buttons visibility (disable if only 1 photo)
+    const prevBtn = document.getElementById('modalPrevBtn');
+    const nextBtn = document.getElementById('modalNextBtn');
+    if (currentEventPhotos.length <= 1) {
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
     } else {
-      document.getElementById('lbPersonCount').textContent = '1 person in the photo';
+      if (prevBtn) prevBtn.style.display = 'flex';
+      if (nextBtn) nextBtn.style.display = 'flex';
     }
 
-    const modalEl = document.getElementById('zebraLightboxModal');
+    const modalEl = document.getElementById('photoInspectorModal');
     const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
     modalInstance.show();
+    setTimeout(syncPreviewAdWidth, 250);
+  }
+
+  function openPhotoModalByIndex(index) {
+    openZebraLightbox(index);
+  }
+
+  function closePhotoInspectorModal() {
+    const modalEl = document.getElementById('photoInspectorModal');
+    const container = document.getElementById('modalPhotoContainer');
+    if (container) {
+      container.style.width = '';
+      container.style.height = '';
+    }
+    if (modalEl) {
+      try {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.hide();
+      } catch(err) {
+        console.warn('Bootstrap modal hide warning:', err);
+      }
+      setTimeout(() => {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        document.body.style.removeProperty('overflow');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+      }, 120);
+    }
   }
 
   function nextLightboxPhoto() {
@@ -984,18 +1308,166 @@
     openZebraLightbox((currentPhotoIndex - 1 + currentEventPhotos.length) % currentEventPhotos.length);
   }
 
-  function zoomLightbox(delta) {
-    currentZoom = Math.max(0.6, Math.min(2.5, currentZoom + delta));
-    const mainImg = document.getElementById('lbMainImage');
-    if (mainImg) {
-      mainImg.style.transform = `scale(${currentZoom})`;
-      mainImg.style.transition = 'transform 0.2s ease';
+  function nextModalPhoto() {
+    nextLightboxPhoto();
+  }
+
+  function prevModalPhoto() {
+    prevLightboxPhoto();
+  }
+
+  function syncPreviewAdWidth() {
+    const photoImg = document.getElementById('modalPhotoImg');
+    const adWrapper = document.getElementById('modalPreviewAdWrapper');
+    const secInfo = document.getElementById('modalSecurityInfoBar');
+
+    if (!photoImg) return;
+
+    const w = photoImg.clientWidth || photoImg.offsetWidth;
+    if (w && w >= 200) {
+      if (adWrapper) {
+        adWrapper.style.maxWidth = w + 'px';
+        adWrapper.style.width = '100%';
+        adWrapper.style.marginLeft = 'auto';
+        adWrapper.style.marginRight = 'auto';
+      }
+      if (secInfo) {
+        secInfo.style.maxWidth = Math.max(w, 520) + 'px';
+        secInfo.style.width = '100%';
+        secInfo.style.marginLeft = 'auto';
+        secInfo.style.marginRight = 'auto';
+      }
+    }
+  }
+
+  // Anti-AI Opposing Triangle Blur Interaction
+  let antiAiBlurEnabled = true;
+  let isTopLeftClear = true;
+
+  function initAntiAiTriangleBlur() {
+    const container = document.getElementById('modalPhotoContainer');
+    const shield = document.getElementById('modalTransparentShield');
+    const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
+    const tag = document.getElementById('antiAiShieldTag');
+    const tagText = document.getElementById('antiAiShieldTagText');
+
+    if (!container || !shield || !blurLayer) return;
+
+    shield.addEventListener('mousemove', function(e) {
+      if (!antiAiBlurEnabled) return;
+
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const u = (e.clientX - rect.left) / rect.width;
+      const v = (e.clientY - rect.top) / rect.height;
+
+      if (u + v < 1) {
+        if (!isTopLeftClear) {
+          isTopLeftClear = true;
+          blurLayer.style.clipPath = 'polygon(100% 0, 100% 100%, 0 100%)';
+          if (tag) {
+            tag.style.top = 'auto';
+            tag.style.left = 'auto';
+            tag.style.bottom = '16px';
+            tag.style.right = '16px';
+          }
+          if (tagText) {
+            tagText.innerHTML = 'Anti-AI Frosted Half · Hover to Reveal';
+          }
+        }
+      } else {
+        if (isTopLeftClear) {
+          isTopLeftClear = false;
+          blurLayer.style.clipPath = 'polygon(0 0, 100% 0, 0 100%)';
+          if (tag) {
+            tag.style.bottom = 'auto';
+            tag.style.right = 'auto';
+            tag.style.top = '16px';
+            tag.style.left = '16px';
+          }
+          if (tagText) {
+            tagText.innerHTML = 'Anti-AI Frosted Half · Hover to Reveal';
+          }
+        }
+      }
+    });
+
+    shield.addEventListener('mouseleave', function() {
+      if (!antiAiBlurEnabled) return;
+      resetAntiAiBlurState();
+    });
+  }
+
+  function resetAntiAiBlurState() {
+    isTopLeftClear = true;
+    const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
+    const tag = document.getElementById('antiAiShieldTag');
+    const tagText = document.getElementById('antiAiShieldTagText');
+    if (blurLayer) blurLayer.style.clipPath = 'polygon(100% 0, 100% 100%, 0 100%)';
+    if (tag) {
+      tag.style.top = 'auto';
+      tag.style.left = 'auto';
+      tag.style.bottom = '16px';
+      tag.style.right = '16px';
+    }
+    if (tagText) tagText.innerHTML = 'Anti-AI Frosted Half · Hover to Reveal';
+  }
+
+  function toggleAntiAiBlur() {
+    antiAiBlurEnabled = !antiAiBlurEnabled;
+    const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
+    const text = document.getElementById('antiAiBlurStateText');
+    const btn = document.getElementById('toggleAntiAiBlurBtn');
+    if (blurLayer) {
+      if (antiAiBlurEnabled) {
+        blurLayer.classList.remove('d-none');
+        blurLayer.classList.add('active');
+        resetAntiAiBlurState();
+        if (text) text.textContent = 'ON';
+        if (btn) {
+          btn.classList.remove('btn-outline-secondary');
+          btn.classList.add('btn-outline-warning');
+        }
+      } else {
+        blurLayer.classList.add('d-none');
+        blurLayer.classList.remove('active');
+        if (text) text.textContent = 'OFF';
+        if (btn) {
+          btn.classList.remove('btn-outline-warning');
+          btn.classList.add('btn-outline-secondary');
+        }
+      }
+    }
+  }
+
+  function toggleWaterMotion() {
+    const layer = document.getElementById('modalWaterMotionLayer');
+    const text = document.getElementById('waterMotionStateText');
+    const btn = document.getElementById('toggleWaterMotionBtn');
+    if (!layer) return;
+
+    const isCurrentlyActive = layer.classList.contains('active');
+    if (isCurrentlyActive) {
+      layer.classList.remove('active');
+      if (text) text.textContent = 'OFF';
+      if (btn) {
+        btn.classList.remove('btn-outline-info');
+        btn.classList.add('btn-outline-secondary');
+      }
+    } else {
+      layer.classList.add('active');
+      if (text) text.textContent = 'ON';
+      if (btn) {
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-info');
+      }
     }
   }
 
   // Keyboard navigation
   document.addEventListener('keydown', function(e) {
-    const modalEl = document.getElementById('zebraLightboxModal');
+    const modalEl = document.getElementById('photoInspectorModal');
     if (!modalEl || !modalEl.classList.contains('show')) return;
 
     if (e.key === 'ArrowRight') {
@@ -1006,9 +1478,21 @@
       prevLightboxPhoto();
     } else if (e.key === 'Escape' || e.key === 'Esc') {
       e.preventDefault();
-      const modalInstance = bootstrap.Modal.getInstance(modalEl);
-      if (modalInstance) modalInstance.hide();
+      closePhotoInspectorModal();
     }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initAntiAiTriangleBlur();
+
+    const modalEl = document.getElementById('photoInspectorModal');
+    if (modalEl) {
+      modalEl.addEventListener('shown.bs.modal', function() {
+        syncPreviewAdWidth();
+        setTimeout(syncPreviewAdWidth, 100);
+      });
+    }
+    window.addEventListener('resize', syncPreviewAdWidth);
   });
 
   // Filter photos by Bib Number input

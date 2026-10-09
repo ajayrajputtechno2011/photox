@@ -858,38 +858,70 @@
             <div class="col-lg-5 modal-info-col p-4 d-flex flex-column justify-content-between" style="background: #091724; border-left: 1px solid #1a3248;">
               <div>
                 
-                <!-- License Usage Selector (Commercial vs Personal) -->
+                <!-- License & Bundle Selector (Single Personal, Single Commercial, Selfie Bundle, Buy Complete Gallery) -->
                 <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
                   <label class="form-label text-warning small fw-bold text-uppercase mb-2 d-flex align-items-center gap-1" style="letter-spacing: 0.05em; font-size: 0.82rem;">
-                    <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
+                    <i class="bi bi-tag-fill me-1"></i> SELECT PURCHASE OPTION
                   </label>
                   
                   <div class="d-flex flex-column gap-2">
-                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <!-- Option 1: Personal Single Photo -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="personal" checked onchange="updateModalPrice('personal')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
-                          <strong class="d-block text-white" style="font-size: 0.95rem;">Personal License</strong>
-                          <small style="font-size: 0.78rem; color: #cbd5e1;">Social media, phone wallpaper, prints for personal use</small>
+                          <strong class="d-block text-white" style="font-size: 0.92rem;">Personal License (Single Photo)</strong>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Social media, phone wallpaper, prints for personal use</small>
                         </div>
                       </div>
-                      <span class="fs-6 fw-bold text-warning" id="modalPersonalPriceLabel">R50.00</span>
+                      <span class="fs-6 fw-bold text-warning" id="modalPersonalPriceLabel">R75.00</span>
                     </label>
 
-                    <label class="d-flex align-items-center justify-content-between p-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <!-- Option 2: Commercial Single Photo -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="commercial" onchange="updateModalPrice('commercial')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
-                          <strong class="d-block text-white" style="font-size: 0.95rem;">Commercial License</strong>
-                          <small style="font-size: 0.78rem; color: #cbd5e1;">Editorial, websites, sponsors, brand marketing rights</small>
+                          <strong class="d-block text-white" style="font-size: 0.92rem;">Commercial License (Single Photo)</strong>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Editorial, websites, sponsors, brand marketing rights</small>
                         </div>
                       </div>
-                      <span class="fs-6 fw-bold text-success" id="modalCommercialPriceLabel">R250.00</span>
+                      <span class="fs-6 fw-bold text-success" id="modalCommercialPriceLabel">R350.00</span>
+                    </label>
+
+                    <!-- Option 3: Selfie / Athlete Bundle (Flat Rate for 1 or 100+ images) -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="selfie" onchange="updateModalPrice('selfie')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <div class="d-flex align-items-center gap-2">
+                            <strong class="text-white" style="font-size: 0.92rem;">Selfie / Athlete Bundle</strong>
+                            <span class="badge bg-warning text-dark px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">FLAT RATE</span>
+                          </div>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">All your matched photos from bib/selfie search (1 or 100+)</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-info" id="modalSelfieBundlePriceLabel">R150.00</span>
+                    </label>
+
+                    <!-- Option 4: Buy Complete Gallery (All Photos in Event) -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                      <div class="d-flex align-items-center gap-3">
+                        <input type="radio" name="license_type" value="full_gallery" onchange="updateModalPrice('full_gallery')" style="transform: scale(1.25); accent-color: #ff8a00;">
+                        <div>
+                          <div class="d-flex align-items-center gap-2">
+                            <strong class="text-white" style="font-size: 0.92rem;">Buy Complete Gallery</strong>
+                            <span class="badge bg-success text-white px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">ALL PHOTOS</span>
+                          </div>
+                          <small style="font-size: 0.76rem; color: #cbd5e1;">Instant high-res bundle of all captures in this event</small>
+                        </div>
+                      </div>
+                      <span class="fs-6 fw-bold text-warning" id="modalFullGalleryPriceLabel">R450.00</span>
                     </label>
                   </div>
                 </div>
 
-                <!-- Clean Event & Protection Note (Camera & EXIF Metadata Removed per Client Request) -->
+                <!-- Clean Event & Clickable Link to Gallery (Matching Client Handwriting: LINK TO THAT GALLERY) -->
                 <div class="mb-4 p-3 rounded" style="background: #0c1e30; border: 1px solid #1e3e5c;">
                   <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-warning small text-uppercase fw-bold" style="font-size: 0.78rem; letter-spacing: 0.05em;">
@@ -897,8 +929,13 @@
                     </span>
                     <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.70rem;">Full Resolution Hi-Res</span>
                   </div>
-                  <strong class="text-white d-block fs-6 mb-1" id="modalEventName">-</strong>
-                  <span class="small d-block" id="modalCopyright" style="font-size: 0.78rem; color: #cbd5e1;">© 2026 PhotoX All Rights Reserved. Clean original master without watermark delivered upon license purchase.</span>
+                  <a href="/events" id="modalEventLink" class="text-white text-decoration-none d-flex align-items-center justify-content-between fs-6 fw-bold mb-1 p-2 rounded" style="background: rgba(255,255,255,0.05); transition: all 0.2s; border: 1px solid rgba(255,138,0,0.3);" onmouseover="this.style.background='rgba(255,138,0,0.18)'; this.style.borderColor='#ff8a00';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,138,0,0.3)';" title="Click to view full event gallery page">
+                    <span id="modalEventName">PhotoX Event Gallery</span>
+                    <span class="badge bg-warning text-dark d-flex align-items-center gap-1" style="font-size: 0.72rem; font-weight: 700;">
+                      View Gallery <i class="bi bi-box-arrow-up-right"></i>
+                    </span>
+                  </a>
+                  <span class="small d-block mt-2" id="modalCopyright" style="font-size: 0.78rem; color: #cbd5e1;">© {{ date('Y') }} PhotoX All Rights Reserved. Clean original master without watermark delivered upon license purchase.</span>
                 </div>
 
               </div>
@@ -1473,8 +1510,14 @@
 
       // Fill Event Details & Rights info (Camera EXIF removed per client request)
       const evNameEl = document.getElementById('modalEventName');
+      const evLinkEl = document.getElementById('modalEventLink');
+      const eventTitle = photo.event && photo.event.title ? photo.event.title : (photo.event_title || 'PhotoX Championship Event');
+      const eventSlug = photo.event && photo.event.slug ? photo.event.slug : '';
       if (evNameEl) {
-        evNameEl.textContent = photo.event && photo.event.title ? photo.event.title : 'PhotoX Championship Event';
+        evNameEl.textContent = eventTitle;
+      }
+      if (evLinkEl) {
+        evLinkEl.href = eventSlug ? `/event-details/${eventSlug}` : '/events';
       }
       const copyEl = document.getElementById('modalCopyright');
       if (copyEl) {
@@ -1482,15 +1525,17 @@
       }
 
       // Pricing labels
-      const personalPrice = parseFloat(photo.personal_price || 50).toFixed(2);
-      const commercialPrice = parseFloat(photo.commercial_price || 250).toFixed(2);
-      document.getElementById('modalPersonalPriceLabel').textContent = `R${personalPrice}`;
-      document.getElementById('modalCommercialPriceLabel').textContent = `R${commercialPrice}`;
+      const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
+      const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
+      const personalTag = document.getElementById('modalPersonalPriceLabel');
+      if (personalTag) personalTag.textContent = `R${personalPrice}`;
+      const commercialTag = document.getElementById('modalCommercialPriceLabel');
+      if (commercialTag) commercialTag.textContent = `R${commercialPrice}`;
 
-      // Default to personal license
-      const personalRadio = document.querySelector('input[name="license_type"][value="personal"]');
+      // Default to personal license or current choice
+      const personalRadio = document.querySelector(`input[name="license_type"][value="${currentSelectedLicense || 'personal'}"]`);
       if (personalRadio) personalRadio.checked = true;
-      updateModalPrice('personal');
+      updateModalPrice(currentSelectedLicense || 'personal');
 
       // Update Nav Buttons visibility (disable if only 1 photo)
       const prevBtn = document.getElementById('modalPrevBtn');
@@ -1550,10 +1595,27 @@
     function updateModalPrice(type) {
       currentSelectedLicense = type;
       if (!currentActivePhoto) return;
-      const price = (type === 'commercial') 
-          ? (currentActivePhoto.commercial_price || 250) 
-          : (currentActivePhoto.personal_price || 50);
-      document.getElementById('modalActionPrice').textContent = `R${parseFloat(price).toFixed(2)}`;
+      const personalPrice = parseFloat(currentActivePhoto.personal_price || 75).toFixed(2);
+      const commercialPrice = parseFloat(currentActivePhoto.commercial_price || 350).toFixed(2);
+      const selfieBundlePrice = (150).toFixed(2);
+      const fullGalleryPrice = (450).toFixed(2);
+
+      let chosenPrice = personalPrice;
+      if (type === 'commercial') {
+        chosenPrice = commercialPrice;
+      } else if (type === 'selfie') {
+        chosenPrice = selfieBundlePrice;
+      } else if (type === 'full_gallery') {
+        chosenPrice = fullGalleryPrice;
+      }
+
+      const actionPriceEl = document.getElementById('modalActionPrice');
+      if (actionPriceEl) {
+        actionPriceEl.textContent = `R${chosenPrice}`;
+      }
+
+      const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);
+      if (radio) radio.checked = true;
     }
 
     function triggerSimulatedPurchase() {

@@ -180,8 +180,18 @@
 				<section class="watermark-studio-admin">
 					<div class="watermark-studio-grid">
 						<div class="watermark-preview-shell">
-							<div class="d-flex align-items-center justify-content-between mb-3 px-2">
-								<span class="small text-uppercase fw-bold text-muted"><i class="bi bi-broadcast me-1 text-warning"></i> Real-Time Canvas View</span>
+							<div class="d-flex align-items-center justify-content-between mb-3 px-2 flex-wrap gap-2">
+								<div class="d-flex align-items-center gap-2">
+									<span class="small text-uppercase fw-bold text-muted"><i class="bi bi-broadcast me-1 text-warning"></i> Real-Time Canvas View</span>
+									<div class="btn-group btn-group-sm ms-2" role="group">
+										<button type="button" class="btn btn-outline-warning btn-sm active" id="btnOrientLandscape" onclick="switchPreviewOrientation('landscape')">
+											<i class="bi bi-aspect-ratio me-1"></i> Landscape (4:3)
+										</button>
+										<button type="button" class="btn btn-outline-warning btn-sm" id="btnOrientPortrait" onclick="switchPreviewOrientation('portrait')">
+											<i class="bi bi-phone me-1"></i> Portrait (3:4)
+										</button>
+									</div>
+								</div>
 								<span class="badge bg-dark border text-warning"><i class="bi bi-shield-check me-1"></i> Anti-Theft Protected</span>
 							</div>
 							<div class="watermark-preview" id="watermarkPreview" style="min-height: 480px; height: 520px;">
@@ -325,6 +335,27 @@
 		});
 
 		renderWatermark();
+
+		window.switchPreviewOrientation = function(orientation) {
+			const btnLandscape = document.getElementById('btnOrientLandscape');
+			const btnPortrait = document.getElementById('btnOrientPortrait');
+			const previewBox = document.getElementById('watermarkPreview');
+
+			if (orientation === 'portrait') {
+				photo.src = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=1200&q=88';
+				previewBox.style.maxWidth = '380px';
+				previewBox.style.margin = '0 auto';
+				if (btnPortrait) btnPortrait.classList.add('active');
+				if (btnLandscape) btnLandscape.classList.remove('active');
+			} else {
+				photo.src = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1200&q=88';
+				previewBox.style.maxWidth = '100%';
+				previewBox.style.margin = '0';
+				if (btnLandscape) btnLandscape.classList.add('active');
+				if (btnPortrait) btnPortrait.classList.remove('active');
+			}
+			renderWatermark();
+		};
 	})();
 	</script>
 </body>

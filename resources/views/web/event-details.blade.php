@@ -293,6 +293,96 @@
     background: #84cc16 !important;
   }
 
+  /* License Option Selector Card Styling (Matching Image 2 Prototype) */
+  .license-option-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .license-option-card:hover {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(255, 138, 0, 0.4);
+  }
+  .license-option-card.active {
+    background: rgba(255, 138, 0, 0.12);
+    border-color: #ff8a00 !important;
+    box-shadow: 0 0 0 1px #ff8a00;
+  }
+
+  /* MOBILE RESPONSIVE LIGHTBOX (Screens under 992px) - Fixes Squeezed Photo Bug */
+  @media (max-width: 991.98px) {
+    #zebraLightboxModal .lightbox-topbar {
+      padding: 10px 14px !important;
+      flex-wrap: nowrap !important;
+      gap: 10px;
+    }
+    #zebraLightboxModal .lightbox-topbar .btn-group {
+      display: none !important; /* Hide desktop zoom buttons on mobile; native pinch-to-zoom is supported */
+    }
+    #zebraLightboxModal .lightbox-stage {
+      flex-direction: column !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      flex: 1 1 auto;
+    }
+    #zebraLightboxModal .lightbox-image-container {
+      width: 100% !important;
+      min-height: 280px !important;
+      max-height: 50vh !important;
+      height: 48vh !important;
+      flex: 0 0 auto !important;
+      padding: 10px 8px !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: relative !important;
+    }
+    #zebraLightboxModal .lightbox-image-container img {
+      max-height: 100% !important;
+      max-width: 100% !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: contain !important;
+      display: block !important;
+      margin: 0 auto !important;
+    }
+    #zebraLightboxModal .lightbox-sidebar {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-left: none !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+      padding: 20px 16px 28px !important;
+      overflow-y: visible !important;
+      flex: 1 0 auto !important;
+      background: #0c121a !important;
+    }
+    #zebraLightboxModal .lightbox-bottombar {
+      padding: 10px 14px !important;
+      flex-wrap: wrap !important;
+      gap: 10px;
+    }
+    #zebraLightboxModal .lightbox-bottombar > .d-flex:first-child {
+      display: none !important; /* Hide duplicate avatar pill to give full space to cart button */
+    }
+    #zebraLightboxModal .lightbox-bottombar > .d-flex:last-child {
+      width: 100% !important;
+      justify-content: space-between !important;
+    }
+    #zebraLightboxModal #lbAddToCartBtn {
+      flex: 1 !important;
+      text-align: center !important;
+      padding: 10px 14px !important;
+      font-size: 0.95rem !important;
+    }
+  }
+
   /* Toast for Right-Click Defense */
   .toast-protection {
     position: fixed;
@@ -529,7 +619,7 @@
               $previewAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
             @endphp
             @if($previewAd)
-              <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-3 py-1 rounded-3 d-flex align-items-center gap-3 shadow-lg" 
+              <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-3 py-1 rounded-3 d-none d-md-flex align-items-center gap-3 shadow-lg" 
                    style="background: rgba(6, 16, 25, 0.92); border: 1px solid rgba(255, 138, 0, 0.4); max-width: 90%; z-index: 15; backdrop-filter: blur(8px);">
                 <span class="badge bg-warning text-dark font-monospace text-uppercase" style="font-size: 0.62rem;">
                   {{ $previewAd->badge_text ?: 'Sponsor' }}
@@ -592,11 +682,33 @@
               </div>
             </div>
 
-            <div class="p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25">
-              <span class="d-block text-white-50 small">Selected License:</span>
-              <div class="d-flex justify-content-between align-items-center mt-1">
-                <strong class="text-white">Personal Use</strong>
-                <span class="text-warning fw-bold fs-5" id="lbPriceBadge">R50.00</span>
+            <!-- SELECT USAGE LICENSE (Matching Prototype Screenshot 2) -->
+            <div class="mb-4">
+              <span class="text-warning small fw-bold text-uppercase d-flex align-items-center gap-1 mb-2" style="letter-spacing: 0.08em; font-size: 0.75rem;">
+                <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
+              </span>
+              <div class="d-flex flex-column gap-2">
+                <div class="license-option-card active" id="licenseOptPersonal" onclick="setLightboxLicense('personal')">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="radio" name="lb_license_choice" value="personal" checked style="accent-color: #ff8a00; transform: scale(1.15);">
+                    <div>
+                      <strong class="text-white d-block small">Personal License</strong>
+                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Social media, phone wallpaper, prints</span>
+                    </div>
+                  </div>
+                  <strong class="text-warning fs-6" id="lbPersonalPriceTag">R50.00</strong>
+                </div>
+
+                <div class="license-option-card" id="licenseOptCommercial" onclick="setLightboxLicense('commercial')">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="radio" name="lb_license_choice" value="commercial" style="accent-color: #a3e635; transform: scale(1.15);">
+                    <div>
+                      <strong class="text-white d-block small">Commercial License</strong>
+                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Marketing, brand sponsorships, editorial</span>
+                    </div>
+                  </div>
+                  <strong class="text-success fs-6" id="lbCommercialPriceTag">R250.00</strong>
+                </div>
               </div>
             </div>
 
@@ -774,6 +886,29 @@
     }
   }
 
+  // Dynamic License Selection (Matching Prototype Screenshot 2)
+  let currentLicenseChoice = 'personal';
+
+  function setLightboxLicense(type) {
+    currentLicenseChoice = type;
+    const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
+    const personalPrice = parseFloat(photo.personal_price || 50).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || 250).toFixed(2);
+    const chosenPrice = type === 'commercial' ? commercialPrice : personalPrice;
+
+    const cartBtn = document.getElementById('lbAddToCartBtn');
+    if (cartBtn) {
+      cartBtn.innerHTML = `<i class="bi bi-cart-fill me-1"></i> Add to cart - R${chosenPrice}`;
+    }
+
+    document.querySelectorAll('.license-option-card').forEach(el => el.classList.remove('active'));
+    const targetCard = document.getElementById(type === 'commercial' ? 'licenseOptCommercial' : 'licenseOptPersonal');
+    if (targetCard) targetCard.classList.add('active');
+
+    const radio = document.querySelector(`input[name="lb_license_choice"][value="${type}"]`);
+    if (radio) radio.checked = true;
+  }
+
   // Open the Lightbox modal (matching Screenshots 3 & 5)
   function openZebraLightbox(index) {
     if (!currentEventPhotos || currentEventPhotos.length === 0) return;
@@ -800,9 +935,16 @@
     document.getElementById('lbMetaSize').textContent = photo.file_size || '1.96 MB';
     document.getElementById('lbMetaBib').textContent = photo.bib_number ? `#${photo.bib_number}` : 'Not Assigned';
     
-    const price = parseFloat(photo.personal_price || 50).toFixed(2);
-    document.getElementById('lbPriceBadge').textContent = `R${price}`;
-    document.getElementById('lbAddToCartBtn').innerHTML = `<i class="bi bi-cart-fill me-1"></i> Add to cart - R${price}`;
+    const personalPrice = parseFloat(photo.personal_price || 50).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || 250).toFixed(2);
+
+    const personalTag = document.getElementById('lbPersonalPriceTag');
+    if (personalTag) personalTag.textContent = `R${personalPrice}`;
+
+    const commercialTag = document.getElementById('lbCommercialPriceTag');
+    if (commercialTag) commercialTag.textContent = `R${commercialPrice}`;
+
+    setLightboxLicense(currentLicenseChoice || 'personal');
 
     if (photo.bib_number) {
       document.getElementById('lbPersonCount').textContent = `Bib #${photo.bib_number} detected in frame`;

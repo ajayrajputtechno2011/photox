@@ -25,6 +25,9 @@ ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.live /etc/nginx/conf.d/
 
 ## 2. Server Infrastructure & Stack
 - **OS:** AlmaLinux 9.8 64-bit
+- **Root SSH Host:** `168.231.79.67`
+- **Root SSH User:** `root`
+- **Root SSH Password:** `PhotoX@VpsSecure2026!`
 - **Web Server:** Nginx 1.20 (`/etc/nginx/`)
 - **PHP:** PHP 8.4.26 (`php-fpm`, Remi repo) with `gd`, `imagick`, `pdo_mysql`, `opcache`, `intl`, `mbstring`, `zip`, `xml`, `curl`
 - **Database:** MariaDB 10.5

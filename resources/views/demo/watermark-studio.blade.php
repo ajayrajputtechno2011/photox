@@ -1381,6 +1381,9 @@
 									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnPhotoCycling" onclick="switchPreviewPhoto('cycling')">
 										<i class="bi bi-bicycle me-1"></i> Cycling
 									</button>
+									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnPhotoPortrait" onclick="switchPreviewPhoto('portrait')">
+										<i class="bi bi-phone me-1"></i> Portrait Athlete (3:4)
+									</button>
 									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="document.getElementById('testPhotoInput').click()">
 										<i class="bi bi-cloud-upload me-1"></i> Custom Photo
 									</button>
@@ -1590,6 +1593,7 @@
 
 		const marathonPhotoUrl = "{{ asset('uploads/watermarks/photox_dummy_marathon.jpg') }}";
 		const cyclingPhotoUrl = "{{ asset('uploads/watermarks/photox_dummy_cycling.jpg') }}";
+		const portraitPhotoUrl = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=1200&q=88";
 
 		function switchMainTab(tab) {
 			currentTab = tab;
@@ -1917,15 +1921,31 @@
 		}
 
 		function switchPreviewPhoto(photoKey) {
+			const stage = document.getElementById('previewStage');
+			const btnMarathon = document.getElementById('btnPhotoMarathon');
+			const btnCycling = document.getElementById('btnPhotoCycling');
+			const btnPortrait = document.getElementById('btnPhotoPortrait');
+
 			if (photoKey === 'cycling') {
 				document.getElementById('previewBasePhoto').src = cyclingPhotoUrl;
-				document.getElementById('btnPhotoCycling').className = 'btn btn-sm btn-outline-warning rounded-pill active';
-				document.getElementById('btnPhotoMarathon').className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (stage) { stage.style.maxWidth = '100%'; stage.style.margin = '0'; }
+			} else if (photoKey === 'portrait') {
+				document.getElementById('previewBasePhoto').src = portraitPhotoUrl;
+				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (stage) { stage.style.maxWidth = '460px'; stage.style.margin = '0 auto'; }
 			} else {
 				document.getElementById('previewBasePhoto').src = marathonPhotoUrl;
-				document.getElementById('btnPhotoMarathon').className = 'btn btn-sm btn-outline-warning rounded-pill active';
-				document.getElementById('btnPhotoCycling').className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (stage) { stage.style.maxWidth = '100%'; stage.style.margin = '0'; }
 			}
+			updateLivePreview();
 		}
 
 		function handleTestPhotoUpload(event) {

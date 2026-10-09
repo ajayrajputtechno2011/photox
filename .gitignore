@@ -28,6 +28,7 @@ Thumbs.db
 *.zip
 backups/
 scratch/
+photox_vps_key*
 test.php
 blueprint_extracted.txt
 client_task_status.txt
@@ -35,3 +36,4 @@ newa/
 newpadminpage/
 *.docx
 *database_backup.sql
+photox_server.pem*

@@ -13,6 +13,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('css/styles.css') }}?v={{ file_exists(public_path('css/styles.css')) ? filemtime(public_path('css/styles.css')) : time() }}" rel="stylesheet">
   <script defer src="{{ asset('site-ad.js') }}?v={{ file_exists(public_path('site-ad.js')) ? filemtime(public_path('site-ad.js')) : time() }}"></script>
+  <style>
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100% !important;
+    }
+  </style>
   @yield('styles')
 </head>
 <body class="@yield('body-class', '')">

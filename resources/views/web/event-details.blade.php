@@ -217,114 +217,30 @@
     background: #84cc16;
   }
 
-  /* 4. Fullscreen Dark Lightbox / Inspector (Matching ZebraSnap Screenshots 3 & 5) */
-  #zebraLightboxModal .modal-dialog {
-    max-width: 100vw !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    margin: 0 !important;
+  /* Prevent Horizontal Scrolling / Viewport Overflow */
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
   }
-  #zebraLightboxModal .modal-content {
-    height: 100vh !important;
-    border-radius: 0 !important;
-    background: #080c12 !important;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
+  main {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
   }
-  .lightbox-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 24px;
-    background: #04070b;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    z-index: 10;
-  }
-  .lightbox-stage {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-  }
-  .lightbox-image-container {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000000;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  .lightbox-image-container img {
-    max-height: 80vh;
-    max-width: 100%;
-    object-fit: contain;
-    display: block;
-    border-radius: 6px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    user-select: none !important;
-    -webkit-user-drag: none !important;
-  }
-  .lightbox-sidebar {
-    width: 360px;
-    background: #0c121a;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 28px 24px;
-    overflow-y: auto;
-  }
-  .lightbox-bottombar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 24px;
-    background: #04070b;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    z-index: 10;
-  }
-  .btn-lime {
-    background: #a3e635 !important;
-    color: #0f172a !important;
-    border: none !important;
-    font-weight: 700 !important;
-  }
-  .btn-lime:hover {
-    background: #84cc16 !important;
+  .site-ad-banner {
+    max-width: 100% !important;
+    overflow: hidden !important;
   }
 
-  /* License Option Selector Card Styling (Matching Image 2 Prototype) */
-  .license-option-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .license-option-card:hover {
-    background: rgba(15, 23, 42, 0.9);
-    border-color: rgba(255, 138, 0, 0.4);
-  }
-  .license-option-card.active {
-    background: rgba(255, 138, 0, 0.12);
-    border-color: #ff8a00 !important;
-    box-shadow: 0 0 0 1px #ff8a00;
-  }
-
-  /* Responsive Scaling for High-Security Photo Inspector Modal (Matching Client Approved Reference) */
+  /* Responsive Scaling for High-Security Photo Inspector Modal */
   #photoInspectorModal .modal-dialog {
-    width: 95vw !important;
+    width: calc(100% - 24px) !important;
     max-width: 1580px !important;
-    margin: 1.5rem auto !important;
+    margin: 1.25rem auto !important;
   }
 
   @media (min-width: 1400px) {
     #photoInspectorModal .modal-dialog {
-      width: 92vw !important;
+      width: calc(100% - 48px) !important;
       max-width: 1720px !important;
     }
     #photoInspectorModal .modal-photo-col {
@@ -339,7 +255,7 @@
 
   @media (min-width: 992px) and (max-width: 1399.98px) {
     #photoInspectorModal .modal-dialog {
-      width: 94vw !important;
+      width: calc(100% - 32px) !important;
       max-width: 1380px !important;
     }
     #photoInspectorModal .modal-photo-col {
@@ -572,11 +488,34 @@
     100% { transform: translate(30px, 65px) scale(1.05) rotate(-3deg); }
   }
 
+  /* Photo Gallery Grid Responsive Auto-fit */
+  .photo-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  @media (max-width: 575.98px) {
+    .photo-gallery-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+    .find-photos-card {
+      padding: 16px !important;
+    }
+    .event-top-bar {
+      padding: 16px 0 14px !important;
+    }
+  }
+
   /* MOBILE RESPONSIVE LIGHTBOX (Screens under 992px) */
   @media (max-width: 991.98px) {
     #photoInspectorModal .modal-dialog {
       margin: 0.5rem auto !important;
-      width: 98vw !important;
+      width: calc(100% - 16px) !important;
+      max-width: 100% !important;
     }
     #photoInspectorModal .modal-photo-col {
       min-height: auto !important;
@@ -612,28 +551,30 @@
   <section class="event-top-bar">
     <div class="container-xl">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-        <div class="d-flex align-items-center gap-3">
-          <a href="/#latest-events" class="event-back-btn" title="Back to Events">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <a href="/#latest-events" class="event-back-btn flex-shrink-0" title="Back to Events">
             <i class="bi bi-arrow-left fs-5"></i>
           </a>
-          <div>
-            <h1 class="h3 fw-bold text-white mb-0">{{ $event->title }}</h1>
-            <p class="text-white-50 small mb-0 mt-1">
+          <div class="flex-grow-1" style="min-width: 0;">
+            <h1 class="h3 fw-bold text-white mb-0 text-break">{{ $event->title }}</h1>
+            <p class="text-white-50 small mb-0 mt-1 d-flex align-items-center flex-wrap gap-2">
               @php
                 $evPhotographer = $event->photographer ?? ($photos->first()?->photographer ?? null);
               @endphp
-              <i class="bi bi-camera me-1 text-warning"></i>
-              @if($evPhotographer)
-                <a href="{{ route('photographers.show', $evPhotographer->id) }}" class="text-warning text-decoration-none fw-semibold">
-                  {{ $evPhotographer->name }}
-                </a>
-              @else
-                <span>{{ $event->photographer_name ?? ($photos->first()?->photographer_name ?? 'PhotoX Pro') }}</span>
-              @endif
-              &nbsp;·&nbsp; 
-              <i class="bi bi-calendar-event me-1"></i> {{ $event->event_date ? \Carbon\Carbon::parse($event->event_date)->format('d M, Y') : 'Oct 6, 2026' }}
-              &nbsp;·&nbsp; 
-              <i class="bi bi-geo-alt me-1"></i> {{ $event->location ?? 'Cape Town, South Africa' }}
+              <span>
+                <i class="bi bi-camera me-1 text-warning"></i>
+                @if($evPhotographer)
+                  <a href="{{ route('photographers.show', $evPhotographer->id) }}" class="text-warning text-decoration-none fw-semibold">
+                    {{ $evPhotographer->name }}
+                  </a>
+                @else
+                  <span>{{ $event->photographer_name ?? ($photos->first()?->photographer_name ?? 'PhotoX Pro') }}</span>
+                @endif
+              </span>
+              <span class="d-none d-sm-inline">·</span>
+              <span><i class="bi bi-calendar-event me-1"></i> {{ $event->event_date ? \Carbon\Carbon::parse($event->event_date)->format('d M, Y') : 'Oct 6, 2026' }}</span>
+              <span class="d-none d-sm-inline">·</span>
+              <span><i class="bi bi-geo-alt me-1"></i> {{ $event->location ?? 'Cape Town, South Africa' }}</span>
             </p>
           </div>
         </div>
@@ -675,13 +616,13 @@
           <h5 class="fw-bold text-dark mb-1">Find your photos</h5>
           <span class="text-muted small">Filter captures by athlete bib number or selfie</span>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-column flex-sm-row justify-content-md-end flex-shrink-0">
-          <div class="input-group" style="width: 270px;">
+        <div class="d-flex align-items-stretch align-items-sm-center gap-2 flex-column flex-sm-row justify-content-md-end flex-wrap">
+          <div class="input-group" style="max-width: 270px; width: 100%;">
             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control border-start-0" id="bibSearchInput" placeholder="Bib search..." onkeyup="filterPhotosByBib(this.value)">
             <button class="btn btn-dark px-3 fw-semibold" type="button" onclick="filterPhotosByBib(document.getElementById('bibSearchInput').value)">Search</button>
           </div>
-          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm text-nowrap" style="height: 38px;" onclick="openSelfieSearchModal()">
+          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap" style="height: 38px;" onclick="openSelfieSearchModal()">
             <i class="bi bi-camera-fill"></i>
             <span>Search by Selfie</span>
           </button>

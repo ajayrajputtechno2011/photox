@@ -961,7 +961,7 @@
                     <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.70rem;">Full Resolution Hi-Res</span>
                   </div>
                   <a href="/event-details/{{ $event->slug }}" id="modalEventLink" class="text-white text-decoration-none d-flex align-items-center justify-content-between fs-6 fw-bold mb-1 p-2 rounded" style="background: rgba(255,255,255,0.05); transition: all 0.2s; border: 1px solid rgba(255,138,0,0.3);" onmouseover="this.style.background='rgba(255,138,0,0.18)'; this.style.borderColor='#ff8a00';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,138,0,0.3)';" title="Click to view full event gallery page">
-                    <span id="modalEventName">{{ $event->title }}</span>
+                    <span id="modalEventName">{!! $event->title !!}</span>
                     <span class="badge bg-warning text-dark d-flex align-items-center gap-1" style="font-size: 0.72rem; font-weight: 700;">
                       View Gallery <i class="bi bi-box-arrow-up-right"></i>
                     </span>
@@ -1233,7 +1233,7 @@
     // Fill Event Details & Rights info
     const evNameEl = document.getElementById('modalEventName');
     if (evNameEl) {
-      evNameEl.textContent = photo.event && photo.event.title ? photo.event.title : '{{ $event->title }}';
+      evNameEl.innerHTML = photo.event && photo.event.title ? photo.event.title : {!! json_encode($event->title) !!};
     }
     const copyEl = document.getElementById('modalCopyright');
     if (copyEl) {

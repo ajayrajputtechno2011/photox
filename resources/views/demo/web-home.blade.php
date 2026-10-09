@@ -1514,7 +1514,7 @@
       const eventTitle = photo.event && photo.event.title ? photo.event.title : (photo.event_title || 'PhotoX Championship Event');
       const eventSlug = photo.event && photo.event.slug ? photo.event.slug : '';
       if (evNameEl) {
-        evNameEl.textContent = eventTitle;
+        evNameEl.innerHTML = eventTitle;
       }
       if (evLinkEl) {
         evLinkEl.href = eventSlug ? `/event-details/${eventSlug}` : '/events';

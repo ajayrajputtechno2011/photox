@@ -29,7 +29,7 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 | 2.2 | **Per-Photographer Custom Override** | ✅ **DONE** | Har photographer ke edit page (`/admin/photographers/{id}/edit`) par custom storage, custom commission aur `custom_features` checkboxes hain. |
 | 2.3 | **Dynamic Commission per Account** | ✅ **DONE** | `User.php` me `effective_commission_rate` accessor ready hai. Agar admin ne custom commission (e.g. 8%) set kiya hai toh wahi use hoga, warna plan ka default (10%, 15%, 20%). |
 | 2.4 | **Admin Photographers Contrast & Bug Fix** | ✅ **DONE** | Photographer update par error 500 fix kiya gaya aur dark-mode contrast issue theek kar diya gaya. |
-| 2.5 | **Storefront Banner Management in Admin** | ✅ **DONE** | Admin add/edit photographer form me `banner_image` (Header Banner URL) field aur current banner preview add kiya gaya. Storefront hero cover par seedha render hota hai. |
+| 2.5 | **Dual File Upload & URL for Avatar/Logo & Banner** | ✅ **DONE** | Admin add/edit photographer form me Avatar/Logo aur Storefront Header Banner dono ke liye **Direct File Upload** (Browse file) aur **Web URL** dono options with live preview add kar diye gaye. |
 
 ---
 

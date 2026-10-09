@@ -81,8 +81,8 @@
         <div class="photographer-showcase-heading">
           <!-- Avatar Column -->
           <div class="photographer-showcase-avatar-column">
-            <div class="photographer-showcase-avatar">
-              <img alt="{{ $photographer->name }}" src="{{ $photographer->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=260&q=90' }}">
+            <div class="photographer-showcase-avatar {{ $photographer->avatar ? '' : 'bg-dark p-3 d-flex align-items-center justify-content-center' }}">
+              <img alt="{{ $photographer->name }}" src="{{ $photographer->avatar ?: asset('logo.png') }}" style="{{ $photographer->avatar ? '' : 'object-fit: contain;' }}">
             </div>
             <div class="photographer-avatar-facts">
               <span><strong>Member</strong><small>Since {{ $photographer->created_at ? $photographer->created_at->format('Y') : '2024' }}</small></span>
@@ -334,7 +334,7 @@
           <i class="bi bi-x-lg"></i>
         </button>
         <div class="photographer-message-heading">
-          <img alt="{{ $photographer->name }}" src="{{ $photographer->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=160&q=85' }}">
+          <img alt="{{ $photographer->name }}" src="{{ $photographer->avatar ?: asset('logo.png') }}" style="{{ $photographer->avatar ? '' : 'background: #0b1a29; object-fit: contain; padding: 6px;' }}">
           <div>
             <span class="showcase-eyebrow">PHOTOGRAPHER CONTACT</span>
             <h2 id="photographerMessageTitle">Message {{ $photographer->name }}</h2>

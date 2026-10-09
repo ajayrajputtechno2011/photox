@@ -57,6 +57,8 @@ Is file me client ke diye huye saare points list hain. Jo kaam complete ho chuka
 | 7.6 | **Clean Storefront Design (PhotoFrog Style)** | ✅ **DONE** | Hardcoded generic text ("The eye behind the moment") hatakar clean hero banner, `@username` grey handle, aur album search bar lagaya gaya. |
 | 7.7 | **Compact Header & @username Sizing** | ✅ **DONE** | Hero banner height 205px compact ki gayi aur `@username` font size sleek chhota kiya gaya taaki page par faltu space na khaye. |
 | 7.8 | **Albums Grid vs List View Toggle** | ✅ **DONE** | Albums toolbar me Grid view aur List view toggle buttons (`#btnViewGrid` & `#btnViewList`) live hain. List view me compact rows show hoti hain. |
+| 7.9 | **Default Face/Avatar & Cover to PhotoX Logo** | ✅ **DONE** | Agar photographer ne apna face/avatar ya cover photo upload nahi kiya, toh random stock photo ki jagah official PhotoX logo (`/logo.png`) show hoga. |
+| 7.10 | **Photo Lightbox: Commercial License & Sponsor Banner** | ✅ **DONE** | Photo preview modal me Personal vs Commercial License options aur Sponsor Banner ko top par place kar diya gaya hai, aur mobile view par hidden (`d-none`) hata kar completely visible kar diya gaya hai. |
 
 ---
 

@@ -236,7 +236,7 @@
                      data-sports="{{ strtolower($creatorSportsList) }}"
                      data-type="{{ $filterType }}">
               <div class="person-image">
-                <img alt="{{ $creator->name }}" src="{{ $creator->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=90' }}">
+                <img alt="{{ $creator->name }}" src="{{ $creator->avatar ?: asset('logo.png') }}" style="{{ $creator->avatar ? '' : 'background: #0b1a29; object-fit: contain; padding: 24px;' }}">
                 <span>{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
               </div>
               <div class="person-info">

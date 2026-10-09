@@ -523,7 +523,7 @@
 
           <!-- Top-Left: Photographer Avatar Circle -->
           <div class="card-avatar-pill" title="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'PhotoX Creator') }}">
-            <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80') }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}">
+            <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: asset('logo.png')) }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}" style="{{ ($photo->photographer?->avatar || $event->photographer?->avatar) ? '' : 'background: #0b1a29; padding: 2px; object-fit: contain;' }}">
           </div>
 
           <!-- Top-Right: Price Tag (Matching Screenshot 2: e.g. R50.00) -->
@@ -583,11 +583,12 @@
               <i class="bi bi-x-lg"></i>
             </button>
             <div class="d-flex align-items-center gap-2">
-              <img src="{{ $event->photographer?->avatar ?: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80' }}" 
-                   alt="Creator" 
-                   class="rounded-circle border border-warning" 
-                   id="lbPhotographerAvatar"
-                   style="width: 36px; height: 36px; object-fit: cover;">
+              <div class="rounded-circle border border-warning d-flex align-items-center justify-content-center bg-dark overflow-hidden shadow-sm" style="width: 36px; height: 36px; min-width: 36px;">
+                <img src="{{ $event->photographer?->avatar ?: asset('logo.png') }}" 
+                     alt="Creator" 
+                     id="lbPhotographerAvatar"
+                     style="width: 100%; height: 100%; object-fit: contain; padding: {{ $event->photographer?->avatar ? '0' : '4px' }};">
+              </div>
               <div>
                 <strong class="d-block text-white small" id="lbPhotographerName">{{ $event->photographer?->name ?? ($photos->first()?->photographer_name ?? 'Aiden Daniels') }}</strong>
                 <span class="text-white-50" style="font-size: 0.70rem;" id="lbPhotographerBadge">{{ $event->photographer?->effective_badge_heading ?? 'Verified Creator' }}</span>
@@ -625,21 +626,21 @@
                  draggable="false" 
                  oncontextmenu="triggerProtectionToast(event); return false;">
 
-            <!-- SPONSOR BANNER (Bottom of Photo Preview) -->
+            <!-- SPONSOR BANNER (Bottom of Photo Preview - Mobile & Desktop) -->
             @php
               $previewAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
             @endphp
             @if($previewAd)
-              <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-3 py-1 rounded-3 d-none d-md-flex align-items-center gap-3 shadow-lg" 
-                   style="background: rgba(6, 16, 25, 0.92); border: 1px solid rgba(255, 138, 0, 0.4); max-width: 90%; z-index: 15; backdrop-filter: blur(8px);">
-                <span class="badge bg-warning text-dark font-monospace text-uppercase" style="font-size: 0.62rem;">
+              <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-3 py-1 rounded-3 d-flex align-items-center gap-2 gap-md-3 shadow-lg" 
+                   style="background: rgba(6, 16, 25, 0.94); border: 1px solid rgba(255, 138, 0, 0.4); max-width: 95%; z-index: 15; backdrop-filter: blur(8px);">
+                <span class="badge bg-warning text-dark font-monospace text-uppercase" style="font-size: 0.60rem;">
                   {{ $previewAd->badge_text ?: 'Sponsor' }}
                 </span>
                 <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-inline-flex align-items-center gap-2 text-white text-decoration-none">
                   @if(!empty($previewAd->image_url))
-                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" style="height: 36px; width: auto; max-width: 140px; object-fit: contain; border-radius: 4px;">
+                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" style="height: 30px; width: auto; max-width: 120px; object-fit: contain; border-radius: 4px;">
                   @endif
-                  <span class="small fw-semibold text-truncate" style="max-width: 280px;">{{ $previewAd->title ?: 'Built for more than roads' }}</span>
+                  <span class="small fw-semibold text-truncate" style="max-width: 220px; font-size: 0.78rem;">{{ $previewAd->title ?: 'Built for more than roads' }}</span>
                   <i class="bi bi-box-arrow-up-right text-warning small ms-1"></i>
                 </a>
               </div>
@@ -648,7 +649,53 @@
 
           <!-- Right Details Sidebar (Matching Screenshot 3 & 5) -->
           <div class="lightbox-sidebar">
+            <!-- 1. SELECT USAGE LICENSE (Prominently Placed at the Top) -->
             <div class="mb-4">
+              <span class="text-warning small fw-bold text-uppercase d-flex align-items-center gap-1 mb-2" style="letter-spacing: 0.08em; font-size: 0.75rem;">
+                <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
+              </span>
+              <div class="d-flex flex-column gap-2">
+                <div class="license-option-card active" id="licenseOptPersonal" onclick="setLightboxLicense('personal')">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="radio" name="lb_license_choice" value="personal" checked style="accent-color: #ff8a00; transform: scale(1.15);">
+                    <div>
+                      <strong class="text-white d-block small">Personal License</strong>
+                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Social media, phone wallpaper, personal prints</span>
+                    </div>
+                  </div>
+                  <strong class="text-warning fs-6" id="lbPersonalPriceTag">R50.00</strong>
+                </div>
+
+                <div class="license-option-card" id="licenseOptCommercial" onclick="setLightboxLicense('commercial')">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="radio" name="lb_license_choice" value="commercial" style="accent-color: #a3e635; transform: scale(1.15);">
+                    <div>
+                      <strong class="text-white d-block small">Commercial License</strong>
+                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Marketing, brand sponsorships, editorial publishing</span>
+                    </div>
+                  </div>
+                  <strong class="text-success fs-6" id="lbCommercialPriceTag">R250.00</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. SPONSOR BANNER PLACEMENT (Sidebar) -->
+            @if($previewAd)
+              <div class="mb-4 p-2 rounded bg-dark bg-opacity-75 border border-secondary border-opacity-25 text-center">
+                <span class="d-block text-white-50 text-uppercase fw-semibold mb-1" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                  {{ $previewAd->badge_text ?? 'Official Event Sponsor' }}
+                </span>
+                <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-block text-decoration-none">
+                  <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" class="img-fluid rounded" style="max-height: 75px; object-fit: contain;">
+                  @if(!empty($previewAd->title))
+                    <div class="text-white small fw-bold mt-1 text-truncate">{{ $previewAd->title }}</div>
+                  @endif
+                </a>
+              </div>
+            @endif
+
+            <!-- 3. WHAT'S INCLUDED -->
+            <div class="mb-4 pt-2 border-top border-secondary border-opacity-25">
               <span class="text-warning small fw-bold text-uppercase" style="letter-spacing: 0.08em; font-size: 0.75rem;">
                 WHAT'S INCLUDED
               </span>
@@ -665,7 +712,8 @@
               </ul>
             </div>
 
-            <div class="pt-3 border-top border-secondary border-opacity-25 mb-4">
+            <!-- 4. DETAILS -->
+            <div class="pt-3 border-top border-secondary border-opacity-25 mb-3">
               <span class="text-warning small fw-bold text-uppercase" style="letter-spacing: 0.08em; font-size: 0.75rem;">
                 DETAILS
               </span>
@@ -692,63 +740,17 @@
                 </div>
               </div>
             </div>
-
-            <!-- SELECT USAGE LICENSE (Matching Prototype Screenshot 2) -->
-            <div class="mb-4">
-              <span class="text-warning small fw-bold text-uppercase d-flex align-items-center gap-1 mb-2" style="letter-spacing: 0.08em; font-size: 0.75rem;">
-                <i class="bi bi-tag-fill me-1"></i> SELECT USAGE LICENSE
-              </span>
-              <div class="d-flex flex-column gap-2">
-                <div class="license-option-card active" id="licenseOptPersonal" onclick="setLightboxLicense('personal')">
-                  <div class="d-flex align-items-center gap-2">
-                    <input type="radio" name="lb_license_choice" value="personal" checked style="accent-color: #ff8a00; transform: scale(1.15);">
-                    <div>
-                      <strong class="text-white d-block small">Personal License</strong>
-                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Social media, phone wallpaper, prints</span>
-                    </div>
-                  </div>
-                  <strong class="text-warning fs-6" id="lbPersonalPriceTag">R50.00</strong>
-                </div>
-
-                <div class="license-option-card" id="licenseOptCommercial" onclick="setLightboxLicense('commercial')">
-                  <div class="d-flex align-items-center gap-2">
-                    <input type="radio" name="lb_license_choice" value="commercial" style="accent-color: #a3e635; transform: scale(1.15);">
-                    <div>
-                      <strong class="text-white d-block small">Commercial License</strong>
-                      <span class="text-white-50 d-block" style="font-size: 0.70rem;">Marketing, brand sponsorships, editorial</span>
-                    </div>
-                  </div>
-                  <strong class="text-success fs-6" id="lbCommercialPriceTag">R250.00</strong>
-                </div>
-              </div>
-            </div>
-
-            <!-- SPONSOR BANNER PLACEMENT (Image Preview / Lightbox) -->
-            @php
-              $previewAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
-            @endphp
-            @if($previewAd)
-              <div class="mt-3 p-2 rounded bg-dark bg-opacity-75 border border-secondary border-opacity-25 text-center">
-                <span class="d-block text-white-50 text-uppercase fw-semibold mb-1" style="font-size: 0.65rem; letter-spacing: 0.08em;">
-                  {{ $previewAd->badge_text ?? 'Official Event Sponsor' }}
-                </span>
-                <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-block text-decoration-none">
-                  <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor' }}" class="img-fluid rounded" style="max-height: 75px; object-fit: contain;">
-                  @if(!empty($previewAd->title))
-                    <div class="text-white small fw-bold mt-1 text-truncate">{{ $previewAd->title }}</div>
-                  @endif
-                </a>
-              </div>
-            @endif
           </div>
         </div>
 
         <!-- Bottom Bar: Person Icon, Wishlist, Share, Add to Cart (Matching Screenshot 3 & 5) -->
         <div class="lightbox-bottombar">
           <div class="d-flex align-items-center gap-2">
-            <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=100&q=80" 
-                 class="rounded-circle" 
-                 style="width: 28px; height: 28px; object-fit: cover;">
+            <div class="rounded-circle bg-dark border border-secondary border-opacity-50 d-flex align-items-center justify-content-center p-1" style="width: 28px; height: 28px;">
+              <img src="{{ asset('logo.png') }}" 
+                   class="rounded-circle" 
+                   style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
             <span class="text-white-50 small" id="lbPersonCount">1 person in the photo</span>
           </div>
 
@@ -941,6 +943,10 @@
 
     // Update Sidebar Meta
     document.getElementById('lbPhotographerName').textContent = photo.photographer_name || 'Aiden Daniels';
+    const avatarEl = document.getElementById('lbPhotographerAvatar');
+    if (avatarEl) {
+      avatarEl.src = photo.photographer_avatar || '{{ asset("logo.png") }}';
+    }
     document.getElementById('lbMetaFile').textContent = photo.original_name || `IMG_${photo.id + 9000}.jpg`;
     document.getElementById('lbMetaResolution').textContent = photo.dimensions || '1667 × 2500';
     document.getElementById('lbMetaSize').textContent = photo.file_size || '1.96 MB';

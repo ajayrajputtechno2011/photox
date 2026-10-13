@@ -3,16 +3,21 @@
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
 use App\Http\Controllers\Admin\PageBannerController as AdminPageBannerController;
 use App\Http\Controllers\Admin\PhotographerController as AdminPhotographerController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\WatermarkController;
 use App\Http\Controllers\Admin\WatermarkController as AdminWatermarkController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\Web\CustomerPortalController;
 use App\Http\Controllers\Web\EventController as WebEventController;
+use App\Http\Controllers\Web\LegalController;
 use App\Http\Controllers\Web\MembershipController as WebMembershipController;
 use App\Http\Controllers\Web\PhotographerController as WebPhotographerController;
+use App\Http\Controllers\Web\PhotographerPortalController;
 use App\Http\Controllers\Web\YocoTestController;
 use App\Models\WatermarkSetting;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [DemoController::class, 'dummyHome'])->name('home');
 
 Route::get('/home', [DemoController::class, 'dummyHome'])->name('home.preview');
+Route::get('/api/load-more-photos', [DemoController::class, 'apiLoadMorePhotos'])->name('api.photos.loadMore');
 
 // Dynamic Explore & Events routes
 Route::get('/events', [WebEventController::class, 'index'])->name('events.index');
@@ -40,6 +46,35 @@ Route::get('/membership.html', function () {
     return redirect('/membership', 301);
 });
 
+// News, Articles & Journal
+Route::get('/news', function () {
+    return view('web.blog');
+})->name('news');
+Route::get('/news.html', fn () => redirect('/news', 301));
+Route::get('/blog', fn () => redirect('/news', 301))->name('blog');
+Route::get('/blog.html', fn () => redirect('/news', 301));
+Route::get('/journal', fn () => redirect('/news', 301));
+Route::get('/journal.html', fn () => redirect('/news', 301));
+
+// About & Contact pages
+Route::get('/about', function () {
+    return view('web.about');
+})->name('about');
+Route::get('/about.html', fn () => redirect('/about', 301));
+
+Route::get('/contact', function () {
+    return view('web.contact');
+})->name('contact');
+Route::get('/contact.html', fn () => redirect('/contact', 301));
+
+// Legal & POPIA Compliance Policies
+Route::get('/terms', [LegalController::class, 'terms'])->name('terms');
+Route::get('/terms-and-conditions', fn () => redirect('/terms', 301));
+Route::get('/privacy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('/privacy-policy', fn () => redirect('/privacy', 301));
+Route::get('/licensing', [LegalController::class, 'licensing'])->name('licensing');
+Route::get('/legal/{slug}', [LegalController::class, 'show'])->name('legal.show');
+
 // Dynamic Photographers directory & details routes
 Route::get('/photographers', [WebPhotographerController::class, 'index'])->name('photographers.index');
 Route::get('/photographers.html', fn () => redirect('/photographers', 301));
@@ -52,6 +87,29 @@ Route::get('/@{username}', [WebPhotographerController::class, 'show'])->name('ph
 Route::get('/{username}', [WebPhotographerController::class, 'show'])
     ->where('username', '^(aidendaniels|jordanmiller|sarahkim|michaeladams|siphodlamini|danieljacobs|aiden-daniels|jordan-miller|sarah-kim|michael-adams|sipho-dlamini|daniel-jacobs)$')
     ->name('photographers.vanity');
+
+// Dynamic Photographer Portal routes (Dashboard, Upload, Galleries, Profile, Earnings, Bookings)
+Route::get('/photographer-dashboard', [PhotographerPortalController::class, 'dashboard'])->name('photographer.dashboard');
+Route::get('/photographer-upload-new', [PhotographerPortalController::class, 'uploadForm'])->name('photographer.upload');
+Route::post('/photographer-upload-new', [PhotographerPortalController::class, 'storeGallery'])->name('photographer.upload.store');
+Route::get('/photographer-gallery', [PhotographerPortalController::class, 'galleries'])->name('photographer.gallery');
+Route::delete('/photographer-gallery/{id}', [PhotographerPortalController::class, 'destroyGallery'])->name('photographer.gallery.destroy');
+Route::get('/photographer-profile', [PhotographerPortalController::class, 'profile'])->name('photographer.profile');
+Route::post('/photographer-profile', [PhotographerPortalController::class, 'updateProfile'])->name('photographer.profile.update');
+Route::get('/photographer-earnings', [PhotographerPortalController::class, 'earnings'])->name('photographer.earnings');
+Route::get('/photographer-bookings', [PhotographerPortalController::class, 'bookings'])->name('photographer.bookings');
+
+// Dynamic Customer Portal routes (Cart, Dashboard, Profile, Checkout, Orders, Saved, My Photos)
+Route::get('/cart', [CustomerPortalController::class, 'cart'])->name('cart');
+Route::get('/customer-dashboard', [CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
+Route::get('/profile-settings', [CustomerPortalController::class, 'profileSettings'])->name('customer.profile');
+Route::post('/profile-settings', [CustomerPortalController::class, 'updateProfileSettings'])->name('customer.profile.update');
+Route::get('/checkout', [CustomerPortalController::class, 'checkout'])->name('checkout');
+Route::post('/checkout/process', [CustomerPortalController::class, 'processCheckout'])->name('checkout.process');
+Route::get('/orders-downloads', [CustomerPortalController::class, 'ordersDownloads'])->name('orders.downloads');
+Route::get('/orders-downloads/download-zip', [CustomerPortalController::class, 'downloadZip'])->name('orders.download.zip');
+Route::get('/my-photos', [CustomerPortalController::class, 'myPhotos'])->name('customer.my_photos');
+Route::get('/saved-events', [CustomerPortalController::class, 'savedEvents'])->name('customer.saved_events');
 
 // Public demo links show "Work in Progress"
 Route::get('/watermark-studio-demo', function () {
@@ -113,12 +171,14 @@ Route::prefix('admin')->group(function () {
 
     // Admin Login (Public for guests; redirects logged-in admin to dashboard)
     Route::get('/login', function () {
-        if (Auth::check() && Auth::user()->role === 'admin') {
+        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             return redirect('/admin/dashboard');
         }
 
         return view('admin.login');
     })->name('admin.login');
+
+    Route::post('/login', [AuthController::class, 'adminLogin'])->name('admin.login.post');
 
     // Dedicated Dynamic Watermark Studio route for admin/dummy (Used for client video recording)
     // Watermark Studio (Full SuperAdmin Configuration & Database Save)
@@ -222,6 +282,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/page-banners', [AdminPageBannerController::class, 'index'])->name('admin.page-banners.index');
         Route::put('/page-banners/{pageHero}', [AdminPageBannerController::class, 'update'])->name('admin.page-banners.update');
 
+        // Legal Policies & POPIA Compliance
+        Route::get('/legal-pages', [LegalPageController::class, 'index'])->name('admin.legal.index');
+        Route::put('/legal-pages/{legalPage}', [LegalPageController::class, 'update'])->name('admin.legal.update');
+
+        // Platform & API Settings Management
+        Route::get('/settings', [AdminSettingController::class, 'index'])->name('admin.settings.index');
+        Route::put('/settings', [AdminSettingController::class, 'update'])->name('admin.settings.update');
+
         // Memberships Management
         Route::get('/memberships', [AdminMembershipController::class, 'index'])->name('admin.memberships.index');
         Route::post('/memberships', [AdminMembershipController::class, 'store'])->name('admin.memberships.store');
@@ -258,7 +326,11 @@ Route::prefix('admin')->group(function () {
             if (view()->exists("admin.{$page}")) {
                 return view("admin.{$page}");
             }
-            abort(404);
+
+            return view('admin.work-in-progress', [
+                'page' => $page,
+                'pageTitle' => ucwords(str_replace(['-', '_'], ' ', $page)),
+            ]);
         })->where('page', '^[a-zA-Z0-9_\-\/]+$');
     });
 });

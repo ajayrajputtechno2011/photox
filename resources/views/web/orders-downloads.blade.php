@@ -1,22 +1,147 @@
-<!doctype html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Your PhotoX orders and downloads."><title>PhotoX | Orders and downloads</title><link rel="icon" href="favicon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link href="css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link href="css/styles.css" rel="stylesheet"><script defer src="site-ad.js"></script></head>
-<body class="customer-app page-orders-downloads">
-  <nav aria-label="Main navigation" class="navbar navbar-expand-lg py-2"><div class="container-xl"><a aria-label="PhotoX home" class="navbar-brand" href="/"><img alt="PhotoX" src="logo.png"></a><button aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler border-0 p-0" data-bs-target="#mainNav" data-bs-toggle="collapse" type="button"><i class="bi bi-list fs-2"></i></button><div class="collapse navbar-collapse" id="mainNav"><ul class="navbar-nav mx-auto gap-lg-3 mt-3 mt-lg-0"><li class="nav-item"><a class="nav-link" href="/">Home</a></li><li class="nav-item"><a class="nav-link" href="/events">Explore</a></li><li class="nav-item"><a class="nav-link" href="/photographers">Photographers</a></li><li class="nav-item"><a class="nav-link" href="/membership">Membership</a></li><li class="nav-item"><a class="nav-link" href="/about">About</a></li><li class="nav-item"><a class="nav-link" href="/#contact">Contact</a></li></ul><div class="d-flex align-items-center gap-3 mt-3 mt-lg-0"><button class="icon-button notification-button" aria-label="Notifications"><i class="bi bi-bell"></i><span>2</span></button><div class="account-menu"><button class="profile-trigger" aria-label="Open account menu"><span class="avatar">LM</span><span class="d-none d-sm-inline">Lebo Mokoena</span><i class="bi bi-chevron-down"></i></button><div class="account-dropdown" role="menu"><div class="account-dropdown-user"><span class="avatar">LM</span><div><strong>Lebo Mokoena</strong><small>lebo.mokoena@example.com</small></div></div><a href="/profile-settings"><i class="bi bi-person"></i> Profile & settings</a><a href="/"><i class="bi bi-box-arrow-left"></i> Log out</a></div></div></div></div></div></nav>
-  <main class="workspace-layout container-xl"><aside class="workspace-sidebar" aria-label="Account navigation"><div class="workspace-greeting"><span class="eyebrow-blue">YOUR WORKSPACE</span><h1>Keep the<br><em>good ones.</em></h1></div><nav class="workspace-nav"><a class="workspace-nav-link" href="/customer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a><a class="workspace-nav-link" href="/my-photos"><i class="bi bi-images"></i><span>My photos</span><b>24</b></a><a class="workspace-nav-link" href="/saved-events"><i class="bi bi-bookmark"></i><span>Saved events</span></a><a class="workspace-nav-link active" href="/orders-downloads"><i class="bi bi-bag"></i><span>Orders & downloads</span></a><a class="workspace-nav-link" href="/profile-settings"><i class="bi bi-person"></i><span>Profile & settings</span></a></nav><div class="workspace-side-note"><i class="bi bi-shield-check"></i><div><strong>Secure delivery</strong><span>Your original files are protected with temporary download links.</span></div></div></aside><section class="workspace-content"><div class="workspace-mobile-heading"><span class="eyebrow-blue">YOUR WORKSPACE</span><h2>Orders.</h2><p>Your purchases, ready when you are.</p></div><section class="workspace-view active"><div class="workspace-view-header"><div><span class="eyebrow-blue">ORDERS & DOWNLOADS</span><h2>Your purchases.</h2><p>Download the files you have bought, whenever you need them.</p></div></div><div class="download-banner"><i class="bi bi-cloud-check"></i><div><strong>12 downloads ready</strong><span>Secure high-resolution files are available for your recent orders.</span></div><a class="btn btn-dark rounded-pill px-4" href="/my-photos">View photos</a></div><div class="order-table"><div class="order-row order-heading"><span>Order</span><span>Event</span><span>Date</span><span>Total</span><span>Status</span><span></span></div><div class="order-row"><span><strong>PX-000123</strong></span><span>Maties vs Ikeys</span><span>12 Sep 2026</span><span>R200</span><span class="status-pill paid">Paid</span><button aria-label="View order"><i class="bi bi-arrow-up-right"></i></button></div><div class="order-row"><span><strong>PX-000098</strong></span><span>City Marathon 2026</span><span>14 Sep 2026</span><span>R450</span><span class="status-pill paid">Paid</span><button aria-label="View order"><i class="bi bi-arrow-up-right"></i></button></div></div></section></section></main>
-  <nav class="workspace-bottom-nav"><a href="/customer-dashboard"><i class="bi bi-grid-1x2"></i><span>Home</span></a><a href="/my-photos"><i class="bi bi-images"></i><span>Photos</span></a><a href="/saved-events"><i class="bi bi-bookmark"></i><span>Saved</span></a><a class="active" href="/orders-downloads"><i class="bi bi-bag"></i><span>Orders</span></a><a href="/profile-settings"><i class="bi bi-person"></i><span>Profile</span></a></nav>
-  <footer class="footer footer-premium"><div class="container-xl">
-   <div class="row g-5 footer-main"><div class="col-lg-5"><a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p><div class="footer-social d-flex gap-3"><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a></div></div><div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/sponsors">Sponsors</a></div><div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/upload">Upload photos</a><a href="/photographers">Join PhotoX</a><a href="/messages">Support</a></div><div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div></div><div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div></div></footer>
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div aria-live="polite" class="toast" id="photoToast" role="status">
-      <div class="toast-body d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i><span>Search ready.</span>
+@extends('web.layouts.app')
+
+@section('title', 'PhotoX | Orders & Downloads')
+@section('body-class', 'customer-app page-orders-downloads')
+
+@section('content')
+  <main class="workspace-layout container-xl py-4">
+    <aside class="workspace-sidebar" aria-label="Account navigation">
+      <div class="workspace-greeting">
+        <span class="eyebrow-blue">YOUR WORKSPACE</span>
+        <h1>Keep the<br><em>good ones.</em></h1>
       </div>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-  </script> 
-  <script src="app.js">
-  </script>
-</body>
-</html>
+      <nav class="workspace-nav">
+        <a class="workspace-nav-link" href="{{ route('customer.dashboard') }}"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
+        <a class="workspace-nav-link" href="{{ route('customer.my_photos') }}"><i class="bi bi-images"></i><span>My photos</span></a>
+        <a class="workspace-nav-link" href="{{ route('customer.saved_events') }}"><i class="bi bi-bookmark"></i><span>Saved events</span></a>
+        <a class="workspace-nav-link active" href="{{ route('orders.downloads') }}"><i class="bi bi-bag"></i><span>Orders &amp; downloads</span></a>
+        <a class="workspace-nav-link" href="{{ route('customer.profile') }}"><i class="bi bi-person"></i><span>Profile &amp; settings</span></a>
+      </nav>
+      <div class="workspace-side-note">
+        <i class="bi bi-shield-check"></i>
+        <div>
+          <strong>Secure delivery</strong>
+          <span>Your original files are protected with unwatermarked high-resolution downloads.</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="workspace-content">
+      @if($status === 'success')
+        <div class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-4 mb-4 border-0 shadow-sm" style="background: #e8f9ee;" role="alert">
+          <i class="bi bi-patch-check-fill fs-1 text-success"></i>
+          <div>
+            <h4 class="alert-heading mb-1 fw-bold text-success">Payment Received Successfully via Yoco!</h4>
+            <p class="mb-0 small text-dark">Thank you for your purchase. Total amount: <strong>R{{ number_format($amount ?: 75, 2) }}</strong>. Your original digital photos are unlocked below.</p>
+          </div>
+        </div>
+
+        <script>
+          // Clear cart on successful purchase
+          try {
+            localStorage.removeItem('photox_cart');
+          } catch(e) {}
+        </script>
+      @endif
+
+      <div class="workspace-view-header">
+        <div>
+          <span class="eyebrow-blue">ORDERS &amp; DOWNLOADS</span>
+          <h2>Your purchases &amp; files</h2>
+          <p>Download the high-resolution files you have bought, whenever you need them.</p>
+        </div>
+      </div>
+
+      <div class="download-banner mb-4 p-4 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-3 text-white" style="background: linear-gradient(135deg, #0b2d5b, #194680);">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-cloud-check fs-1 text-warning"></i>
+          <div>
+            <strong class="fs-5 d-block">Digital Downloads Ready</strong>
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+              <span class="badge rounded-pill bg-warning text-dark font-monospace py-1 px-2"><i class="bi bi-file-earmark-zip me-1"></i>ZIP Bundle Available</span>
+              <span class="badge rounded-pill bg-white text-dark font-monospace py-1 px-2"><i class="bi bi-clock-history me-1"></i>6-Month Active Window (Valid until {{ now()->addMonths(6)->format('d M Y') }})</span>
+            </div>
+            <small class="text-white-50 d-block mt-1">Original full-resolution photography files unwatermarked for print & web use.</small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm" href="{{ route('orders.download.zip') }}">
+            <i class="bi bi-file-earmark-zip-fill me-1"></i>Download All (ZIP)
+          </a>
+          <a class="btn btn-outline-light rounded-pill px-4" href="{{ route('customer.my_photos') }}">
+            <i class="bi bi-images me-1"></i>View All Photos
+          </a>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        @forelse($purchasedPhotos as $photo)
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border rounded-4 overflow-hidden shadow-sm">
+              <div style="height: 180px; background: #081426; position: relative;">
+                <img src="{{ $photo->thumbnail_url ?: $photo->file_path }}" alt="{{ $photo->title }}" style="width: 100%; height: 100%; object-fit: contain;">
+                <span class="badge bg-success position-absolute top-0 end-0 m-2 font-monospace">PAID</span>
+              </div>
+              <div class="card-body p-3">
+                <strong class="d-block text-truncate">{{ $photo->title ?: 'Action Photo' }}</strong>
+                <small class="text-muted d-block">{{ $photo->event?->title ?: 'Sports Championship' }}</small>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                  <span class="small font-monospace text-primary">High-Res JPG</span>
+                  <a href="{{ $photo->file_path }}" download="PhotoX_{{ $photo->id }}.jpg" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    <i class="bi bi-download me-1"></i>Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        @empty
+          <div class="col-12 text-center py-4 text-muted">
+            <p>No orders placed yet.</p>
+          </div>
+        @endforelse
+      </div>
+
+      <div class="card border rounded-4 p-3 shadow-sm">
+        <h5 class="fw-bold mb-3">Order History</h5>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr class="text-secondary small font-monospace">
+                <th>ORDER ID</th>
+                <th>EVENT / PRODUCT</th>
+                <th>DATE</th>
+                <th>AMOUNT</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if($status === 'success')
+                <tr>
+                  <td><strong>PX-{{ date('Ymd') }}-{{ rand(100, 999) }}</strong></td>
+                  <td>PhotoX Digital Photos Bundle</td>
+                  <td>{{ date('d M Y') }}</td>
+                  <td><strong>R{{ number_format($amount ?: 75, 2) }}</strong></td>
+                  <td><span class="badge bg-success rounded-pill px-3 py-1">PAID (YOCO)</span></td>
+                </tr>
+              @endif
+              <tr>
+                <td><strong>PX-202610-098</strong></td>
+                <td>Maties vs Ikeys Derby</td>
+                <td>12 Sep 2026</td>
+                <td>R200.00</td>
+                <td><span class="badge bg-success rounded-pill px-3 py-1">PAID</span></td>
+              </tr>
+              <tr>
+                <td><strong>PX-202610-064</strong></td>
+                <td>City Marathon 2026 High-Res Bundle</td>
+                <td>14 Sep 2026</td>
+                <td>R450.00</td>
+                <td><span class="badge bg-success rounded-pill px-3 py-1">PAID</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+@endsection

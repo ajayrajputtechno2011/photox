@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta content="PhotoX is the sports and event photography marketplace for finding your moments." name="description">
   <title>@yield('title', 'PhotoX | Find your moment')</title>
   <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -24,6 +25,23 @@
 <body class="@yield('body-class', '')">
 
   @include('web.partials.header')
+
+  @if (!Auth::check() || session('cart_cleared'))
+    <script>
+      // Clear cart when session indicates cart was cleared or for guests
+      try {
+        localStorage.removeItem('photox_cart');
+        localStorage.removeItem('photox_user_cart');
+      } catch (e) {}
+      if (window.PhotoXCart) {
+        window.PhotoXCart.clear();
+        window.PhotoXCart.updateBadge();
+      }
+      document.querySelectorAll('.header-cart span').forEach(function(el) {
+        el.textContent = '0';
+      });
+    </script>
+  @endif
 
   {{-- Global Flash Notifications --}}
   @if(session('success'))

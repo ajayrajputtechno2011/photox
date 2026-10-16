@@ -11,10 +11,10 @@
         <li class="nav-item">
           <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Home</a>
         </li>
-        {{-- Explore is hidden for now as homepage serves as Explore --}}
+        {{-- Explore / Events is hidden as homepage serves as Explore --}}
         {{--
         <li class="nav-item">
-          <a class="nav-link {{ request()->is('events*') ? 'active' : '' }}" href="{{ url('/events') }}">Explore</a>
+          <a class="nav-link {{ request()->is('events*') || request()->is('event-details*') ? 'active' : '' }}" href="{{ url('/events') }}">Events</a>
         </li>
         --}}
         <li class="nav-item">
@@ -24,13 +24,23 @@
           <a class="nav-link {{ request()->is('membership*') ? 'active' : '' }}" href="{{ url('/membership') }}">Membership</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link {{ request()->is('news*') || request()->is('blog*') ? 'active' : '' }}" href="{{ url('/news') }}">News</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {{ request()->is('about*') ? 'active' : '' }}" href="{{ url('/about') }}">About</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ request()->is('contact*') ? 'active' : '' }}" href="{{ url('/contact') }}">Contact</a>
         </li>
+        @guest
+          <li class="nav-item d-lg-none mt-2 pt-2 border-top border-secondary border-opacity-25">
+            <a class="nav-link fw-semibold text-white d-flex align-items-center {{ request()->is('login*') ? 'active' : '' }}" href="{{ route('login') }}">
+              <i class="bi bi-box-arrow-in-right me-2 text-warning fs-5"></i><span>Login to your account</span>
+            </a>
+          </li>
+        @endguest
       </ul>
-      <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+      <div class="d-flex align-items-center flex-wrap gap-2 gap-sm-3 mt-3 mt-lg-0">
         <div class="header-search d-none d-xl-flex">
           <i class="bi bi-search"></i>
           <input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search">
@@ -40,11 +50,12 @@
         </a>
 
         @guest
-          <a class="text-link d-none d-sm-inline" href="{{ route('login') }}">
-            <i class="bi bi-person me-1"></i>Login
+          <a class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold text-white d-inline-flex align-items-center gap-1" href="{{ route('login') }}" style="border-color: rgba(255,255,255,0.35);">
+            <i class="bi bi-person"></i>
+            <span>Login</span>
           </a>
-          <a class="btn btn-lime rounded-pill px-4" href="{{ route('signup') }}">
-            Sign Up <i class="bi bi-arrow-up-right ms-1"></i>
+          <a class="btn btn-lime rounded-pill px-3 px-sm-4 py-2 fw-semibold d-inline-flex align-items-center gap-1" href="{{ route('signup') }}">
+            <span>Sign Up</span> <i class="bi bi-arrow-up-right ms-1"></i>
           </a>
         @else
           <div class="dropdown">
@@ -65,15 +76,20 @@
               @if(Auth::user()->role === 'admin')
                 <li><a class="dropdown-item py-2" href="{{ url('/admin') }}"><i class="bi bi-speedometer2 me-2 text-danger"></i>Admin Panel</a></li>
               @elseif(Auth::user()->role === 'photographer')
-                <li><a class="dropdown-item py-2" href="{{ url('/photographer-dashboard') }}"><i class="bi bi-camera me-2 text-info"></i>Creator Studio</a></li>
-                <li><a class="dropdown-item py-2" href="{{ url('/photographer-earnings') }}"><i class="bi bi-wallet2 me-2 text-success"></i>Earnings & Payouts</a></li>
-                <li><a class="dropdown-item py-2" href="{{ url('/photographer-gallery') }}"><i class="bi bi-images me-2"></i>My Galleries</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-dashboard') }}"><i class="bi bi-speedometer me-2 text-info"></i>Creator Studio</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-upload-new') }}"><i class="bi bi-cloud-arrow-up me-2 text-success"></i>Upload Photos</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-gallery') }}"><i class="bi bi-images me-2 text-primary"></i>My Galleries</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-payouts') }}"><i class="bi bi-bank me-2 text-warning"></i>Payouts &amp; Bank</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-profile') }}"><i class="bi bi-person-badge me-2 text-info"></i>Creator Profile</a></li>
               @else
                 <li><a class="dropdown-item py-2" href="{{ url('/customer-dashboard') }}"><i class="bi bi-grid me-2 text-primary"></i>My Dashboard</a></li>
                 <li><a class="dropdown-item py-2" href="{{ url('/orders-downloads') }}"><i class="bi bi-download me-2 text-success"></i>My Downloads</a></li>
                 <li><a class="dropdown-item py-2" href="{{ url('/my-photos') }}"><i class="bi bi-heart me-2 text-danger"></i>Saved Photos</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/saved-events') }}"><i class="bi bi-bookmark-star me-2 text-warning"></i>Saved Events</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/profile-settings') }}"><i class="bi bi-gear me-2"></i>Account Settings</a></li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li><a class="dropdown-item py-2 text-info" href="{{ url('/signup') }}"><i class="bi bi-camera me-2"></i>Become a Photographer</a></li>
               @endif
-              <li><a class="dropdown-item py-2" href="{{ url('/profile-settings') }}"><i class="bi bi-gear me-2"></i>Profile Settings</a></li>
               <li><hr class="dropdown-divider"></li>
               <li>
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">

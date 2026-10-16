@@ -38,6 +38,16 @@
     box-shadow: 0 4px 16px rgba(11, 45, 91, 0.05);
     margin: 28px 0 24px;
   }
+  .bib-search-group {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  @media (min-width: 992px) {
+    .bib-search-group {
+      max-width: 270px !important;
+      width: auto !important;
+    }
+  }
   .search-method-tab {
     display: inline-flex;
     align-items: center;
@@ -133,7 +143,34 @@
     pointer-events: none;
   }
 
-  /* Bottom flag */
+  /* Bottom bookmark and flag buttons */
+  .card-bookmark-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(15, 23, 42, 0.75);
+    color: rgba(255, 255, 255, 0.85);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    border: none;
+    z-index: 5;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .card-bookmark-btn:hover {
+    color: #ff8a00;
+    background: rgba(15, 23, 42, 0.95);
+    transform: scale(1.12);
+  }
+  .card-bookmark-btn.active {
+    color: #ff8a00 !important;
+    background: rgba(15, 23, 42, 0.95);
+  }
   .card-flag-btn {
     position: absolute;
     bottom: 10px;
@@ -150,9 +187,15 @@
     border: none;
     z-index: 5;
     transition: all 0.2s;
+    cursor: pointer;
   }
   .card-flag-btn:hover {
-    color: #ff8a00;
+    color: #ef4444;
+    background: rgba(15, 23, 42, 0.95);
+    transform: scale(1.12);
+  }
+  .card-flag-btn.flagged {
+    color: #ef4444 !important;
     background: rgba(15, 23, 42, 0.95);
   }
 
@@ -306,17 +349,19 @@
   }
 
   #photoInspectorModal .image-preview-ad-wrapper {
-    max-height: 110px !important;
     width: 100%;
     max-width: 100%;
+    height: auto !important;
+    max-height: none !important;
     transition: width 0.15s ease;
     margin: 12px auto 0 !important;
   }
 
   #photoInspectorModal .image-preview-ad-wrapper img {
     width: 100% !important;
-    max-height: 95px !important;
-    object-fit: cover !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
     display: block;
     border-radius: 8px;
   }
@@ -552,7 +597,7 @@
     <div class="container-xl">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3 flex-wrap">
-          <a href="/#latest-events" class="event-back-btn flex-shrink-0" title="Back to Events">
+          <a href="{{ route('events.index') }}" class="event-back-btn flex-shrink-0" title="Back to Events">
             <i class="bi bi-arrow-left fs-5"></i>
           </a>
           <div class="flex-grow-1" style="min-width: 0;">
@@ -580,7 +625,38 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-          <a href="/#latest-events" class="btn btn-lime rounded-pill btn-sm px-3">
+          {{-- Bookmark / Follow Event Button --}}
+          @if(!empty($event->id))
+            <button type="button" class="btn btn-sm rounded-pill px-3 save-event-btn {{ !empty($isEventSaved) ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning text-warning' }}" onclick="toggleSaveEvent({{ $event->id }}, this)" title="{{ !empty($isEventSaved) ? 'Unfollow this event' : 'Follow this event' }}" style="font-size: 0.82rem; border-color: #ff8a00;">
+              <i class="bi {{ !empty($isEventSaved) ? 'bi-bookmark-star-fill text-dark' : 'bi-bookmark-star' }} me-1"></i>
+              <span class="btn-text">{{ !empty($isEventSaved) ? 'Followed' : 'Follow Event' }}</span>
+            </button>
+          @endif
+
+          @php
+            $quickSwitchEvents = \App\Models\Event::where('status', 'published')->where('id', '!=', $event->id)->latest('event_date')->take(8)->get();
+          @endphp
+          @if($quickSwitchEvents->isNotEmpty())
+            <div class="dropdown d-none d-sm-inline-block">
+              <button class="btn btn-outline-light rounded-pill btn-sm px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-color: rgba(255,255,255,0.25);">
+                <i class="bi bi-collection me-1"></i> Switch Event
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="max-height: 360px; overflow-y: auto; min-width: 260px;">
+                <li class="dropdown-header text-uppercase small" style="font-size: 0.68rem; letter-spacing: 0.05em;">Published Events</li>
+                @foreach($quickSwitchEvents as $qEv)
+                  <li>
+                    <a class="dropdown-item d-flex align-items-center justify-content-between gap-2 py-2" href="{{ route('events.show', $qEv->slug) }}">
+                      <span class="text-truncate fw-semibold" style="max-width: 170px;">{{ $qEv->title }}</span>
+                      <span class="badge bg-secondary" style="font-size: 0.65rem;">{{ $qEv->category_name }}</span>
+                    </a>
+                  </li>
+                @endforeach
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-center fw-bold text-warning small" href="{{ route('events.index') }}">Browse All Events &rarr;</a></li>
+              </ul>
+            </div>
+          @endif
+          <a href="{{ route('events.index') }}" class="btn btn-lime rounded-pill btn-sm px-3">
             All Events <i class="bi bi-arrow-right ms-1"></i>
           </a>
         </div>
@@ -593,46 +669,62 @@
 
     <!-- SPONSORED PARTNER BANNER PLACEMENT (Matching Client Screenshot) -->
     @php
-      $eventPartnerAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
+      $eventPartnerAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'event_detail')->first() ?: (\App\Models\Banner::where('is_active', true)->where('placement', 'home_before_featured')->first() ?: \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first());
+      $hasAdText = !empty(trim($eventPartnerAd->title ?? '')) || !empty(trim($eventPartnerAd->subtitle ?? ''));
+      $adHref = (!empty($eventPartnerAd->link_url) && $eventPartnerAd->link_url !== '/events') ? $eventPartnerAd->link_url : '/#latest-events';
     @endphp
     @if($eventPartnerAd)
-    <aside class="site-ad-banner mb-4" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="{{ $eventPartnerAd->link_url ?: '#' }}">
-        <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}">
-        <span class="site-ad-overlay"></span>
-        <span class="site-ad-copy">
-          <small>{{ $eventPartnerAd->badge_text ?: 'PHOTOX PARTNER' }}</small>
-          <strong>{!! !empty($eventPartnerAd->title) ? nl2br(e($eventPartnerAd->title)) : 'BUILT FOR MORE<br>THAN ROADS' !!}</strong>
-          <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-        </span>
+    <aside class="site-ad-banner mb-4" aria-label="Sponsored placement" style="height: auto !important; max-height: 200px !important; min-height: unset !important; overflow: hidden; border-radius: 15px; background: #07152b;">
+      <a class="site-ad-link" href="{{ $adHref }}" style="height: auto !important; max-height: 200px !important; display: block; line-height: 0; position: relative;">
+        <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}" style="width: 100%; height: 200px; max-height: 200px; display: block; object-fit: cover; object-position: center; position: relative; background: #07152b;">
       </a>
     </aside>
     @endif
 
     <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number) -->
     <div class="find-photos-card">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
         <div>
           <h5 class="fw-bold text-dark mb-1">Find your photos</h5>
           <span class="text-muted small">Filter captures by athlete bib number or selfie</span>
         </div>
-        <div class="d-flex align-items-stretch align-items-sm-center gap-2 flex-column flex-sm-row justify-content-md-end flex-wrap">
-          <div class="input-group" style="max-width: 270px; width: 100%;">
+        <div class="d-flex align-items-stretch align-items-lg-center gap-2 flex-column flex-sm-row flex-lg-row justify-content-lg-end flex-wrap w-100 w-lg-auto">
+          <div class="input-group bib-search-group shadow-sm">
             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control border-start-0" id="bibSearchInput" placeholder="Bib search..." onkeyup="filterPhotosByBib(this.value)">
             <button class="btn btn-dark px-3 fw-semibold" type="button" onclick="filterPhotosByBib(document.getElementById('bibSearchInput').value)">Search</button>
           </div>
-          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap" style="height: 38px;" onclick="openSelfieSearchModal()">
+          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap w-100 w-sm-auto" style="height: 38px;" onclick="openSelfieSearchModal()">
             <i class="bi bi-camera-fill"></i>
             <span>Search by Selfie</span>
           </button>
-          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap" style="height: 38px;" onclick="openZebraLightbox(0); setLightboxLicense('full_gallery');">
+          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap w-100 w-sm-auto" style="height: 38px;" onclick="buyCompleteGalleryPackage();">
             <i class="bi bi-box-seam-fill"></i>
-            <span>Buy Complete Gallery · R450</span>
+            <span>Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}</span>
+          </button>
+          <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap d-none w-100 w-sm-auto" id="btnAddSearchResultsToCart" onclick="addSearchResultsToCart()" style="height: 38px;">
+            <i class="bi bi-bag-plus-fill"></i>
+            <span id="btnAddSearchResultsLabel">Add Found Photos to Basket</span>
           </button>
         </div>
       </div>
     </div>
+
+    @if(!($event->allow_individual_sales ?? true))
+      <!-- Exclusive Complete Gallery Only Banner -->
+      <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="background: linear-gradient(135deg, rgba(255, 138, 0, 0.15), rgba(245, 158, 11, 0.25)); border: 1px solid rgba(255, 138, 0, 0.4) !important;">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-box-seam-fill text-warning fs-3"></i>
+          <div>
+            <strong class="text-dark d-block">Exclusive Complete Gallery Collection</strong>
+            <small class="text-muted">This event is offered exclusively as a complete gallery package (R{{ number_format($event->full_gallery_price ?: 450, 0) }} for all {{ number_format($event->total_photos > 0 ? $event->total_photos : $photos->count()) }} photos). Individual photos are not sold separately.</small>
+          </div>
+        </div>
+        <button type="button" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm" onclick="buyCompleteGalleryPackage();">
+          <i class="bi bi-bag-check-fill me-1"></i> Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}
+        </button>
+      </div>
+    @endif
 
     <!-- GALLERY SUBHEADER & VIEW CONTROLS (Matching ZebraSnap Screenshot 2) -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
@@ -651,11 +743,18 @@
         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle" data-bs-toggle="dropdown">
           <i class="bi bi-funnel me-1"></i> Filters
         </button>
+        @php
+          $dynamicSubAlbums = $photos->pluck('sub_album')->filter()->unique()->values();
+        @endphp
         <ul class="dropdown-menu dropdown-menu-end shadow">
           <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosByBib('')">Show All Photos</a></li>
-          <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('Start Line')">Start Line</a></li>
-          <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('Course Action')">Course Action</a></li>
-          <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('Finish Arch')">Finish Arch</a></li>
+          @if($dynamicSubAlbums->isNotEmpty())
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem;">Albums / Stations</h6></li>
+            @foreach($dynamicSubAlbums as $subAlb)
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('{{ addslashes($subAlb) }}')">{{ $subAlb }}</a></li>
+            @endforeach
+          @endif
         </ul>
       </div>
     </div>
@@ -666,6 +765,7 @@
         <div class="event-photo-card" 
              data-index="{{ $loop->index }}" 
              data-bib="{{ $photo->bib_number ?? '' }}" 
+             data-subalbum="{{ $photo->sub_album ?? '' }}" 
              data-title="{{ $photo->title }}"
              onclick="openZebraLightbox({{ $loop->index }})">
           
@@ -683,13 +783,36 @@
             <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: asset('logo.png')) }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}" style="{{ ($photo->photographer?->avatar || $event->photographer?->avatar) ? '' : 'background: #0b1a29; padding: 2px; object-fit: contain;' }}">
           </div>
 
-          <!-- Top-Right: Price Tag (Matching Screenshot 2: e.g. R50.00) -->
-          <span class="card-price-pill">
-            R{{ number_format($photo->personal_price ?: 50, 2) }}
-          </span>
+          <!-- Top-Right: Price Tag (Matching Screenshot 2) -->
+          @if($event->allow_individual_sales ?? true)
+            <span class="card-price-pill">
+              R{{ number_format($photo->personal_price ?: 50, 2) }}
+            </span>
+          @else
+            <span class="card-price-pill" style="background: rgba(16, 185, 129, 0.95); font-size: 0.68rem; letter-spacing: 0.03em;">
+              <i class="bi bi-collection-fill me-1"></i> Gallery Pack
+            </span>
+          @endif
 
-          <!-- Bottom-Right Flag Button -->
-          <button class="card-flag-btn" type="button" title="Flag photo" onclick="event.stopPropagation(); alert('Photo reported for review.');">
+          @php
+            $isPhotoSaved = in_array($photo->id, $savedPhotoIds ?? []);
+          @endphp
+
+          <!-- Bottom-Left: Bookmark / Save Button (Always visible on card) -->
+          <button class="card-bookmark-btn {{ $isPhotoSaved ? 'active' : '' }}" 
+                  id="cardBookmarkBtn_{{ $photo->id }}"
+                  type="button" 
+                  title="{{ $isPhotoSaved ? 'Bookmarked in your collection' : 'Bookmark this photo' }}" 
+                  onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
+            <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
+          </button>
+
+          <!-- Bottom-Right Flag Button (Opens report modal) -->
+          <button class="card-flag-btn" 
+                  id="cardFlagBtn_{{ $photo->id }}"
+                  type="button" 
+                  title="Flag / Report photo" 
+                  onclick="event.stopPropagation(); openPhotoReportModal({{ $photo->id }}, '{{ addslashes($photo->title ?: 'Action Photo') }}');">
             <i class="bi bi-flag"></i>
           </button>
 
@@ -699,8 +822,12 @@
               {{ $photo->title ?: 'Event Action' }}
             </span>
             <div class="hover-action-row">
-              <button type="button" class="hover-circle-btn" title="Add to wishlist" onclick="event.stopPropagation(); toggleWishlist(this);">
-                <i class="bi bi-heart"></i>
+              <button type="button" 
+                      class="hover-circle-btn {{ $isPhotoSaved ? 'active text-warning' : '' }}" 
+                      id="hoverBookmarkBtn_{{ $photo->id }}"
+                      title="{{ $isPhotoSaved ? 'Bookmarked in your vault' : 'Bookmark photo' }}" 
+                      onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
+                <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
               </button>
               <button type="button" class="hover-circle-btn" title="Inspect Photo" onclick="event.stopPropagation(); openZebraLightbox({{ $loop->index }});">
                 <i class="bi bi-search"></i>
@@ -708,9 +835,15 @@
               <button type="button" class="hover-circle-btn" title="Share" onclick="event.stopPropagation(); shareSinglePhoto({{ $photo->id }});">
                 <i class="bi bi-share"></i>
               </button>
-              <button type="button" class="hover-cart-btn" title="Add to cart" onclick="event.stopPropagation(); quickAddToCart({{ $photo->id }});">
-                <i class="bi bi-cart3"></i>
-              </button>
+              @if($event->allow_individual_sales ?? true)
+                <button type="button" class="hover-cart-btn" title="Add to cart" onclick="event.stopPropagation(); quickAddToCart({{ $photo->id }});">
+                  <i class="bi bi-cart3"></i>
+                </button>
+              @else
+                <button type="button" class="hover-cart-btn" style="background: #10b981;" title="Complete Gallery Only · Buy Package" onclick="event.stopPropagation(); buyCompleteGalleryPackage();">
+                  <i class="bi bi-box-seam-fill"></i>
+                </button>
+              @endif
             </div>
             @if(!empty($photo->bib_number))
               <span class="badge bg-warning text-dark font-monospace mt-1">BIB #{{ $photo->bib_number }}</span>
@@ -725,6 +858,58 @@
         </div>
       @endforelse
     </div>
+
+    <!-- 4. DYNAMIC RELATED EVENTS SECTION -->
+    @if(isset($relatedEvents) && $relatedEvents->isNotEmpty())
+    <section class="mt-5 pt-4 border-top border-secondary border-opacity-25" id="relatedEventsSection">
+      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+          <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1 rounded-pill mb-2 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">EXPLORE MORE GALLERIES</span>
+          <h3 class="h4 fw-bold text-dark mb-0">Related Events</h3>
+        </div>
+        <a href="{{ route('events.index') }}" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">
+          View All Events <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+
+      <div class="row g-3 g-md-4">
+        @foreach($relatedEvents as $rel)
+          <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative" style="transition: transform 0.25s ease, box-shadow 0.25s ease; background: #fff;">
+              <a href="{{ route('events.show', $rel->slug) }}" class="text-decoration-none text-dark d-flex flex-column h-100">
+                <div class="position-relative overflow-hidden" style="aspect-ratio: 16 / 10; background: #0f172a;">
+                  <img src="{{ $rel->cover_image }}" alt="{{ $rel->title }}" class="w-100 h-100 object-fit-cover" loading="lazy">
+                  <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75 text-warning border border-warning" style="font-size: 0.68rem;">
+                    <i class="bi bi-images me-1"></i> {{ number_format($rel->total_photos) }}
+                  </span>
+                  @if(!empty($rel->category_name))
+                    <span class="position-absolute bottom-0 start-0 m-2 badge text-dark fw-bold" style="font-size: 0.68rem; background: #a3e635;">
+                      {{ $rel->category_name }}
+                    </span>
+                  @endif
+                </div>
+                <div class="card-body p-3 d-flex flex-column justify-content-between flex-grow-1">
+                  <div>
+                    <small class="text-muted d-block mb-1" style="font-size: 0.72rem;">
+                      <i class="bi bi-calendar3 me-1"></i> {{ $rel->event_date ? \Carbon\Carbon::parse($rel->event_date)->format('d M Y') : '' }}
+                    </small>
+                    <h5 class="card-title fw-bold fs-6 mb-1 text-truncate" title="{{ $rel->title }}">{{ $rel->title }}</h5>
+                    <p class="card-text text-muted small mb-2 text-truncate" style="font-size: 0.78rem;">
+                      <i class="bi bi-geo-alt me-1"></i> {{ $rel->location }}
+                    </p>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light mt-auto">
+                    <span class="fw-bold text-warning small">{{ $rel->starting_price ?? 'From R50' }}</span>
+                    <span class="btn btn-sm btn-outline-dark rounded-pill px-2 py-0" style="font-size: 0.72rem;">Open <i class="bi bi-arrow-up-right"></i></span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </section>
+    @endif
 
   </div>
 
@@ -750,6 +935,11 @@
             <!-- WaterMotion Live Toggle -->
             <button type="button" id="toggleWaterMotionBtn" class="btn btn-sm {{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'btn-outline-info' : 'btn-outline-secondary' }} rounded-pill px-2 py-0" style="font-size: 0.72rem; height: 26px;" onclick="toggleWaterMotion()" title="Toggle WaterMotion Dynamic Liquid Glass Lens">
               <i class="bi bi-droplet-half me-1"></i> WaterMotion: <span id="waterMotionStateText" class="fw-bold">{{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'ON' : 'OFF' }}</span>
+            </button>
+
+            <!-- Flag / Report Button in Modal -->
+            <button type="button" id="modalFlagPhotoBtn" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0 ms-md-1" style="font-size: 0.72rem; height: 26px;" onclick="openCurrentModalPhotoReport()" title="Report or flag this photo for review">
+              <i class="bi bi-flag me-1"></i> Flag Photo
             </button>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closePhotoInspectorModal()" aria-label="Close" style="cursor: pointer; opacity: 0.95; z-index: 1056; position: relative;"></button>
@@ -858,18 +1048,19 @@
               <!-- SPONSOR BANNER (Placement: Image Preview - Wide Banner Requested by Client) -->
               @php
                 $previewAd = \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first() ?: ($sponsorBanner ?? null);
+                $modalAdHref = (!empty($previewAd?->link_url) && $previewAd->link_url !== '/events') ? $previewAd->link_url : '/#latest-events';
               @endphp
-              <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 60px;">
+              <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; max-width: 100%;">
                 @if($previewAd)
-                  <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-flex align-items-center justify-content-center w-100 position-relative text-decoration-none p-1" style="display: flex;">
-                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="max-width: 100%; max-height: 90px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto; border-radius: 6px;">
+                  <a href="{{ $modalAdHref }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
+                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
                     @if(!empty($previewAd->badge_text))
-                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2;">
+                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
                         {{ $previewAd->badge_text }}
                       </span>
                     @endif
                     @if(!empty($previewAd->title))
-                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2;">
+                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
                         <strong>{{ $previewAd->title }}</strong>
                         @if(!empty($previewAd->subtitle))
                           <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
@@ -989,14 +1180,22 @@
                 </div>
 
                 <button class="btn btn-warning w-100 py-3 fw-bold rounded-pill text-dark d-flex align-items-center justify-content-center gap-2 shadow" id="btnPurchaseModal" onclick="triggerPurchase()">
-                  <i class="bi bi-bag-check-fill fs-5"></i> 
-                  <span>Purchase Hi-Res</span>
+                  <i class="bi bi-cart-plus-fill fs-5" id="btnPurchaseModalIcon"></i> 
+                  <span id="btnPurchaseModalText">Add to Cart</span>
                 </button>
-                <button type="button" class="btn btn-outline-secondary rounded-pill w-100 py-2 mt-2 text-white" onclick="closePhotoInspectorModal()" style="border-color: rgba(255,255,255,0.25); font-size: 0.85rem;">
-                  <i class="bi bi-x-circle me-1"></i> Close / Cancel
-                </button>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                  <button type="button" class="btn btn-outline-warning rounded-pill flex-fill py-2 text-decoration-none text-center" id="btnModalSavePhoto" onclick="toggleModalSavePhoto()" style="font-size: 0.85rem; font-weight: 600;">
+                    <i class="bi bi-bookmark-star me-1" id="btnModalSavePhotoIcon"></i> <span id="btnModalSavePhotoText">Bookmark Photo</span>
+                  </button>
+                  <a href="{{ url('/cart') }}" class="btn btn-outline-warning rounded-pill flex-fill py-2 text-decoration-none text-center" style="font-size: 0.85rem; font-weight: 600;">
+                    <i class="bi bi-bag-check me-1"></i> View Cart
+                  </a>
+                  <button type="button" class="btn btn-outline-secondary rounded-pill flex-fill py-2 text-white" onclick="closePhotoInspectorModal()" style="border-color: rgba(255,255,255,0.25); font-size: 0.85rem;">
+                    <i class="bi bi-x-circle me-1"></i> Keep Browsing
+                  </button>
+                </div>
                 <small class="text-center d-block mt-2" style="font-size: 0.75rem; color: #cbd5e1;">
-                  Licensed purchase unlocks full resolution without watermarks.
+                  Licensed purchase unlocks full resolution clean master without watermarks.
                 </small>
               </div>
 
@@ -1101,6 +1300,59 @@
         </div>
       </div>
     </div>
+  <!-- 7. PHOTO REPORT / FLAG MODAL -->
+  <div class="modal fade" id="photoReportModal" tabindex="-1" aria-labelledby="photoReportModalTitle" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="background: #081426; color: #fff; border-radius: 18px; border: 1px solid #1c354d !important;">
+        <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: #040c14;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-flag-fill text-warning fs-5"></i>
+            <h5 class="modal-title fs-6 fw-bold text-white mb-0" id="photoReportModalTitle">Report Photo for Review</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="photoReportForm" onsubmit="submitPhotoReport(event)">
+          <input type="hidden" id="reportPhotoId" value="">
+          <div class="modal-body p-4">
+            <p class="small text-white-50 mb-3">
+              Please specify the issue regarding <strong class="text-white" id="reportPhotoTitle">this photo</strong>. PhotoX moderators review each report promptly.
+            </p>
+            <div class="d-flex flex-column gap-2 mb-3">
+              <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03); cursor: pointer;">
+                <input type="radio" name="report_reason" value="privacy" checked style="accent-color: #ff8a00;">
+                <span class="small">Privacy request (I am in this photo and request removal)</span>
+              </label>
+              <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03); cursor: pointer;">
+                <input type="radio" name="report_reason" value="inappropriate" style="accent-color: #ff8a00;">
+                <span class="small">Inappropriate or offensive content</span>
+              </label>
+              <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03); cursor: pointer;">
+                <input type="radio" name="report_reason" value="copyright" style="accent-color: #ff8a00;">
+                <span class="small">Copyright or intellectual property infringement</span>
+              </label>
+              <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03); cursor: pointer;">
+                <input type="radio" name="report_reason" value="incorrect_bib" style="accent-color: #ff8a00;">
+                <span class="small">Incorrect BIB number or event tagging</span>
+              </label>
+              <label class="d-flex align-items-center gap-2 p-2 rounded border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03); cursor: pointer;">
+                <input type="radio" name="report_reason" value="other" style="accent-color: #ff8a00;">
+                <span class="small">Other problem</span>
+              </label>
+            </div>
+            <div class="mb-2">
+              <label for="reportDetails" class="form-label small text-white-50">Additional Details (Optional)</label>
+              <textarea class="form-control text-white border-secondary" id="reportDetails" rows="2" placeholder="Briefly describe the issue..." style="background: #040c14; border-color: #1e3e5c; font-size: 0.85rem;"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3 d-flex justify-content-between" style="background: #040c14;">
+            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-4" id="btnSubmitReport">
+              <i class="bi bi-send-fill me-1"></i> Submit Report
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -1129,9 +1381,11 @@
 
   // Dynamic License Selection (Matching Client Approved Reference)
   let currentLicenseChoice = 'personal';
+  let currentSelectedLicense = 'personal';
 
   function updateModalPrice(type) {
     currentLicenseChoice = type;
+    currentSelectedLicense = type;
     const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
     const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
     const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
@@ -1157,13 +1411,10 @@
       actionPriceEl.textContent = `R${chosenPrice}`;
     }
 
-    const btnPurchase = document.getElementById('btnPurchaseModal');
-    if (btnPurchase) {
-      btnPurchase.innerHTML = `<i class="bi bi-bag-check-fill fs-5"></i> <span>${buttonLabel}</span>`;
-    }
-
     const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);
     if (radio) radio.checked = true;
+
+    updateEventAddToCartButtonState();
   }
 
   function setLightboxLicense(type) {
@@ -1268,6 +1519,7 @@
     const modalEl = document.getElementById('photoInspectorModal');
     const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
     modalInstance.show();
+    updateModalSaveButtonState();
     setTimeout(syncPreviewAdWidth, 250);
   }
 
@@ -1319,26 +1571,21 @@
   }
 
   function syncPreviewAdWidth() {
-    const photoImg = document.getElementById('modalPhotoImg');
     const adWrapper = document.getElementById('modalPreviewAdWrapper');
     const secInfo = document.getElementById('modalSecurityInfoBar');
 
-    if (!photoImg) return;
-
-    const w = photoImg.clientWidth || photoImg.offsetWidth;
-    if (w && w >= 200) {
-      if (adWrapper) {
-        adWrapper.style.maxWidth = w + 'px';
-        adWrapper.style.width = '100%';
-        adWrapper.style.marginLeft = 'auto';
-        adWrapper.style.marginRight = 'auto';
-      }
-      if (secInfo) {
-        secInfo.style.maxWidth = Math.max(w, 520) + 'px';
-        secInfo.style.width = '100%';
-        secInfo.style.marginLeft = 'auto';
-        secInfo.style.marginRight = 'auto';
-      }
+    // Keep banner full width of modal preview container (requested by client for portrait & landscape)
+    if (adWrapper) {
+      adWrapper.style.maxWidth = '100%';
+      adWrapper.style.width = '100%';
+      adWrapper.style.marginLeft = 'auto';
+      adWrapper.style.marginRight = 'auto';
+    }
+    if (secInfo) {
+      secInfo.style.maxWidth = '100%';
+      secInfo.style.width = '100%';
+      secInfo.style.marginLeft = 'auto';
+      secInfo.style.marginRight = 'auto';
     }
   }
 
@@ -1506,7 +1753,8 @@
     cards.forEach(card => {
       const bib = (card.getAttribute('data-bib') || '').toLowerCase();
       const title = (card.getAttribute('data-title') || '').toLowerCase();
-      if (!cleanQuery || bib.includes(cleanQuery) || title.includes(cleanQuery)) {
+      const subalbum = (card.getAttribute('data-subalbum') || '').toLowerCase();
+      if (!cleanQuery || bib.includes(cleanQuery) || title.includes(cleanQuery) || subalbum.includes(cleanQuery)) {
         card.style.display = '';
         visibleCount++;
       } else {
@@ -1515,6 +1763,58 @@
     });
 
     document.getElementById('photoCountDisplay').textContent = visibleCount;
+
+    // Dynamic "Add Found Photos to Basket" button update
+    const btnFound = document.getElementById('btnAddSearchResultsToCart');
+    const lblFound = document.getElementById('btnAddSearchResultsLabel');
+    if (btnFound && lblFound) {
+      if (cleanQuery && visibleCount > 0) {
+        btnFound.classList.remove('d-none');
+        btnFound.classList.remove('btn-secondary');
+        btnFound.classList.add('btn-success');
+        lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${visibleCount} Found Photo${visibleCount > 1 ? 's' : ''} to Basket · R${(visibleCount * 75).toFixed(2)}`;
+      } else {
+        btnFound.classList.add('d-none');
+      }
+    }
+  }
+
+  function addSearchResultsToCart() {
+    const visibleCards = [...document.querySelectorAll('.event-photo-card')].filter(card => card.style.display !== 'none');
+    if (!visibleCards.length || !window.PhotoXCart) return;
+
+    let addedCount = 0;
+    visibleCards.forEach(card => {
+      const photoId = card.getAttribute('data-photo-id');
+      const photo = currentEventPhotos.find(p => String(p.id) === String(photoId));
+      if (photo) {
+        const item = {
+          id: String(photo.id),
+          title: photo.title || `Photo #${photo.id}`,
+          price: 75.00,
+          licenseType: 'personal',
+          licenseName: 'Personal Digital License',
+          image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
+          eventTitle: '{{ $event->title ?? "Event Gallery" }}',
+          eventSlug: '{{ $event->slug ?? "" }}',
+          photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+        };
+        const res = window.PhotoXCart.addItem(item);
+        if (res.added) addedCount++;
+      }
+    });
+
+    const btnFound = document.getElementById('btnAddSearchResultsToCart');
+    const lblFound = document.getElementById('btnAddSearchResultsLabel');
+    if (btnFound && lblFound) {
+      btnFound.classList.remove('btn-success');
+      btnFound.classList.add('btn-secondary');
+      lblFound.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Added to Basket!';
+    }
+
+    if (typeof showToast === 'function') {
+      showToast(`✓ Added ${addedCount > 0 ? addedCount : visibleCards.length} athlete photos to your basket!`);
+    }
   }
 
   function filterPhotosBySubAlbum(albumName) {
@@ -1530,21 +1830,399 @@
     }
   }
 
-  function toggleWishlist(btn) {
-    const icon = btn.querySelector('i');
-    if (icon.classList.contains('bi-heart')) {
-      icon.className = 'bi bi-heart-fill text-danger';
+  window.userSavedPhotoIds = new Set(@json($savedPhotoIds ?? []));
+
+  function syncPhotoBookmarkButtons(photoId) {
+    const isSaved = window.userSavedPhotoIds && window.userSavedPhotoIds.has(photoId);
+
+    // 1. Bottom-left card bookmark button
+    const cardBtn = document.getElementById('cardBookmarkBtn_' + photoId);
+    if (cardBtn) {
+      if (isSaved) {
+        cardBtn.classList.add('active');
+        cardBtn.innerHTML = '<i class="bi bi-bookmark-star-fill text-warning"></i>';
+        cardBtn.title = 'Bookmarked in your vault';
+      } else {
+        cardBtn.classList.remove('active');
+        cardBtn.innerHTML = '<i class="bi bi-bookmark-star"></i>';
+        cardBtn.title = 'Bookmark this photo';
+      }
+    }
+
+    // 2. Hover overlay bookmark button
+    const hoverBtn = document.getElementById('hoverBookmarkBtn_' + photoId);
+    if (hoverBtn) {
+      if (isSaved) {
+        hoverBtn.classList.add('active', 'text-warning');
+        hoverBtn.innerHTML = '<i class="bi bi-bookmark-star-fill text-warning"></i>';
+        hoverBtn.title = 'Bookmarked in your vault';
+      } else {
+        hoverBtn.classList.remove('active', 'text-warning');
+        hoverBtn.innerHTML = '<i class="bi bi-bookmark-star"></i>';
+        hoverBtn.title = 'Bookmark photo';
+      }
+    }
+
+    // 3. Modal bookmark button
+    updateModalSaveButtonState();
+  }
+
+  function toggleWishlist(photoId, btn) {
+    if (!photoId) return;
+    const wasSaved = window.userSavedPhotoIds && window.userSavedPhotoIds.has(photoId);
+
+    // Optimistic toggle
+    if (wasSaved) {
+      window.userSavedPhotoIds.delete(photoId);
     } else {
-      icon.className = 'bi bi-heart';
+      window.userSavedPhotoIds.add(photoId);
+    }
+    syncPhotoBookmarkButtons(photoId);
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    fetch('/api/photos/' + photoId + '/toggle-save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      }
+    })
+    .then(r => {
+      if (r.status === 401) {
+        window.location.href = '{{ route("login") }}';
+        return;
+      }
+      return r.json();
+    })
+    .then(data => {
+      if (!data || !data.success) {
+        // Revert
+        if (wasSaved) {
+          window.userSavedPhotoIds.add(photoId);
+        } else {
+          window.userSavedPhotoIds.delete(photoId);
+        }
+        syncPhotoBookmarkButtons(photoId);
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(data.saved ? '✓ Photo bookmarked to your Saved Photos collection!' : 'Photo removed from Saved Photos.');
+        }
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (wasSaved) {
+        window.userSavedPhotoIds.add(photoId);
+      } else {
+        window.userSavedPhotoIds.delete(photoId);
+      }
+      syncPhotoBookmarkButtons(photoId);
+    });
+  }
+
+  function toggleSaveEvent(eventId, btn) {
+    if (!eventId) return;
+    const icon = btn.querySelector('i');
+    const textSpan = btn.querySelector('.btn-text');
+    const wasSaved = btn.classList.contains('active') || (icon && icon.classList.contains('bi-bookmark-star-fill'));
+
+    // Optimistic toggle
+    if (wasSaved) {
+      btn.classList.remove('active', 'btn-warning', 'text-dark', 'fw-bold');
+      btn.classList.add('btn-outline-warning', 'text-warning');
+      if (icon) icon.className = 'bi bi-bookmark-star me-1';
+      if (textSpan) textSpan.textContent = 'Follow Event';
+    } else {
+      btn.classList.add('active', 'btn-warning', 'text-dark', 'fw-bold');
+      btn.classList.remove('btn-outline-warning', 'text-warning');
+      if (icon) icon.className = 'bi bi-bookmark-star-fill text-dark me-1';
+      if (textSpan) textSpan.textContent = 'Followed';
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    fetch('/api/events/' + eventId + '/toggle-save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      }
+    })
+    .then(r => {
+      if (r.status === 401) {
+        window.location.href = '{{ route("login") }}';
+        return;
+      }
+      return r.json();
+    })
+    .then(data => {
+      if (!data || !data.success) {
+        if (wasSaved) {
+          btn.classList.add('active', 'btn-warning', 'text-dark', 'fw-bold');
+          btn.classList.remove('btn-outline-warning', 'text-warning');
+          if (icon) icon.className = 'bi bi-bookmark-star-fill text-dark me-1';
+          if (textSpan) textSpan.textContent = 'Followed';
+        } else {
+          btn.classList.remove('active', 'btn-warning', 'text-dark', 'fw-bold');
+          btn.classList.add('btn-outline-warning', 'text-warning');
+          if (icon) icon.className = 'bi bi-bookmark-star me-1';
+          if (textSpan) textSpan.textContent = 'Follow Event';
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(data.saved ? '✓ Event added to your Followed Events!' : 'Event removed from Followed Events.');
+        }
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    });
+  }
+
+  function toggleModalSavePhoto() {
+    if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
+    const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    const btn = document.getElementById('btnModalSavePhoto');
+    toggleWishlist(currentPhoto.id, btn);
+  }
+
+  function updateModalSaveButtonState() {
+    if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
+    const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    const btn = document.getElementById('btnModalSavePhoto');
+    const text = document.getElementById('btnModalSavePhotoText');
+    const icon = document.getElementById('btnModalSavePhotoIcon');
+    if (!btn || !text || !icon) return;
+
+    const isSaved = window.userSavedPhotoIds && window.userSavedPhotoIds.has(currentPhoto.id);
+    if (isSaved) {
+      btn.classList.remove('btn-outline-warning');
+      btn.classList.add('btn-warning', 'text-dark', 'fw-bold');
+      icon.className = 'bi bi-bookmark-star-fill text-dark me-1';
+      text.textContent = 'Bookmarked';
+    } else {
+      btn.classList.remove('btn-warning', 'text-dark', 'fw-bold');
+      btn.classList.add('btn-outline-warning');
+      icon.className = 'bi bi-bookmark-star me-1';
+      text.textContent = 'Bookmark Photo';
+    }
+  }
+
+  function openPhotoReportModal(photoId, photoTitle) {
+    document.getElementById('reportPhotoId').value = photoId;
+    document.getElementById('reportPhotoTitle').textContent = photoTitle ? `"${photoTitle}"` : `#${photoId}`;
+    document.getElementById('reportDetails').value = '';
+
+    const modalEl = document.getElementById('photoReportModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+
+  function openCurrentModalPhotoReport() {
+    if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
+    const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    openPhotoReportModal(currentPhoto.id, currentPhoto.title || 'Selected Photo');
+  }
+
+  function submitPhotoReport(e) {
+    e.preventDefault();
+    const photoId = document.getElementById('reportPhotoId').value;
+    const reason = document.querySelector('input[name="report_reason"]:checked')?.value || 'other';
+    const details = document.getElementById('reportDetails').value;
+    const btnSubmit = document.getElementById('btnSubmitReport');
+
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    fetch('/api/photos/' + photoId + '/flag', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        reason: reason,
+        details: details
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = '<i class="bi bi-send-fill me-1"></i> Submit Report';
+
+      const modalEl = document.getElementById('photoReportModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (data.success) {
+        // Visual indicator on card flag button
+        const cardFlagBtn = document.getElementById('cardFlagBtn_' + photoId);
+        if (cardFlagBtn) {
+          cardFlagBtn.classList.add('flagged');
+          cardFlagBtn.innerHTML = '<i class="bi bi-flag-fill text-danger"></i>';
+          cardFlagBtn.title = 'Reported for review';
+        }
+        if (typeof showToast === 'function') {
+          showToast('✓ ' + (data.message || 'Photo reported for review.'));
+        } else {
+          alert('Thank you. Photo #' + photoId + ' has been reported for review.');
+        }
+      } else {
+        alert(data.message || 'Could not submit report.');
+      }
+    })
+    .catch(err => {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = '<i class="bi bi-send-fill me-1"></i> Submit Report';
+      console.error(err);
+      alert('Error submitting report. Please try again.');
+    });
+  }
+
+  function updateEventAddToCartButtonState() {
+    if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
+    const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    const btn = document.getElementById('btnPurchaseModal');
+    const text = document.getElementById('btnPurchaseModalText');
+    const icon = document.getElementById('btnPurchaseModalIcon');
+    if (!btn || !text || !icon) return;
+
+    const license = currentSelectedLicense || 'personal';
+    const isAlreadyAdded = window.PhotoXCart && window.PhotoXCart.hasItem(currentPhoto.id, license);
+
+    if (isAlreadyAdded) {
+      btn.classList.remove('btn-warning');
+      btn.classList.add('btn-success');
+      icon.className = 'bi bi-check-circle-fill fs-5';
+      text.textContent = 'Already in Cart';
+    } else {
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-warning');
+      icon.className = 'bi bi-cart-plus-fill fs-5';
+      text.textContent = 'Add to Cart';
+    }
+  }
+
+  function buyCompleteGalleryPackage() {
+    const fullPrice = '{{ number_format($event->full_gallery_price ?: 450, 2, '.', '') }}';
+    const item = {
+      id: 'gallery_{{ $event->id }}',
+      title: 'Complete Gallery: {{ addslashes($event->title) }} (All {{ $photos->count() }} Photos)',
+      price: fullPrice,
+      licenseType: 'full_gallery',
+      licenseName: 'Complete Gallery Digital Package',
+      image: '{{ $event->cover_image ?: ($photos->first()?->file_path ?: asset("logo.png")) }}',
+      eventTitle: '{{ addslashes($event->title ?? "Event Gallery") }}',
+      eventSlug: '{{ $event->slug ?? "" }}',
+      photographer: '{{ addslashes($event->photographer->name ?? "PhotoX Creator") }}'
+    };
+
+    if (window.PhotoXCart) {
+      const res = window.PhotoXCart.addItem(item);
+      if (res.added) {
+        if (typeof showToast === 'function') {
+          showToast(`✓ Complete Gallery added to cart (R${item.price})`);
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(`ℹ Complete Gallery is already in your cart!`);
+        }
+      }
+      setTimeout(() => {
+        window.location.href = '/cart';
+      }, 400);
+    } else {
+      window.location.href = '/cart';
     }
   }
 
   function quickAddToCart(photoId) {
-    alert('Photo #' + photoId + ' added to cart. Clean high-resolution unwatermarked file ready for download upon checkout.');
+    let photo = (currentEventPhotos || []).find(p => String(p.id) === String(photoId));
+    if (!photo) {
+      photo = { id: photoId, personal_price: 75 };
+    }
+
+    const item = {
+      id: photo.id,
+      title: photo.title || `Photo #${photo.id}`,
+      price: parseFloat(photo.personal_price || 75).toFixed(2),
+      licenseType: 'personal',
+      licenseName: 'Personal Digital License',
+      image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
+      eventTitle: '{{ $event->title ?? "Event Gallery" }}',
+      eventSlug: '{{ $event->slug ?? "" }}',
+      photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+    };
+
+    if (!window.PhotoXCart) return;
+    const res = window.PhotoXCart.addItem(item);
+
+    if (res.added) {
+      const btn = document.querySelector(`.hover-cart-btn[onclick*="${photoId}"]`);
+      if (btn) {
+        btn.innerHTML = '<i class="bi bi-check2-circle text-success"></i>';
+        btn.classList.add('bg-white');
+      }
+      if (typeof showToast === 'function') {
+        showToast(`✓ Photo #${photo.id} added to cart (R${item.price})`);
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(`ℹ Photo #${photo.id} is already in your cart!`);
+      }
+    }
   }
 
   function triggerPurchase() {
-    alert('License checkout initialized. In production, this completes payment and delivers the original uncompressed master without watermark.');
+    if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
+    const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    const license = currentSelectedLicense || 'personal';
+
+    const licenseNames = {
+      'personal': 'Personal Digital License',
+      'commercial': 'Commercial Editorial License',
+      'selfie': 'Selfie / Athlete Bundle',
+      'full_gallery': 'Full Gallery Digital Package'
+    };
+
+    const prices = {
+      'personal': parseFloat(currentPhoto.personal_price || 75).toFixed(2),
+      'commercial': parseFloat(currentPhoto.commercial_price || 350).toFixed(2),
+      'selfie': '150.00',
+      'full_gallery': '450.00'
+    };
+
+    const item = {
+      id: currentPhoto.id,
+      title: currentPhoto.title || `Photo #${currentPhoto.id}`,
+      price: prices[license] || '75.00',
+      licenseType: license,
+      licenseName: licenseNames[license] || 'Personal License',
+      image: currentPhoto.preview_url || currentPhoto.image_path || `/protected-photo/${currentPhoto.id}`,
+      eventTitle: '{{ $event->title ?? "Event Gallery" }}',
+      eventSlug: '{{ $event->slug ?? "" }}',
+      photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+    };
+
+    if (!window.PhotoXCart) return;
+    const res = window.PhotoXCart.addItem(item);
+    updateEventAddToCartButtonState();
+
+    if (res.added) {
+      if (typeof showToast === 'function') {
+        showToast(`✓ Photo #${currentPhoto.id} added to cart (R${item.price})`);
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(`ℹ This photo (${licenseNames[license]}) is already in your cart!`);
+      }
+    }
   }
 
   function shareEvent() {
@@ -1654,6 +2332,16 @@
         }
       });
       document.getElementById('photoCountDisplay').textContent = matchCount;
+
+      // Reveal Add Found Photos to Basket button
+      const btnFound = document.getElementById('btnAddSearchResultsToCart');
+      const lblFound = document.getElementById('btnAddSearchResultsLabel');
+      if (btnFound && lblFound) {
+        btnFound.classList.remove('d-none');
+        btnFound.classList.remove('btn-secondary');
+        btnFound.classList.add('btn-success');
+        lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${matchCount} Matched Photos · R150 (Selfie Bundle)`;
+      }
     }, 1400);
   }
 </script>

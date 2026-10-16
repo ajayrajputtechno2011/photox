@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Event;
+use App\Models\EventPhoto;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -12,14 +14,15 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Event::with('category')->latest('event_date');
+        $query = Event::with(['category', 'photographer'])->latest('event_date');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
-                    ->orWhere('category_name', 'like', "%{$search}%");
+                    ->orWhere('category_name', 'like', "%{$search}%")
+                    ->orWhere('photographer_name', 'like', "%{$search}%");
             });
         }
 
@@ -51,8 +54,9 @@ class EventController extends Controller
     public function create()
     {
         $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $photographers = User::where('role', 'photographer')->orderBy('name')->get();
 
-        return view('admin.add-event', compact('categories'));
+        return view('admin.add-event', compact('categories', 'photographers'));
     }
 
     public function store(Request $request)
@@ -60,6 +64,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
+            'photographer_id' => 'nullable|exists:users,id',
             'sport' => 'nullable|string|max:100',
             'location' => 'required|string|max:255',
             'event_date' => 'nullable|date',
@@ -87,6 +92,11 @@ class EventController extends Controller
             }
         }
 
+        $photographer = null;
+        if (! empty($validated['photographer_id'])) {
+            $photographer = User::find($validated['photographer_id']);
+        }
+
         $slug = Str::slug($validated['title']);
         $baseSlug = $slug;
         $counter = 1;
@@ -98,6 +108,8 @@ class EventController extends Controller
         Event::create([
             'title' => $validated['title'],
             'slug' => $slug,
+            'photographer_id' => $photographer?->id,
+            'photographer_name' => $photographer?->name,
             'category_id' => $validated['category_id'] ?? null,
             'category_name' => $categoryName ?? 'Sport',
             'location' => $validated['location'],
@@ -111,7 +123,88 @@ class EventController extends Controller
             'status' => $validated['status'],
         ]);
 
-        return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
+        return redirect()->route('admin.events.index')->with('success', 'Event created successfully with assigned photographer watermark.');
+    }
+
+    public function edit(Event $event)
+    {
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $photographers = User::where('role', 'photographer')->orderBy('name')->get();
+
+        return view('admin.add-event', compact('event', 'categories', 'photographers'));
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'photographer_id' => 'nullable|exists:users,id',
+            'sport' => 'nullable|string|max:100',
+            'location' => 'required|string|max:255',
+            'event_date' => 'nullable|date',
+            'starting_price' => 'nullable|string|max:50',
+            'total_photos' => 'nullable|integer',
+            'photographers_count' => 'nullable|integer',
+            'description' => 'nullable|string',
+            'cover_image' => 'nullable|string|max:1000',
+            'cover_file' => 'nullable|image|max:10240',
+            'is_featured' => 'nullable|boolean',
+            'status' => 'required|in:published,draft,archived',
+        ]);
+
+        $coverImage = $event->cover_image;
+        if ($request->hasFile('cover_file')) {
+            $path = $request->file('cover_file')->store('events', 'public');
+            $coverImage = '/storage/'.$path;
+        } elseif (! empty($validated['cover_image'])) {
+            $coverImage = $validated['cover_image'];
+        }
+
+        $categoryName = $validated['sport'] ?? $event->category_name;
+        if (! empty($validated['category_id'])) {
+            $cat = Category::find($validated['category_id']);
+            if ($cat) {
+                $categoryName = $cat->name;
+            }
+        }
+
+        $photographer = null;
+        if (! empty($validated['photographer_id'])) {
+            $photographer = User::find($validated['photographer_id']);
+        }
+
+        $oldPhotographerId = $event->photographer_id;
+
+        $event->update([
+            'title' => $validated['title'],
+            'photographer_id' => $photographer?->id,
+            'photographer_name' => $photographer?->name,
+            'category_id' => $validated['category_id'] ?? null,
+            'category_name' => $categoryName ?? 'Sport',
+            'location' => $validated['location'],
+            'event_date' => $validated['event_date'] ?? $event->event_date,
+            'starting_price' => $validated['starting_price'] ?? $event->starting_price,
+            'total_photos' => $validated['total_photos'] ?? $event->total_photos,
+            'photographers_count' => $validated['photographers_count'] ?? $event->photographers_count,
+            'description' => $validated['description'] ?? null,
+            'cover_image' => $coverImage,
+            'is_featured' => $request->has('is_featured'),
+            'status' => $validated['status'],
+        ]);
+
+        // If photographer changed, invalidate cached watermarked preview images
+        if ($oldPhotographerId !== ($photographer?->id)) {
+            $photoIds = EventPhoto::where('event_id', $event->id)->pluck('id');
+            foreach ($photoIds as $pId) {
+                $wmPath = storage_path('app/public/uploads/demo/watermarked/'.$pId.'_wm.jpg');
+                if (file_exists($wmPath)) {
+                    @unlink($wmPath);
+                }
+            }
+        }
+
+        return redirect()->route('admin.events.index')->with('success', 'Event updated successfully.');
     }
 
     public function destroy(Event $event)

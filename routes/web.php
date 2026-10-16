@@ -329,6 +329,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/events', [AdminEventController::class, 'index'])->name('admin.events.index');
         Route::get('/add-event', [AdminEventController::class, 'create'])->name('admin.events.create');
         Route::post('/events', [AdminEventController::class, 'store'])->name('admin.events.store');
+        Route::get('/events/{event}/edit', [AdminEventController::class, 'edit'])->name('admin.events.edit');
+        Route::put('/events/{event}', [AdminEventController::class, 'update'])->name('admin.events.update');
         Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('admin.events.destroy');
 
         // Photographers Management with dynamic membership overrides

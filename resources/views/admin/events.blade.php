@@ -190,7 +190,7 @@
 								<tr>
 									<th>Event</th>
 									<th>Sport / date</th>
-									<th>Photographers</th>
+									<th>Photographer / Watermark</th>
 									<th>Photos</th>
 									<th>Pricing</th>
 									<th>Status</th>
@@ -214,7 +214,13 @@
 											<small class="d-block text-muted">{{ $event->event_date ? $event->event_date->format('d M Y') : 'Date TBD' }}</small>
 										</td>
 										<td>
-											<strong>{{ $event->photographers_count }} assigned</strong>
+											@if($event->photographer)
+												<strong class="text-primary d-block">{{ $event->photographer->name }}</strong>
+												<small class="badge bg-warning text-dark font-monospace" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>Custom Watermark</small>
+											@else
+												<span class="text-muted d-block">PhotoX Platform</span>
+												<small class="badge bg-light text-secondary border" style="font-size: 0.68rem;">Admin Watermark</small>
+											@endif
 										</td>
 										<td>
 											<strong>{{ number_format($event->total_photos) }} photos</strong>
@@ -236,6 +242,7 @@
 										</td>
 										<td>
 											<div class="ops-actions">
+												<a aria-label="Edit event" class="row-action text-primary" href="{{ route('admin.events.edit', $event) }}" title="Edit event & photographer"><i class="bi bi-pencil-square"></i></a>
 												<a aria-label="View on site" class="row-action" href="/events" target="_blank" title="View on site"><i class="bi bi-box-arrow-up-right"></i></a>
 												<form action="{{ route('admin.events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete \'{{ $event->title }}\'?');">
 													@csrf

@@ -696,6 +696,156 @@
       transform: scale(1.15);
       box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.6);
     }
+
+    /* ========================================================
+       RESPONSIVE & MOBILE-FIRST STYLES (Studio & Layout)
+       ======================================================== */
+    @media (max-width: 991px) {
+      body.page-photographer-gallery .photographer-shell {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding-top: 14px !important;
+        padding-bottom: 30px !important;
+      }
+      .photographer-sidebar {
+        padding: 16px 14px !important;
+        border-radius: 14px !important;
+      }
+      .photographer-sidebar .workspace-greeting {
+        margin-bottom: 10px !important;
+      }
+      .photographer-sidebar h1 {
+        font-size: 1.5rem !important;
+        line-height: 1 !important;
+        margin: 6px 0 12px !important;
+      }
+      .workspace-nav {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+      .workspace-nav-link {
+        flex: 1 1 calc(33.333% - 6px) !important;
+        min-width: 120px !important;
+        padding: 8px 10px !important;
+        font-size: 0.82rem !important;
+        border-radius: 8px !important;
+        justify-content: center !important;
+      }
+      .workspace-side-note {
+        display: none !important;
+      }
+      .workspace-logout {
+        margin-top: 10px !important;
+        padding: 8px 12px !important;
+        font-size: 0.82rem !important;
+        display: inline-block !important;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .workspace-topbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+      .workspace-topbar .d-flex {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      .workspace-topbar .btn {
+        width: 100% !important;
+        text-align: center !important;
+        justify-content: center !important;
+        font-size: 0.82rem !important;
+      }
+
+      .wm-studio-container {
+        padding: 14px 10px !important;
+        border-radius: 14px !important;
+      }
+      .wm-inner-card {
+        padding: 14px 10px !important;
+      }
+
+      .wm-top-tabs {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+        padding: 4px !important;
+        border-radius: 12px !important;
+      }
+      .wm-top-tab {
+        min-width: 0 !important;
+        padding: 8px 6px !important;
+        font-size: 0.78rem !important;
+        text-align: center !important;
+      }
+      .wm-top-tab span {
+        line-height: 1.2 !important;
+        white-space: normal !important;
+      }
+      .wm-top-tab .tab-status {
+        font-size: 0.65rem !important;
+      }
+
+      .preview-mode-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+      .preview-mode-bar .btn-group {
+        width: 100% !important;
+        display: flex !important;
+      }
+      .preview-mode-bar .btn-group .btn {
+        flex: 1 1 50% !important;
+        font-size: 0.75rem !important;
+        padding: 6px 4px !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
+      }
+      .preview-mode-badge {
+        text-align: center !important;
+        width: 100% !important;
+      }
+
+      .wm-preview-wrapper {
+        border-radius: 10px !important;
+        max-height: 380px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .workspace-nav-link {
+        flex: 1 1 calc(50% - 6px) !important;
+        min-width: 100px !important;
+        font-size: 0.78rem !important;
+      }
+      .wm-type-btn {
+        font-size: 0.76rem !important;
+        padding: 8px 4px !important;
+        gap: 4px !important;
+      }
+      .wm-type-btn i {
+        font-size: 0.9rem !important;
+      }
+      .wm-density-btn {
+        padding: 5px 3px !important;
+        font-size: 0.72rem !important;
+      }
+      .wm-density-btn strong {
+        font-size: 0.72rem !important;
+      }
+      .wm-density-btn small {
+        font-size: 0.62rem !important;
+      }
+      .btn-save-settings {
+        font-size: 0.88rem !important;
+        padding: 10px 14px !important;
+      }
+    }
   </style>
 </head>
 <body class="page-photographer-gallery">
@@ -827,7 +977,7 @@
           <!-- ============================================== -->
           <!-- LEFT COLUMN: CONTROLS & SETTINGS               -->
           <!-- ============================================== -->
-          <div class="col-lg-5">
+          <div class="col-lg-5 order-2 order-lg-1">
             <!-- TAB 1: PRE-PURCHASE WATERMARK SETTINGS -->
             <div id="tabPanelWatermark">
               <!-- Enable watermark toggle -->
@@ -849,32 +999,32 @@
                   <span class="badge bg-dark text-warning border border-warning font-monospace px-2 py-1" id="activePatternBadge">PhotoX Pro Grid</span>
                 </div>
                 <div class="row g-2 mb-2">
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'fotto_pro' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternFottoProBtn" onclick="setWatermarkPattern('fotto_pro')" title="PhotoX Pro Grid">
                       <i class="bi bi-shield-shaded me-1"></i> PhotoX Pro
                     </button>
                   </div>
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'tiled' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternTiledBtn" onclick="setWatermarkPattern('tiled')" title="Tiled Matrix">
                       <i class="bi bi-grid-3x3 me-1"></i> Tiled Grid
                     </button>
                   </div>
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'single_large' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternSingleLargeBtn" onclick="setWatermarkPattern('single_large')" title="Single Hero Center">
                       <i class="bi bi-bullseye me-1"></i> Hero Center
                     </button>
                   </div>
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'double_cross' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternDoubleCrossBtn" onclick="setWatermarkPattern('double_cross')" title="Double X-Cross Shield">
                       <i class="bi bi-x-octagon me-1"></i> X-Cross
                     </button>
                   </div>
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'hex_mesh' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternHexMeshBtn" onclick="setWatermarkPattern('hex_mesh')" title="Hex Mesh Security Web">
                       <i class="bi bi-hexagon me-1"></i> Hex Mesh
                     </button>
                   </div>
-                  <div class="col-4">
+                  <div class="col-6 col-sm-4">
                     <button type="button" class="btn btn-sm w-100 text-truncate {{ ($setting->watermark_pattern ?? 'fotto_pro') === 'quad_corners' ? 'btn-warning fw-bold text-dark' : 'btn-outline-secondary' }}" id="patternQuadCornersBtn" onclick="setWatermarkPattern('quad_corners')" title="Quad Corner Anti-Crop">
                       <i class="bi bi-bounding-box me-1"></i> Quad Crop
                     </button>
@@ -1362,10 +1512,10 @@
           <!-- ============================================== -->
           <!-- RIGHT COLUMN: LIVE RESPONSIVE PREVIEW          -->
           <!-- ============================================== -->
-          <div class="col-lg-7">
+          <div class="col-lg-7 order-1 order-lg-2">
             <!-- PREVIEW MODE SELECTOR BAR (Pre-Purchase vs Post-Purchase) -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center p-2 rounded-3 mb-2" style="background: #081420; border: 1px solid #1f374e;">
-              <div class="d-flex align-items-center gap-2">
+            <div class="preview-mode-bar d-flex flex-wrap justify-content-between align-items-center p-2 rounded-3 mb-2 gap-2" style="background: #081420; border: 1px solid #1f374e;">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="small fw-bold text-white-50 text-uppercase me-1"><i class="bi bi-eye text-warning me-1"></i> Preview Stage:</span>
                 <div class="btn-group btn-group-sm" role="group">
                   <button type="button" class="btn btn-warning fw-bold text-dark" id="btnPreviewPrePurchase" onclick="setPreviewStageMode('pre')">
@@ -1376,7 +1526,7 @@
                   </button>
                 </div>
               </div>
-              <div class="badge bg-dark text-warning border border-warning px-2 py-1 small" id="previewModeBadge">
+              <div class="badge bg-dark text-warning border border-warning px-2 py-1 small preview-mode-badge" id="previewModeBadge">
                 Album Preview (Protected)
               </div>
             </div>
@@ -1942,7 +2092,7 @@
         if (btnCustom) btnCustom.className = 'btn btn-sm btn-outline-secondary rounded-pill';
         if (stage) {
           stage.style.aspectRatio = '3 / 4';
-          stage.style.maxWidth = '390px';
+          stage.style.maxWidth = 'min(100%, 390px)';
           stage.style.margin = '0 auto';
         }
         if (dimText) dimText.innerHTML = '3000 &times; 4000 Portrait';
@@ -1975,7 +2125,7 @@
           if (stage) {
             if (img.naturalHeight > img.naturalWidth) {
               stage.style.aspectRatio = '3 / 4';
-              stage.style.maxWidth = '390px';
+              stage.style.maxWidth = 'min(100%, 390px)';
               stage.style.margin = '0 auto';
               if (dimText) dimText.innerHTML = `${img.naturalWidth} &times; ${img.naturalHeight} Portrait`;
             } else {
@@ -2107,6 +2257,10 @@
       let textColor = watermarkColor || '#ff8a00';
       let crossLineColor = textColor + '55';
 
+      const stageEl = document.getElementById('previewStage');
+      const stageW = (stageEl && stageEl.clientWidth > 0) ? stageEl.clientWidth : 650;
+      const scaleRatio = stageW < 600 ? Math.max(0.65, stageW / 650) : 1;
+
       // Reset all layer visibility before applying active pattern
       standardOverlay.style.display = 'none';
       fottoOverlay.classList.remove('active');
@@ -2134,17 +2288,17 @@
 
         centerTitle.textContent = activeText;
         centerTitle.style.color = textColor;
-        centerTitle.style.fontSize = Math.round(activeFontSize * 1.8) + 'px';
+        centerTitle.style.fontSize = Math.max(16, Math.round(activeFontSize * 1.8 * scaleRatio)) + 'px';
 
         if (watermarkType === 'both') {
           centerLogo.style.display = 'block';
           centerLogo.src = logoUrl;
-          centerLogo.style.maxHeight = Math.round(activeFontSize * 1.6) + 'px';
+          centerLogo.style.maxHeight = Math.max(22, Math.round(activeFontSize * 1.6 * scaleRatio)) + 'px';
           centerTitle.style.display = 'block';
         } else if (watermarkType === 'logo') {
           centerLogo.style.display = 'block';
           centerLogo.src = logoUrl;
-          centerLogo.style.maxHeight = Math.round(activeLogoSize * 1.4) + 'px';
+          centerLogo.style.maxHeight = Math.max(22, Math.round(activeLogoSize * 1.4 * scaleRatio)) + 'px';
           centerTitle.style.display = 'none';
         } else { // text only
           centerLogo.style.display = 'none';
@@ -2158,7 +2312,7 @@
             el.textContent = activeText;
             el.style.color = textColor;
             el.style.opacity = activeOpacity;
-            el.style.fontSize = Math.max(11, Math.round(activeFontSize * 0.55)) + 'px';
+            el.style.fontSize = Math.max(9, Math.round(activeFontSize * 0.55 * scaleRatio)) + 'px';
           }
         });
 
@@ -2167,6 +2321,7 @@
         if (ribbon) {
           ribbon.style.color = textColor;
           ribbon.style.opacity = activeOpacity * 0.85;
+          ribbon.style.fontSize = Math.max(9, Math.round(11 * scaleRatio)) + 'px';
         }
 
         // Security Badge
@@ -2191,19 +2346,20 @@
 
         const singleSize = Number(document.getElementById('singleLargeSizeRange').value) || 160;
         document.getElementById('singleLargeSizeLabel').textContent = singleSize + 'px';
+        const scaledSingleSize = Math.round(singleSize * scaleRatio);
 
         if (watermarkType === 'logo') {
-          singleLargeContent.innerHTML = `<img src="${logoUrl}" style="width:${singleSize}px; max-width:90%; height:auto; filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6));" alt="Watermark Logo">`;
+          singleLargeContent.innerHTML = `<img src="${logoUrl}" style="width:${scaledSingleSize}px; max-width:90%; height:auto; filter:drop-shadow(0 2px 10px rgba(0,0,0,0.6));" alt="Watermark Logo">`;
         } else if (watermarkType === 'text') {
-          const fontPx = Math.round(singleSize * 0.45);
-          singleLargeContent.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8);">${activeText}</div>`;
+          const fontPx = Math.max(14, Math.round(scaledSingleSize * 0.45));
+          singleLargeContent.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8); max-width:90%; word-break:break-word;">${activeText}</div>`;
         } else { // both
-          const logoPx = Math.round(singleSize * 0.7);
-          const fontPx = Math.round(singleSize * 0.35);
+          const logoPx = Math.max(20, Math.round(scaledSingleSize * 0.7));
+          const fontPx = Math.max(14, Math.round(scaledSingleSize * 0.35));
           singleLargeContent.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px; max-width:90%;">
               <img src="${logoUrl}" style="width:${logoPx}px; height:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6));" alt="Watermark Logo">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8);">${activeText}</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8); word-break:break-word;">${activeText}</div>
             </div>`;
         }
 
@@ -2230,7 +2386,7 @@
           if (titleEl) {
             titleEl.textContent = activeText;
             titleEl.style.color = textColor;
-            titleEl.style.fontSize = Math.round(activeFontSize * 1.2) + 'px';
+            titleEl.style.fontSize = Math.max(15, Math.round(activeFontSize * 1.2 * scaleRatio)) + 'px';
             titleEl.style.display = (watermarkType === 'logo') ? 'none' : 'block';
           }
           if (logoEl) {
@@ -2255,7 +2411,7 @@
           if (titleEl) {
             titleEl.textContent = activeText;
             titleEl.style.color = textColor;
-            titleEl.style.fontSize = Math.round(activeFontSize * 1.5) + 'px';
+            titleEl.style.fontSize = Math.max(16, Math.round(activeFontSize * 1.5 * scaleRatio)) + 'px';
             titleEl.style.display = (watermarkType === 'logo') ? 'none' : 'block';
           }
           if (logoEl) {
@@ -2543,6 +2699,14 @@
       setSponsorPlacement("{{ $setting->sponsor_placement ?? 'bottom_right' }}");
       onWaterLensControlChange();
       updateLivePreview();
+    });
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        updateLivePreview();
+      }, 100);
     });
   </script>
 </body>

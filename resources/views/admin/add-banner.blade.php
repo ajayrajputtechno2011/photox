@@ -263,6 +263,7 @@
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   @include('admin.partials.media-picker-modal')
 
   <script src="{{ asset('admin-assets/js/app.js') }}"></script>

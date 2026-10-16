@@ -1,7 +1,9 @@
 <!-- Universal Media Library Picker Modal -->
-<div class="modal fade" id="mediaLibraryPickerModal" tabindex="-1" aria-labelledby="mediaLibraryPickerTitle" aria-hidden="true" style="z-index: 1060;">
+<div id="mediaPickerBackdrop" class="modal-backdrop fade" style="display: none; z-index: 1065; background-color: rgba(15, 23, 42, 0.75);"></div>
+
+<div class="modal fade" id="mediaLibraryPickerModal" tabindex="-1" aria-labelledby="mediaLibraryPickerTitle" aria-hidden="true" style="z-index: 1070; display: none;">
   <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-    <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+    <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden; background: #ffffff;">
       <div class="modal-header py-3 px-4" style="background: #0f172a; color: #fff;">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-images fs-5 text-primary"></i>
@@ -10,7 +12,7 @@
             <small class="text-white-50" style="font-size: 0.75rem;">Select an existing banner artwork to reuse, or upload a new asset</small>
           </div>
         </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeMediaLibraryPicker()"></button>
       </div>
 
       <div class="modal-body p-4" style="background: #f8fafc;">
@@ -49,13 +51,20 @@
 
       <div class="modal-footer py-2 px-4 bg-white d-flex justify-content-between align-items-center">
         <span class="text-muted small"><i class="bi bi-info-circle me-1"></i> Click on any thumbnail to select it for your banner</span>
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="closeMediaLibraryPicker()">Cancel</button>
       </div>
     </div>
   </div>
 </div>
 
 <style>
+  #mediaLibraryPickerModal.show {
+    display: block !important;
+  }
+  #mediaPickerBackdrop.show {
+    display: block !important;
+    opacity: 0.75 !important;
+  }
   .picker-media-item {
     background: #fff;
     border: 2px solid #e2e8f0;
@@ -120,22 +129,81 @@
   let pickerMediaCache = [];
 
   function openMediaLibraryPicker(targetUrlInputSelector, targetPreviewImgSelector) {
-    activeTargetUrlInput = document.querySelector(targetUrlInputSelector);
-    activeTargetPreviewImg = targetPreviewImgSelector ? document.querySelector(targetPreviewImgSelector) : null;
+    try {
+      activeTargetUrlInput = typeof targetUrlInputSelector === 'string' 
+        ? document.querySelector(targetUrlInputSelector) 
+        : targetUrlInputSelector;
+      activeTargetPreviewImg = targetPreviewImgSelector 
+        ? (typeof targetPreviewImgSelector === 'string' ? document.querySelector(targetPreviewImgSelector) : targetPreviewImgSelector)
+        : null;
 
-    const modalEl = document.getElementById('mediaLibraryPickerModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+      const modalEl = document.getElementById('mediaLibraryPickerModal');
+      const backdropEl = document.getElementById('mediaPickerBackdrop');
 
-    loadPickerMedia();
+      if (!modalEl) {
+        alert('Media Picker modal element is missing from page.');
+        return;
+      }
+
+      // Show via direct DOM styling (Guaranteed to work regardless of Bootstrap status)
+      modalEl.style.display = 'block';
+      modalEl.classList.add('show');
+      if (backdropEl) {
+        backdropEl.style.display = 'block';
+        backdropEl.classList.add('show');
+      }
+      document.body.classList.add('modal-open');
+
+      loadPickerMedia();
+    } catch (err) {
+      console.error('Error opening media picker:', err);
+      alert('Could not open Media Picker: ' + err.message);
+    }
   }
+
+  function closeMediaLibraryPicker() {
+    const modalEl = document.getElementById('mediaLibraryPickerModal');
+    const backdropEl = document.getElementById('mediaPickerBackdrop');
+
+    if (modalEl) {
+      modalEl.classList.remove('show');
+      modalEl.style.display = 'none';
+    }
+    if (backdropEl) {
+      backdropEl.classList.remove('show');
+      backdropEl.style.display = 'none';
+    }
+    // Only remove modal-open if no other bootstrap modal is visible
+    if (!document.querySelector('.modal.show')) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  // Close when clicking outside dialog
+  document.addEventListener('click', function(e) {
+    const modalEl = document.getElementById('mediaLibraryPickerModal');
+    if (modalEl && modalEl.classList.contains('show') && e.target === modalEl) {
+      closeMediaLibraryPicker();
+    }
+  });
+
+  // Close on ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modalEl = document.getElementById('mediaLibraryPickerModal');
+      if (modalEl && modalEl.classList.contains('show')) {
+        closeMediaLibraryPicker();
+      }
+    }
+  });
 
   function loadPickerMedia(searchQuery = '') {
     const grid = document.getElementById('pickerMediaGrid');
     const countText = document.getElementById('pickerCountText');
     const emptyState = document.getElementById('pickerEmptyState');
 
-    countText.innerText = 'Loading...';
+    if (!grid) return;
+    if (countText) countText.innerText = 'Loading...';
 
     fetch('/admin/api/media' + (searchQuery ? '?q=' + encodeURIComponent(searchQuery) : ''))
       .then(res => res.json())
@@ -145,13 +213,13 @@
           renderPickerGrid(pickerMediaCache);
         } else {
           grid.innerHTML = '';
-          emptyState.classList.remove('d-none');
-          countText.innerText = '0 items';
+          if (emptyState) emptyState.classList.remove('d-none');
+          if (countText) countText.innerText = '0 items';
         }
       })
       .catch(err => {
         console.error('Failed to load media picker:', err);
-        countText.innerText = 'Error loading media';
+        if (countText) countText.innerText = 'Error loading media';
       });
   }
 
@@ -160,14 +228,15 @@
     const countText = document.getElementById('pickerCountText');
     const emptyState = document.getElementById('pickerEmptyState');
 
+    if (!grid) return;
     grid.innerHTML = '';
-    countText.innerText = `${items.length} item(s) found`;
+    if (countText) countText.innerText = `${items.length} item(s) found`;
 
     if (items.length === 0) {
-      emptyState.classList.remove('d-none');
+      if (emptyState) emptyState.classList.remove('d-none');
       return;
     }
-    emptyState.classList.add('d-none');
+    if (emptyState) emptyState.classList.add('d-none');
 
     items.forEach(item => {
       const card = document.createElement('div');
@@ -196,9 +265,9 @@
   function selectMediaItem(item) {
     if (activeTargetUrlInput) {
       activeTargetUrlInput.value = item.url;
-      // Trigger change event
-      activeTargetUrlInput.dispatchEvent(new Event('change'));
-      activeTargetUrlInput.dispatchEvent(new Event('input'));
+      // Trigger change and input events
+      activeTargetUrlInput.dispatchEvent(new Event('change', { bubbles: true }));
+      activeTargetUrlInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     if (activeTargetPreviewImg) {
@@ -206,12 +275,19 @@
       activeTargetPreviewImg.style.display = 'block';
     }
 
-    // Dismiss modal
-    const modalEl = document.getElementById('mediaLibraryPickerModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-    if (modalInstance) {
-      modalInstance.hide();
+    // Also look for wrapper if exists
+    const previewWrap = document.getElementById('addBannerPreviewWrap');
+    if (previewWrap) {
+      previewWrap.style.display = 'block';
     }
+
+    const editBannerId = activeTargetUrlInput?.id?.replace('editBannerImageUrl', '');
+    if (editBannerId) {
+      const editWrap = document.getElementById('editBannerPreviewWrap' + editBannerId);
+      if (editWrap) editWrap.style.display = 'block';
+    }
+
+    closeMediaLibraryPicker();
   }
 
   function filterPickerMedia(query) {
@@ -232,8 +308,10 @@
     if (!file) return;
 
     const progress = document.getElementById('pickerUploadProgress');
-    progress.classList.remove('d-none');
-    progress.classList.add('d-flex');
+    if (progress) {
+      progress.classList.remove('d-none');
+      progress.classList.add('d-flex');
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -252,18 +330,21 @@
     })
     .then(res => res.json())
     .then(res => {
-      progress.classList.add('d-none');
-      progress.classList.remove('d-flex');
+      if (progress) {
+        progress.classList.add('d-none');
+        progress.classList.remove('d-flex');
+      }
       if (res.success && res.uploaded && res.uploaded.length > 0) {
-        // Auto select newly uploaded file!
         selectMediaItem(res.uploaded[0]);
       } else {
         alert(res.message || 'Upload failed');
       }
     })
     .catch(err => {
-      progress.classList.add('d-none');
-      progress.classList.remove('d-flex');
+      if (progress) {
+        progress.classList.add('d-none');
+        progress.classList.remove('d-flex');
+      }
       console.error(err);
       alert('Error uploading file. Please try again.');
     });

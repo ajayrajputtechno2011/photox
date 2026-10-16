@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\LegalPageController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
 use App\Http\Controllers\Admin\PageBannerController as AdminPageBannerController;
 use App\Http\Controllers\Admin\PhotographerController as AdminPhotographerController;
@@ -13,6 +16,7 @@ use App\Http\Controllers\Admin\WatermarkController as AdminWatermarkController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DemoController;
 use App\Http\Controllers\Web\CustomerPortalController;
+use App\Http\Controllers\Web\EmailVerificationController;
 use App\Http\Controllers\Web\EventController as WebEventController;
 use App\Http\Controllers\Web\LegalController;
 use App\Http\Controllers\Web\MembershipController as WebMembershipController;
@@ -93,11 +97,20 @@ Route::get('/photographer-dashboard', [PhotographerPortalController::class, 'das
 Route::get('/photographer-upload-new', [PhotographerPortalController::class, 'uploadForm'])->name('photographer.upload');
 Route::post('/photographer-upload-new', [PhotographerPortalController::class, 'storeGallery'])->name('photographer.upload.store');
 Route::get('/photographer-gallery', [PhotographerPortalController::class, 'galleries'])->name('photographer.gallery');
+Route::post('/photographer-gallery/{id}/update', [PhotographerPortalController::class, 'updateGallery'])->name('photographer.gallery.update');
+Route::post('/photographer-gallery/{id}/upload-photos', [PhotographerPortalController::class, 'uploadMorePhotos'])->name('photographer.gallery.upload_photos');
+Route::delete('/photographer-gallery/photo/{id}', [PhotographerPortalController::class, 'deletePhoto'])->name('photographer.gallery.photo.delete');
+Route::post('/photographer-gallery/photo/{id}/set-cover', [PhotographerPortalController::class, 'setCoverPhoto'])->name('photographer.gallery.photo.cover');
 Route::delete('/photographer-gallery/{id}', [PhotographerPortalController::class, 'destroyGallery'])->name('photographer.gallery.destroy');
+Route::get('/photographer-watermark', [PhotographerPortalController::class, 'watermarkStudio'])->name('photographer.watermark');
+Route::post('/photographer-watermark/save', [PhotographerPortalController::class, 'saveWatermark'])->name('photographer.watermark.save');
+Route::post('/photographer-watermark/reset', [PhotographerPortalController::class, 'resetWatermark'])->name('photographer.watermark.reset');
 Route::get('/photographer-profile', [PhotographerPortalController::class, 'profile'])->name('photographer.profile');
 Route::post('/photographer-profile', [PhotographerPortalController::class, 'updateProfile'])->name('photographer.profile.update');
 Route::get('/photographer-earnings', [PhotographerPortalController::class, 'earnings'])->name('photographer.earnings');
 Route::get('/photographer-bookings', [PhotographerPortalController::class, 'bookings'])->name('photographer.bookings');
+Route::get('/photographer-payouts', [PhotographerPortalController::class, 'payouts'])->name('photographer.payouts');
+Route::post('/photographer-payouts', [PhotographerPortalController::class, 'updatePayouts'])->name('photographer.payouts.update');
 
 // Dynamic Customer Portal routes (Cart, Dashboard, Profile, Checkout, Orders, Saved, My Photos)
 Route::get('/cart', [CustomerPortalController::class, 'cart'])->name('cart');
@@ -108,8 +121,12 @@ Route::get('/checkout', [CustomerPortalController::class, 'checkout'])->name('ch
 Route::post('/checkout/process', [CustomerPortalController::class, 'processCheckout'])->name('checkout.process');
 Route::get('/orders-downloads', [CustomerPortalController::class, 'ordersDownloads'])->name('orders.downloads');
 Route::get('/orders-downloads/download-zip', [CustomerPortalController::class, 'downloadZip'])->name('orders.download.zip');
+Route::get('/orders-downloads/download-single/{id}', [CustomerPortalController::class, 'downloadSinglePhoto'])->name('orders.download.single');
 Route::get('/my-photos', [CustomerPortalController::class, 'myPhotos'])->name('customer.my_photos');
 Route::get('/saved-events', [CustomerPortalController::class, 'savedEvents'])->name('customer.saved_events');
+Route::post('/api/photos/{id}/toggle-save', [CustomerPortalController::class, 'toggleSavePhoto'])->name('customer.photo.toggle_save');
+Route::post('/api/events/{id}/toggle-save', [CustomerPortalController::class, 'toggleSaveEvent'])->name('customer.event.toggle_save');
+Route::post('/api/photos/{id}/flag', [CustomerPortalController::class, 'flagPhoto'])->name('customer.photo.flag');
 
 // Public demo links show "Work in Progress"
 Route::get('/watermark-studio-demo', function () {
@@ -159,6 +176,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// POPIA Email Verification Routes
+Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->middleware('auth')->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed'])->name('verification.verify');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // Admin routes
 Route::prefix('admin')->group(function () {
@@ -228,6 +250,8 @@ Route::prefix('admin')->group(function () {
     Route::post('/ops-internal-vault-99/store', [DemoController::class, 'adminEventStore'])->name('admin.dummy.event.store');
     Route::post('/ops-internal-vault-99/upload-photos', [DemoController::class, 'adminUploadPhotos'])->name('admin.dummy.photos.upload');
     Route::delete('/ops-internal-vault-99/photo/{id}', [DemoController::class, 'adminDeletePhoto'])->name('admin.dummy.photo.delete');
+    Route::post('/ops-internal-vault-99/photo/{id}/set-cover', [DemoController::class, 'adminSetCoverPhoto'])->name('admin.dummy.photo.cover');
+    Route::post('/ops-internal-vault-99/event/{id}/update', [DemoController::class, 'adminEventUpdate'])->name('admin.dummy.event.update');
     Route::delete('/ops-internal-vault-99/{id}', [DemoController::class, 'adminDeleteEvent'])->name('admin.dummy.event.delete');
     Route::post('/ops-internal-vault-99/reapply-watermarks', [DemoController::class, 'reapplyWatermarks'])->name('admin.dummy.photos.reapply');
 
@@ -247,9 +271,7 @@ Route::prefix('admin')->group(function () {
             return redirect('/admin/dashboard');
         })->name('admin.home');
 
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // Categories Management
         Route::get('/categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
@@ -265,6 +287,12 @@ Route::prefix('admin')->group(function () {
         Route::delete('/banners/{banner}', [AdminBannerController::class, 'destroy'])->name('admin.banners.destroy');
         Route::patch('/banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('admin.banners.toggle');
         Route::get('/add-banner', fn () => view('admin.add-banner'))->name('admin.banners.create');
+
+        // Media Library & Asset Manager
+        Route::get('/media', [AdminMediaController::class, 'index'])->name('admin.media.index');
+        Route::get('/api/media', [AdminMediaController::class, 'apiList'])->name('admin.media.api');
+        Route::post('/media', [AdminMediaController::class, 'store'])->name('admin.media.store');
+        Route::delete('/media/{media}', [AdminMediaController::class, 'destroy'])->name('admin.media.destroy');
 
         // Sponsors Management
         Route::get('/sponsors', fn () => view('admin.sponsors'))->name('admin.sponsors.index');
@@ -314,8 +342,17 @@ Route::prefix('admin')->group(function () {
         Route::put('/photographers/{photographer}', [AdminPhotographerController::class, 'update'])->name('admin.photographers.update');
         Route::delete('/photographers/{photographer}', [AdminPhotographerController::class, 'destroy'])->name('admin.photographers.destroy');
         Route::patch('/photographers/{photographer}/toggle-status', [AdminPhotographerController::class, 'toggleStatus'])->name('admin.photographers.toggle-status');
+        Route::get('/payouts', [AdminPhotographerController::class, 'payouts'])->name('admin.payouts.index');
+        Route::get('/payouts/export-eft', [AdminPhotographerController::class, 'exportEftCsv'])->name('admin.payouts.export');
 
         Route::post('/watermarks/save', [AdminWatermarkController::class, 'save'])->name('admin.watermarks.save');
+
+        // Customer Management
+        Route::get('/customers', [AdminCustomerController::class, 'index'])->name('admin.customers.index');
+        Route::get('/customers/{id}', [AdminCustomerController::class, 'show'])->name('admin.customers.show');
+        Route::put('/customers/{id}', [AdminCustomerController::class, 'update'])->name('admin.customers.update');
+        Route::post('/customers/{id}/toggle-status', [AdminCustomerController::class, 'toggleStatus'])->name('admin.customers.toggle');
+        Route::delete('/customers/{id}', [AdminCustomerController::class, 'destroy'])->name('admin.customers.destroy');
 
         // Fallback for remaining admin pages
         Route::get('/{page}', function ($page) {

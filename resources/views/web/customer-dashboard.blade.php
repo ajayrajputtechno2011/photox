@@ -1,93 +1,300 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Your PhotoX customer workspace for saved photos, orders and events.">
-  <title>PhotoX | My workspace</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="css/styles.css" rel="stylesheet">
-  <script defer src="site-ad.js"></script>
-</head>
-<body class="customer-app dashboard-page">
-  <nav aria-label="Main navigation" class="navbar navbar-expand-lg py-2">
-    <div class="container-xl">
-      <a aria-label="PhotoX home" class="navbar-brand d-flex align-items-center gap-2" href="/"><img alt="PhotoX" src="logo.png"></a>
-      <button aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler border-0 p-0" data-bs-target="#mainNav" data-bs-toggle="collapse" type="button"><i class="bi bi-list fs-2"></i></button>
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav mx-auto gap-lg-3 mt-3 mt-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/events">Explore</a></li>
-          <li class="nav-item"><a class="nav-link" href="/photographers">Photographers</a></li>
-          <li class="nav-item"><a class="nav-link" href="/membership">Membership</a></li>
-          <li class="nav-item"><a class="nav-link" href="/blog">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="/#contact">Contact</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-          <div class="header-search d-none d-xl-flex"><i class="bi bi-search"></i><input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search"></div>
-          <a class="header-cart" href="/cart" aria-label="Open cart"><i class="bi bi-cart3"></i><span>0</span></a>
-          <button class="icon-button notification-button" aria-label="Notifications"><i class="bi bi-bell"></i><span>2</span></button>
-          <div class="account-menu">
-            <button class="profile-trigger" aria-label="Open account menu"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</span><span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Customer' }}</span><i class="bi bi-chevron-down"></i></button>
-            <div class="account-dropdown" role="menu">
-              <div class="account-dropdown-user"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</span><div><strong>{{ Auth::user()->name ?? 'Customer' }}</strong><small>{{ Auth::user()->email ?? 'customer@example.com' }}</small></div></div>
-              <a href="{{ url('/profile-settings') }}" role="menuitem"><i class="bi bi-person"></i> Profile & settings</a>
-              <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="dropdown-item text-danger py-2 w-100 text-start border-0 bg-transparent px-3"><i class="bi bi-box-arrow-left me-2"></i> Log out</button>
-              </form>
+@extends('web.layouts.app')
+
+@section('title', 'PhotoX | Customer Dashboard')
+@section('body-class', 'customer-app dashboard-page customer-portal-view')
+
+@section('styles')
+<style>
+  .customer-stat-card {
+    background: #ffffff;
+    border: 1px solid rgba(11, 45, 91, 0.08);
+    border-radius: 16px;
+    padding: 1.4rem 1.25rem;
+    box-shadow: 0 4px 16px rgba(11, 45, 91, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .customer-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(11, 45, 91, 0.08);
+  }
+  .customer-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+  }
+</style>
+@endsection
+
+@section('content')
+  <main class="workspace-layout container-xl py-4">
+    <!-- Customer Dedicated Sidebar -->
+    @include('web.partials.customer-sidebar', ['activeTab' => 'overview'])
+
+    <!-- Customer Dashboard Content -->
+    <section class="workspace-content">
+      @include('web.partials.popia-verification-banner')
+
+      <div class="workspace-view-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 fw-semibold">
+            <i class="bi bi-person-fill me-1"></i> CUSTOMER PORTAL
+          </span>
+          <h2 class="fw-bold mb-1">Hello, {{ $user->name }} 👋</h2>
+          <p class="text-muted mb-0">Manage your saved photos, digital orders, and unwatermarked downloads.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a class="btn btn-outline-primary rounded-pill px-3 py-2" href="{{ route('customer.my_photos') }}">
+            <i class="bi bi-heart me-1 text-danger"></i> Saved Photos
+          </a>
+          <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold" href="{{ url('/#find') }}">
+            <i class="bi bi-search me-1"></i> Find Photos
+          </a>
+        </div>
+      </div>
+
+      <!-- Customer Metric Cards (Distinct 4-Grid) -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="customer-stat-card">
+            <div class="customer-stat-icon bg-danger-subtle text-danger">
+              <i class="bi bi-heart-fill"></i>
             </div>
+            <span class="text-muted d-block small fw-medium">Saved Photos</span>
+            <strong class="fs-3 fw-bold text-dark" id="statCardSavedCount">{{ $savedCount }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="customer-stat-card">
+            <div class="customer-stat-icon bg-warning-subtle text-warning">
+              <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <span class="text-muted d-block small fw-medium">Events Followed</span>
+            <strong class="fs-3 fw-bold text-dark" id="statCardEventsCount">{{ sprintf('%02d', $eventsFollowedCount ?? 0) }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="customer-stat-card">
+            <div class="customer-stat-icon bg-success-subtle text-success">
+              <i class="bi bi-bag-check-fill"></i>
+            </div>
+            <span class="text-muted d-block small fw-medium">Orders Placed</span>
+            <strong class="fs-3 fw-bold text-dark">{{ $ordersCount }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="customer-stat-card border-primary" style="background: linear-gradient(135deg, #0b2d5b, #154580); color: #fff;">
+            <div class="customer-stat-icon" style="background: rgba(201, 253, 2, 0.2); color: #c9fd02;">
+              <i class="bi bi-cloud-arrow-down-fill"></i>
+            </div>
+            <span class="d-block small text-white-50 fw-medium">Ready to Download</span>
+            <strong class="fs-3 fw-bold text-white">{{ $downloadsReady }}</strong>
           </div>
         </div>
       </div>
-    </div>
-  </nav>
 
-  <main class="workspace-layout container-xl">
-    <aside class="workspace-sidebar" aria-label="Account navigation">
-      <div class="workspace-greeting"><span class="eyebrow-blue">YOUR WORKSPACE</span><h1>Keep the<br><em>good ones.</em></h1></div>
-      <nav class="workspace-nav" id="workspaceNav">
-        <a class="workspace-nav-link active" href="/customer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link" href="/my-photos"><i class="bi bi-images"></i><span>My photos</span><b>24</b></a>
-        <a class="workspace-nav-link" href="/saved-events"><i class="bi bi-bookmark"></i><span>Saved events</span></a>
-        <a class="workspace-nav-link" href="/orders-downloads"><i class="bi bi-bag"></i><span>Orders & downloads</span></a>
-        <a class="workspace-nav-link" href="/profile-settings"><i class="bi bi-person"></i><span>Profile & settings</span></a>
-      </nav>
-      <div class="workspace-side-note"><i class="bi bi-shield-check"></i><div><strong>Your privacy matters</strong><span>AI search is only active on galleries where the photographer enables it.</span></div></div>
-      <a class="workspace-logout" href="/"><i class="bi bi-box-arrow-left"></i> Sign out</a>
-    </aside>
+      <!-- Digital Downloads Banner Callout -->
+      <div class="p-4 rounded-4 mb-4 text-white d-flex flex-wrap justify-content-between align-items-center gap-3 shadow-sm" style="background: linear-gradient(135deg, #0b2d5b, #133a6b);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(201, 253, 2, 0.15); width: 56px; height: 56px;">
+            <i class="bi bi-cloud-check-fill fs-2" style="color: #c9fd02;"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1">Your Digital High-Res Photos are Ready</h5>
+            <p class="mb-0 small text-white-50">You have original, unwatermarked photo downloads waiting in your vault.</p>
+          </div>
+        </div>
+        <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold" href="{{ route('orders.downloads') }}">
+          <i class="bi bi-download me-1"></i> Open Downloads Vault
+        </a>
+      </div>
 
-    <section class="workspace-content">
-      <div class="workspace-mobile-heading"><span class="eyebrow-blue">THURSDAY, 17 SEPTEMBER 2026</span><h2>Good morning, Lebo.</h2><p>Your moments are never far away.</p></div>
-      <section class="workspace-view active" data-panel="overview">
-        <div class="workspace-view-header"><div><span class="eyebrow-blue">OVERVIEW</span><h2>Your photo world.</h2><p>Pick up where you left off or find something new.</p></div><a class="btn btn-lime rounded-pill px-4" href="/#find"><i class="bi bi-search me-2"></i>Find my photos</a></div>
-        <div class="workspace-metrics"><div class="workspace-metric"><span>Saved photos</span><strong>24</strong><i class="bi bi-images"></i></div><div class="workspace-metric"><span>Events followed</span><strong>06</strong><i class="bi bi-calendar-event"></i></div><div class="workspace-metric"><span>Orders placed</span><strong>03</strong><i class="bi bi-bag-check"></i></div><div class="workspace-metric accent"><span>Ready to download</span><strong>12</strong><i class="bi bi-cloud-arrow-down"></i></div></div>
-        <div class="workspace-section-heading"><div><span class="eyebrow-blue">RECENTLY SAVED</span><h3>Back to the action.</h3></div><a class="plain-action" href="/my-photos">View all <i class="bi bi-arrow-up-right"></i></a></div>
-        <div class="saved-photo-grid"><div class="saved-photo-gallery"><article class="saved-photo-card featured"><img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=900&q=85" alt="Rugby player in action"><div><span>MATIES VS IKEYS</span><strong>Match-day moments</strong><small>12 photos saved · 12 Sep 2026</small></div><button aria-label="Remove saved photo"><i class="bi bi-bookmark-fill"></i></button></article><article class="saved-photo-card"><img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=85" alt="Runner crossing a finish line"><div><span>CITY MARATHON 2026</span><strong>Finish line feeling</strong><small>8 photos saved</small></div><button aria-label="Remove saved photo"><i class="bi bi-bookmark-fill"></i></button></article><article class="saved-photo-card"><img src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=800&q=85" alt="Cyclist riding outdoors"><div><span>WINELANDS CYCLE TOUR</span><strong>Open road, open frame</strong><small>4 photos saved</small></div><button aria-label="Remove saved photo"><i class="bi bi-bookmark-fill"></i></button></article></div><a class="dashboard-ad-banner" href="/events"><span class="dashboard-ad-label">Sponsor spotlight</span><div class="dashboard-ad-art"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85" alt="Red running shoe for sponsor advertisement"><div class="dashboard-ad-art-copy"><i class="bi bi-lightning-charge-fill"></i><strong>ASICS<br>Keep moving.</strong></div></div><div class="dashboard-ad-copy"><span>PERFORMANCE PARTNER</span><strong>Find your next stride.</strong><small>Discover the events and stories moving your way.</small><b>Discover partner <i class="bi bi-arrow-up-right"></i></b></div></a></div>
-        <div class="workspace-section-heading upcoming-heading"><div><span class="eyebrow-blue">UP NEXT</span><h3>Events you may want to see.</h3></div><a class="plain-action" href="/saved-events">See saved events <i class="bi bi-arrow-up-right"></i></a></div>
-        <div class="mini-event-list"><article><div class="mini-event-date"><strong>20</strong><span>SEP</span></div><div><strong>Stellenbosch Spring Run</strong><span>Running · Stellenbosch</span></div><button aria-label="Save event"><i class="bi bi-bookmark"></i></button></article><article><div class="mini-event-date"><strong>27</strong><span>SEP</span></div><div><strong>School A Rugby Day</strong><span>School sport · Cape Town</span></div><button aria-label="Save event"><i class="bi bi-bookmark"></i></button></article></div>
-      </section>
+      <!-- Recently Saved Photos Section -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <span class="text-primary fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">RECENTLY SAVED</span>
+          <h4 class="fw-bold mb-0">Your Favourites &amp; Highlights</h4>
+        </div>
+        <a class="text-decoration-none fw-semibold small text-primary" href="{{ route('customer.my_photos') }}">
+          View all photos <i class="bi bi-arrow-up-right"></i>
+        </a>
+      </div>
 
+      <div class="saved-photo-grid mb-5">
+        <div class="saved-photo-gallery">
+          @php
+            $displayPhotos = $savedPhotos->isNotEmpty() ? $savedPhotos : ($samplePhotos ?? collect());
+            $isShowingSample = $savedPhotos->isEmpty() && $displayPhotos->isNotEmpty();
+          @endphp
+
+          @if($isShowingSample)
+            <div class="col-12 mb-2 p-2 bg-info-subtle border border-info-subtle rounded-3 small text-primary d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle-fill fs-5"></i>
+              <span><strong>Sample Showcase:</strong> Click the <i class="bi bi-heart text-danger mx-1"></i> heart icon on any photo to add it to your personal Saved Photos!</span>
+            </div>
+          @endif
+
+          @forelse($displayPhotos as $photo)
+            @php
+              $isSaved = $user->savedPhotos()->where('event_photos.id', $photo->id)->exists();
+              $isPurchased = $user ? $user->orderItems()->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))->where('event_photo_id', $photo->id)->exists() : false;
+            @endphp
+            <article class="saved-photo-card {{ $loop->first ? 'featured' : '' }}" id="photo-card-{{ $photo->id }}">
+              <img src="/protected-photo/{{ $photo->id }}" alt="{{ $photo->title }}">
+              <div>
+                <span>{{ strtoupper($photo->event?->category_name ?: 'SPORTS') }}</span>
+                <strong>{{ $photo->title ?: 'Action Shot' }}</strong>
+                <small>{{ $photo->event?->title }}</small>
+                @if(!$isPurchased)
+                  <div class="mt-2">
+                    <a href="{{ route('events.show', $photo->event?->slug ?: $photo->event_id) }}" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.75rem;">
+                      <i class="bi bi-cart-plus me-1"></i>Buy Clean Copy (R{{ number_format($photo->personal_price ?: 75, 0) }})
+                    </a>
+                  </div>
+                @endif
+              </div>
+              <button onclick="togglePhotoSave({{ $photo->id }}, this)" class="btn btn-sm {{ $isSaved ? 'btn-danger' : 'btn-light' }} position-absolute top-0 start-0 m-2 rounded-circle shadow" title="{{ $isSaved ? 'Saved to wishlist' : 'Click to save' }}">
+                <i class="bi {{ $isSaved ? 'bi-heart-fill' : 'bi-heart text-danger' }}"></i>
+              </button>
+              @if($isPurchased)
+                <a href="{{ $photo->file_path }}" download="PhotoX_{{ $photo->id }}.jpg" target="_blank" class="btn btn-sm btn-success position-absolute top-0 end-0 m-2 rounded-circle shadow" title="Download Clean Copy">
+                  <i class="bi bi-download"></i>
+                </a>
+              @else
+                <span class="badge bg-dark bg-opacity-75 text-warning position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill small font-monospace shadow-sm" title="Watermarked Preview - Buy to unlock clean full-resolution download">
+                  <i class="bi bi-shield-lock-fill me-1"></i>Protected
+                </span>
+              @endif
+            </article>
+          @empty
+            <div class="p-4 bg-white rounded-3 border text-center w-100">
+              <i class="bi bi-images fs-1 text-muted d-block mb-2"></i>
+              <p class="text-muted mb-2">You haven't saved any event photos yet.</p>
+              <a href="{{ url('/#find') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Find My Photos</a>
+            </div>
+          @endforelse
+        </div>
+      </div>
+
+      <!-- Upcoming & Followed Events List -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <span class="text-primary fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">{{ $savedEvents->isNotEmpty() ? 'YOUR WATCHLIST' : 'UPCOMING &amp; RECENT' }}</span>
+          <h4 class="fw-bold mb-0">{{ $savedEvents->isNotEmpty() ? 'Events You Are Following' : 'Events You May Want to See' }}</h4>
+        </div>
+        <a class="text-decoration-none fw-semibold small text-primary" href="{{ route('customer.saved_events') }}">
+          See all events <i class="bi bi-arrow-up-right"></i>
+        </a>
+      </div>
+
+      <div class="mini-event-list">
+        @php
+          $eventListToDisplay = $savedEvents->isNotEmpty() ? $savedEvents : $recentEvents;
+        @endphp
+        @forelse($eventListToDisplay as $evt)
+          @php
+            $isFollowed = $user->savedEvents()->where('events.id', $evt->id)->exists();
+          @endphp
+          <article class="p-3 bg-white rounded-3 border shadow-sm d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-3">
+              <div class="mini-event-date text-center bg-light rounded-3 p-2" style="min-width: 50px;">
+                <strong class="d-block text-primary fs-5 leading-none">{{ $evt->event_date?->format('d') ?? '15' }}</strong>
+                <span class="text-muted small text-uppercase fw-semibold">{{ strtoupper($evt->event_date?->format('M') ?? 'OCT') }}</span>
+              </div>
+              <div>
+                <strong class="d-block text-dark">{{ $evt->title }}</strong>
+                <small class="text-muted">{{ $evt->category_name ?: 'Sports' }} &bull; {{ $evt->location ?: 'South Africa' }}</small>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button onclick="toggleEventFollow({{ $evt->id }}, this)" class="btn btn-sm {{ $isFollowed ? 'btn-warning text-dark' : 'btn-outline-warning' }} rounded-pill px-3" title="Toggle Follow">
+                <i class="bi {{ $isFollowed ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus' }} me-1"></i>
+                <span class="btn-text">{{ $isFollowed ? 'Following' : 'Follow' }}</span>
+              </button>
+              <a href="{{ route('events.show', $evt->slug ?: $evt->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                View Photos
+              </a>
+            </div>
+          </article>
+        @empty
+          <p class="text-muted p-3 bg-white rounded-3 border">No events in your watchlist yet.</p>
+        @endforelse
+      </div>
     </section>
   </main>
-  <nav class="workspace-bottom-nav" id="bottomNav" aria-label="Mobile account navigation"><a class="active" href="/customer-dashboard"><i class="bi bi-grid-1x2"></i><span>Home</span></a><a href="/my-photos"><i class="bi bi-images"></i><span>Photos</span></a><a href="/saved-events"><i class="bi bi-bookmark"></i><span>Saved</span></a><a href="/orders-downloads"><i class="bi bi-bag"></i><span>Orders</span></a><a href="/profile-settings"><i class="bi bi-person"></i><span>Profile</span></a></nav>
-   <footer class="footer footer-premium"><div class="container-xl">
-   <div class="row g-5 footer-main"><div class="col-lg-5"><a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p><div class="footer-social d-flex gap-3"><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a></div></div><div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/sponsors">Sponsors</a></div><div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/upload">Upload photos</a><a href="/photographers">Join PhotoX</a><a href="/messages">Support</a></div><div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div></div><div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div></div></footer>
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div aria-live="polite" class="toast" id="photoToast" role="status">
-      <div class="toast-body d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i><span>Search ready.</span>
-      </div>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-  </script> 
-  <script src="app.js">
+
+  <script>
+    function togglePhotoSave(photoId, btn) {
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+      fetch('/api/photos/' + photoId + '/toggle-save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrf,
+          'Accept': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const icon = btn.querySelector('i');
+          if (data.saved) {
+            btn.classList.remove('btn-light');
+            btn.classList.add('btn-danger');
+            if (icon) icon.className = 'bi bi-heart-fill';
+          } else {
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-light');
+            if (icon) icon.className = 'bi bi-heart text-danger';
+          }
+          // Update sidebar counter
+          const sidebarBadge = document.querySelector('.customer-sidebar-link[href*="my-photos"] .customer-sidebar-count');
+          if (sidebarBadge) sidebarBadge.innerText = data.count;
+          const statBadge = document.getElementById('statCardSavedCount');
+          if (statBadge) statBadge.innerText = data.count;
+        }
+      })
+      .catch(err => console.error(err));
+    }
+
+    function toggleEventFollow(eventId, btn) {
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+      fetch('/api/events/' + eventId + '/toggle-save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrf,
+          'Accept': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const icon = btn.querySelector('i');
+          const textSpan = btn.querySelector('.btn-text');
+          if (data.saved) {
+            btn.classList.remove('btn-outline-warning');
+            btn.classList.add('btn-warning', 'text-dark');
+            if (icon) icon.className = 'bi bi-bookmark-check-fill me-1';
+            if (textSpan) textSpan.innerText = 'Following';
+          } else {
+            btn.classList.remove('btn-warning', 'text-dark');
+            btn.classList.add('btn-outline-warning');
+            if (icon) icon.className = 'bi bi-bookmark-plus me-1';
+            if (textSpan) textSpan.innerText = 'Follow';
+          }
+          // Update sidebar counter
+          const sidebarBadge = document.querySelector('.customer-sidebar-link[href*="saved-events"] .customer-sidebar-count');
+          if (sidebarBadge) sidebarBadge.innerText = data.count;
+          const statBadge = document.getElementById('statCardEventsCount');
+          if (statBadge) statBadge.innerText = String(data.count).padStart(2, '0');
+        }
+      })
+      .catch(err => console.error(err));
+    }
   </script>
-</body>
-</html>
+@endsection

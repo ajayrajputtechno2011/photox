@@ -58,9 +58,11 @@
       </div>
       <nav class="workspace-nav" id="workspaceNav">
         <a class="workspace-nav-link active" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Bookings</span><b>12</b></a>
+        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
         <a class="workspace-nav-link" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
         <a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
+        <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
+        <a class="workspace-nav-link" href="{{ route('photographers.details', $photographer->id) }}" target="_blank"><i class="bi bi-globe"></i><span>Public Storefront</span></a>
         <a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
         <a class="workspace-nav-link" href="/photographer-profile"><i class="bi bi-person-circle"></i><span>Profile</span></a>
         <a class="workspace-nav-link" href="/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
@@ -72,39 +74,47 @@
           <span>3 client galleries are still pending final delivery.</span>
         </div>
       </div>
-      <a class="workspace-logout" href="/"><i class="bi bi-box-arrow-left"></i> Sign out</a>
+      <form action="{{ route('logout') }}" method="POST" class="mt-3">
+        @csrf
+        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 w-100"><i class="bi bi-box-arrow-left me-1"></i>Sign out</button>
+      </form>
     </aside>
 
     <section class="workspace-content">
       <div class="workspace-view active">
+        @include('web.partials.popia-verification-banner')
+
         <div class="workspace-view-header">
           <div>
             <span class="eyebrow-blue">OVERVIEW</span>
-            <h2>Welcome back, Aiden.</h2>
+            <h2>Welcome back, {{ $photographer->name }}.</h2>
           </div>
-          <a class="btn btn-lime rounded-pill px-4" href="/photographer-new-booking"><i class="bi bi-plus-lg me-2"></i>New booking</a>
+          <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-light rounded-pill px-3 py-2" href="{{ route('photographers.details', $photographer->id) }}" target="_blank"><i class="bi bi-eye me-1"></i> Public Storefront</a>
+            <a class="btn btn-lime rounded-pill px-4" href="/photographer-upload-new"><i class="bi bi-plus-lg me-2"></i>Add new gallery</a>
+          </div>
         </div>
 
         <div class="summary-grid">
           <div class="summary-card accent">
             <span class="card-label"><i class="bi bi-graph-up-arrow"></i> Revenue</span>
-            <strong>R 42.8k</strong>
-            <small><span>vs last month</span><b>+18.4%</b></small>
+            <strong>R {{ number_format($totalRevenue, 0) }}</strong>
+            <small><span>estimated sales</span><b>+18.4%</b></small>
           </div>
           <div class="summary-card">
-            <span class="card-label"><i class="bi bi-camera"></i> Deliveries</span>
-            <strong>268</strong>
-            <small><span>this month</span><b>18 pending</b></small>
+            <span class="card-label"><i class="bi bi-camera"></i> Photos Uploaded</span>
+            <strong>{{ $totalPhotos }}</strong>
+            <small><span>photos in library</span><b>{{ $totalSoldPhotos }} sold</b></small>
           </div>
           <div class="summary-card">
-            <span class="card-label"><i class="bi bi-people"></i> Clients</span>
-            <strong>84</strong>
-            <small><span>active bookings</span><b>+7</b></small>
+            <span class="card-label"><i class="bi bi-collection"></i> Active Galleries</span>
+            <strong>{{ $activeGalleries }}</strong>
+            <small><span>published albums</span><b>live</b></small>
           </div>
           <div class="summary-card">
-            <span class="card-label"><i class="bi bi-star"></i> Rating</span>
-            <strong>4.9</strong>
-            <small><span>average review</span><b>126 reviews</b></small>
+            <span class="card-label"><i class="bi bi-award"></i> Tier Status</span>
+            <strong style="font-size: 1.15rem; line-height: 1.6;">{{ $photographer->effective_badge_heading }}</strong>
+            <small><span>commission</span><b>{{ $photographer->effective_commission_rate }}</b></small>
           </div>
         </div>
 
@@ -113,38 +123,27 @@
             <div class="panel-head">
               <div>
                 <span class="eyebrow-blue">UPCOMING</span>
-                <h3>Booking schedule</h3>
+                <h3>Upcoming Events</h3>
               </div>
               <a class="plain-action" href="/photographer-bookings">View all <i class="bi bi-arrow-up-right"></i></a>
             </div>
 
             <div class="booking-list">
-              <div class="booking-item">
-                <div class="booking-date"><strong>24</strong><span>Sep</span></div>
-                <div class="booking-meta">
-                  <strong>Stellenbosch Spring Run</strong>
-                  <span>8:00 AM • Cape Town • 1 team</span>
+              @forelse($upcomingEvents as $evt)
+                <div class="booking-item">
+                  <div class="booking-date">
+                    <strong>{{ $evt->event_date?->format('d') ?? '01' }}</strong>
+                    <span>{{ $evt->event_date?->format('M') ?? 'Oct' }}</span>
+                  </div>
+                  <div class="booking-meta">
+                    <strong>{{ $evt->title }}</strong>
+                    <span>{{ $evt->location ?: 'South Africa' }} &bull; {{ $evt->category_name ?: 'Sports' }}</span>
+                  </div>
+                  <span class="tag">Confirmed</span>
                 </div>
-                <span class="tag">Confirmed</span>
-              </div>
-
-              <div class="booking-item">
-                <div class="booking-date"><strong>27</strong><span>Sep</span></div>
-                <div class="booking-meta">
-                  <strong>School A Rugby Day</strong>
-                  <span>10:30 AM • Green Point • 3 bookings</span>
-                </div>
-                <span class="tag pending">Pending</span>
-              </div>
-
-              <div class="booking-item">
-                <div class="booking-date"><strong>02</strong><span>Oct</span></div>
-                <div class="booking-meta">
-                  <strong>Family portrait session</strong>
-                  <span>3:00 PM • Waterfront • 1 booking</span>
-                </div>
-                <span class="tag alert">Needs edit</span>
-              </div>
+              @empty
+                <p class="text-muted small py-3">No upcoming events scheduled.</p>
+              @endforelse
             </div>
           </div>
 
@@ -153,15 +152,15 @@
               <div class="chart-head">
                 <div>
                   <span class="eyebrow-blue">PERFORMANCE</span>
-                  <h4>Bookings</h4>
+                  <h4>Sales</h4>
                 </div>
                 <a class="small-cta" href="#">This month</a>
               </div>
               <div class="chart-meta">Last 7 weeks</div>
-              <canvas id="bookingsChart" aria-label="Booking chart"></canvas>
+              <canvas id="bookingsChart" aria-label="Sales chart"></canvas>
             </div>
             <div class="chart-legend">
-              <span><i class="bi bi-circle-fill" style="color:#7cb8ff"></i> Bookings</span>
+              <span><i class="bi bi-circle-fill" style="color:#7cb8ff"></i> Sales</span>
               <span><i class="bi bi-circle-fill" style="color:#ff8a00"></i> Revenue</span>
             </div>
           </div>
@@ -178,27 +177,18 @@
             </div>
 
             <div class="gallery-strip">
-              <div class="gallery-card">
-                <img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=900&q=85" alt="Rugby action">
-                <div class="overlay">
-                  <strong>Matchday action</strong>
-                  <span>Dusty Field • 18 shots</span>
-                </div>
-              </div>
-              <div class="gallery-card">
-                <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=85" alt="Marathon finish line">
-                <div class="overlay">
-                  <strong>Finish line</strong>
-                  <span>City Marathon • 26 shots</span>
-                </div>
-              </div>
-              <div class="gallery-card">
-                <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=900&q=85" alt="Portrait session">
-                <div class="overlay">
-                  <strong>Portrait set</strong>
-                  <span>Waterfront • 14 shots</span>
-                </div>
-              </div>
+            <div class="gallery-strip">
+              @forelse($recentGalleries as $rec)
+                <a href="{{ route('events.show', $rec->slug ?: $rec->id) }}" class="gallery-card text-decoration-none">
+                  <img src="{{ $rec->cover_image ?: ($rec->photos->first()?->thumbnail_url ?: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $rec->title }}" style="object-fit: cover;">
+                  <div class="overlay">
+                    <strong>{{ $rec->title }}</strong>
+                    <span>{{ $rec->location ?: 'South Africa' }} &bull; {{ $rec->photos_count }} shots</span>
+                  </div>
+                </a>
+              @empty
+                <p class="text-muted small p-3">No recent uploads found.</p>
+              @endforelse
             </div>
           </div>
 
@@ -297,48 +287,7 @@
     <a href="/photographer-profile"><i class="bi bi-person"></i><span>Profile</span></a>
   </nav>
 
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5">
-          <a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a>
-          <p class="footer-copy">The feeling of being there,<br>kept in a frame.</p>
-          <div class="footer-social d-flex gap-3">
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>
-        <div class="col-6 col-lg-2">
-          <p class="footer-label">Explore</p>
-          <a href="/events">Events</a>
-          <a href="/photographers">Photographers</a>
-          <a href="/blog">Journal</a>
-          <a href="/contact">Contact</a>
-        </div>
-        <div class="col-6 col-lg-2">
-          <p class="footer-label">For creators</p>
-          <a href="/photographer-dashboard">Creator login</a>
-          <a href="/photographer-upload-new">Upload photos</a>
-          <a href="/photographers">Join PhotoX</a>
-          <a href="#">Support</a>
-        </div>
-        <div class="col-12 col-lg-3">
-          <p class="footer-label">Stay in the frame</p>
-          <p class="footer-small">New events, fresh galleries and stories from the field.</p>
-          <div class="newsletter">
-            <input aria-label="Email address" placeholder="Your email address" type="email">
-            <button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 PhotoX</span>
-        <span>Privacy · Terms ·</span>
-        <span>Made for the moments <i class="bi bi-stars"></i></span>
-      </div>
-    </div>
-  </footer>
+  @include('web.partials.footer')
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -350,7 +299,7 @@
         data: {
           labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7'],
           datasets: [{
-            label: 'Bookings',
+            label: 'Sales',
             data: [5, 9, 7, 12, 15, 11, 18],
             backgroundColor: ['#7cb8ff', '#7cb8ff', '#7cb8ff', '#0b2d5b', '#0b2d5b', '#ff8a00', '#ff8a00'],
             borderRadius: 8,

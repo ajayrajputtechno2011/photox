@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable([
     'name',
     'email',
+    'email_verified_at',
     'password',
     'role',
     'status',
@@ -34,10 +36,15 @@ use Illuminate\Notifications\Notifiable;
     'bio',
     'payout_email',
     'payout_method',
+    'bank_name',
+    'account_holder_name',
+    'account_number',
+    'branch_code',
+    'account_type',
     'admin_notes',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -155,5 +162,25 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function savedPhotos(): BelongsToMany
+    {
+        return $this->belongsToMany(EventPhoto::class, 'customer_saved_photos', 'user_id', 'event_photo_id')->withTimestamps();
+    }
+
+    public function savedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'customer_saved_events', 'user_id', 'event_id')->withTimestamps();
     }
 }

@@ -47,18 +47,18 @@
           <h2 class="fw-bold mb-1">Hello, {{ $user->name }} 👋</h2>
           <p class="text-muted mb-0">Manage your saved photos, digital orders, and unwatermarked downloads.</p>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <a class="btn btn-outline-primary rounded-pill px-3 py-2" href="{{ route('customer.my_photos') }}">
+        <div class="d-flex align-items-center flex-wrap gap-2 w-100 w-sm-auto">
+          <a class="btn btn-outline-primary rounded-pill px-3 py-2 flex-fill flex-sm-grow-0 text-center" href="{{ route('customer.my_photos') }}">
             <i class="bi bi-heart me-1 text-danger"></i> Saved Photos
           </a>
-          <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold" href="{{ url('/#find') }}">
+          <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold flex-fill flex-sm-grow-0 text-center" href="{{ url('/#find') }}">
             <i class="bi bi-search me-1"></i> Find Photos
           </a>
         </div>
       </div>
 
       <!-- Customer Metric Cards (Distinct 4-Grid) -->
-      <div class="row g-3 mb-4">
+      <div class="row g-2 g-sm-3 mb-4">
         <div class="col-6 col-lg-3">
           <div class="customer-stat-card">
             <div class="customer-stat-icon bg-danger-subtle text-danger">
@@ -98,17 +98,17 @@
       </div>
 
       <!-- Digital Downloads Banner Callout -->
-      <div class="p-4 rounded-4 mb-4 text-white d-flex flex-wrap justify-content-between align-items-center gap-3 shadow-sm" style="background: linear-gradient(135deg, #0b2d5b, #133a6b);">
+      <div class="p-3 p-sm-4 rounded-4 mb-4 text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 shadow-sm" style="background: linear-gradient(135deg, #0b2d5b, #133a6b);">
         <div class="d-flex align-items-center gap-3">
-          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(201, 253, 2, 0.15); width: 56px; height: 56px;">
-            <i class="bi bi-cloud-check-fill fs-2" style="color: #c9fd02;"></i>
+          <div class="rounded-circle p-2 p-sm-3 d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(201, 253, 2, 0.15); width: 48px; height: 48px;">
+            <i class="bi bi-cloud-check-fill fs-3" style="color: #c9fd02;"></i>
           </div>
           <div>
-            <h5 class="fw-bold mb-1">Your Digital High-Res Photos are Ready</h5>
+            <h5 class="fw-bold mb-1 fs-6">Your Digital High-Res Photos are Ready</h5>
             <p class="mb-0 small text-white-50">You have original, unwatermarked photo downloads waiting in your vault.</p>
           </div>
         </div>
-        <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold" href="{{ route('orders.downloads') }}">
+        <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold w-100 w-sm-auto text-center flex-shrink-0" href="{{ route('orders.downloads') }}">
           <i class="bi bi-download me-1"></i> Open Downloads Vault
         </a>
       </div>
@@ -199,23 +199,23 @@
           @php
             $isFollowed = $user->savedEvents()->where('events.id', $evt->id)->exists();
           @endphp
-          <article class="p-3 bg-white rounded-3 border shadow-sm d-flex align-items-center justify-content-between mb-2">
+          <article class="p-3 bg-white rounded-3 border shadow-sm d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-3 mb-2">
             <div class="d-flex align-items-center gap-3">
-              <div class="mini-event-date text-center bg-light rounded-3 p-2" style="min-width: 50px;">
+              <div class="mini-event-date text-center bg-light rounded-3 p-2 flex-shrink-0" style="min-width: 50px;">
                 <strong class="d-block text-primary fs-5 leading-none">{{ $evt->event_date?->format('d') ?? '15' }}</strong>
                 <span class="text-muted small text-uppercase fw-semibold">{{ strtoupper($evt->event_date?->format('M') ?? 'OCT') }}</span>
               </div>
-              <div>
-                <strong class="d-block text-dark">{{ $evt->title }}</strong>
-                <small class="text-muted">{{ $evt->category_name ?: 'Sports' }} &bull; {{ $evt->location ?: 'South Africa' }}</small>
+              <div class="overflow-hidden">
+                <strong class="d-block text-dark text-truncate">{{ $evt->title }}</strong>
+                <small class="text-muted d-block text-truncate">{{ $evt->category_name ?: 'Sports' }} &bull; {{ $evt->location ?: 'South Africa' }}</small>
               </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-              <button onclick="toggleEventFollow({{ $evt->id }}, this)" class="btn btn-sm {{ $isFollowed ? 'btn-warning text-dark' : 'btn-outline-warning' }} rounded-pill px-3" title="Toggle Follow">
+            <div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+              <button onclick="toggleEventFollow({{ $evt->id }}, this)" class="btn btn-sm {{ $isFollowed ? 'btn-warning text-dark' : 'btn-outline-warning' }} rounded-pill px-3 flex-fill flex-sm-grow-0" title="Toggle Follow">
                 <i class="bi {{ $isFollowed ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus' }} me-1"></i>
                 <span class="btn-text">{{ $isFollowed ? 'Following' : 'Follow' }}</span>
               </button>
-              <a href="{{ route('events.show', $evt->slug ?: $evt->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+              <a href="{{ route('events.show', $evt->slug ?: $evt->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 flex-fill flex-sm-grow-0 text-center">
                 View Photos
               </a>
             </div>

@@ -57,11 +57,11 @@
                 <small class="text-white-50 d-block mt-1">Original full-resolution photography files unwatermarked for print &amp; web use.</small>
               </div>
             </div>
-            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 flex-shrink-0">
-              <a class="btn btn-warning rounded-pill px-3 px-sm-4 py-2 fw-bold shadow-sm text-center" href="{{ route('orders.download.zip') }}">
+            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 flex-shrink-0 w-100 w-md-auto mt-2 mt-md-0">
+              <a class="btn btn-warning rounded-pill px-3 px-sm-4 py-2 fw-bold shadow-sm text-center flex-fill flex-sm-grow-0" href="{{ route('orders.download.zip') }}">
                 <i class="bi bi-file-earmark-zip-fill me-1"></i>Download All (ZIP)
               </a>
-              <a class="btn btn-outline-light rounded-pill px-3 px-sm-4 py-2 text-center" href="{{ route('customer.my_photos') }}">
+              <a class="btn btn-outline-light rounded-pill px-3 px-sm-4 py-2 text-center flex-fill flex-sm-grow-0" href="{{ route('customer.my_photos') }}">
                 <i class="bi bi-images me-1"></i>View All Photos
               </a>
             </div>

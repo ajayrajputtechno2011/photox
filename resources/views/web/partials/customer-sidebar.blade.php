@@ -74,9 +74,22 @@
 <style>
   @media (max-width: 991.98px) {
     .customer-app .workspace-layout {
-      grid-template-columns: 1fr !important;
-      gap: 1rem !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       padding-top: 1rem !important;
+      padding-bottom: 2.5rem !important;
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+      overflow-x: hidden !important;
+    }
+    .customer-app .workspace-content {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: hidden !important;
     }
     .customer-sidebar-panel {
       position: static !important;
@@ -85,7 +98,11 @@
       border: none !important;
       box-shadow: none !important;
       padding: 0 !important;
-      margin-bottom: 0.5rem !important;
+      margin-bottom: 1.25rem !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
     }
     .customer-sidebar-nav {
       display: flex !important;
@@ -94,7 +111,10 @@
       overflow-x: auto !important;
       -webkit-overflow-scrolling: touch !important;
       gap: 0.5rem !important;
-      padding: 4px 2px 8px 2px !important;
+      padding: 4px 2px 10px 2px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       scrollbar-width: none;
     }
     .customer-sidebar-nav::-webkit-scrollbar {
@@ -103,12 +123,21 @@
     .customer-sidebar-link {
       white-space: nowrap !important;
       flex-shrink: 0 !important;
-      padding: 0.55rem 0.95rem !important;
+      padding: 0.5rem 0.9rem !important;
       font-size: 0.82rem !important;
       border-radius: 50px !important;
       background: #ffffff !important;
-      border: 1px solid rgba(11, 45, 91, 0.1) !important;
-      box-shadow: 0 2px 8px rgba(11, 45, 91, 0.04) !important;
+      border: 1px solid rgba(11, 45, 91, 0.12) !important;
+      box-shadow: 0 2px 6px rgba(11, 45, 91, 0.04) !important;
+      color: #334e68 !important;
+      text-decoration: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.45rem !important;
+    }
+    .customer-sidebar-link i {
+      font-size: 0.95rem !important;
+      color: #64748b !important;
     }
     .customer-sidebar-link.active {
       background: #0b2d5b !important;
@@ -117,7 +146,30 @@
       box-shadow: 0 4px 12px rgba(11, 45, 91, 0.2) !important;
     }
     .customer-sidebar-link.active i {
-      color: #lime !important;
+      color: #c9fd02 !important;
+    }
+    .customer-sidebar-link.active .customer-sidebar-count {
+      background: rgba(255, 255, 255, 0.22) !important;
+      color: #ffffff !important;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .customer-app .workspace-view-header h2 {
+      font-size: 1.5rem !important;
+    }
+    .customer-stat-card {
+      padding: 1rem 0.85rem !important;
+      border-radius: 14px !important;
+    }
+    .customer-stat-card .fs-3 {
+      font-size: 1.45rem !important;
+    }
+    .customer-stat-icon {
+      width: 38px !important;
+      height: 38px !important;
+      font-size: 1.15rem !important;
+      margin-bottom: 0.5rem !important;
     }
   }
 </style>

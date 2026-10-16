@@ -341,8 +341,7 @@ class CustomerPortalController extends Controller
             // Clear any server‑side cart data after successful payment
             $request->session()->forget('cart');
             $request->session()->forget('cart_items');
-            // Persist a flag so the cart page can clear client‑side storage
-            $request->session()->put('cart_cleared', true);
+            $request->session()->forget('cart_cleared');
         }
 
         $purchasedPhotos = $user->orderItems()

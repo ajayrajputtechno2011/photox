@@ -26,22 +26,7 @@
 
   @include('web.partials.header')
 
-  @if (!Auth::check() || session('cart_cleared'))
-    <script>
-      // Clear cart when session indicates cart was cleared or for guests
-      try {
-        localStorage.removeItem('photox_cart');
-        localStorage.removeItem('photox_user_cart');
-      } catch (e) {}
-      if (window.PhotoXCart) {
-        window.PhotoXCart.clear();
-        window.PhotoXCart.updateBadge();
-      }
-      document.querySelectorAll('.header-cart span').forEach(function(el) {
-        el.textContent = '0';
-      });
-    </script>
-  @endif
+
 
   {{-- Global Flash Notifications --}}
   @if(session('success'))

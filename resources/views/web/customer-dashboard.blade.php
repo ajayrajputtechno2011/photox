@@ -151,9 +151,11 @@
                 <small>{{ $photo->event?->title }}</small>
                 @if(!$isPurchased)
                   <div class="mt-2">
-                    <a href="{{ route('events.show', $photo->event?->slug ?: $photo->event_id) }}" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.75rem;">
+                    <button type="button" 
+                            onclick="addSavedPhotoToCart({{ $photo->id }}, {!! json_encode($photo->title ?: 'Action Shot') !!}, {{ $photo->personal_price ?: 75 }}, {!! json_encode($photo->thumbnail_url ?: $photo->file_path) !!}, {!! json_encode($photo->event?->title ?: 'Sports Event') !!})" 
+                            class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.75rem;">
                       <i class="bi bi-cart-plus me-1"></i>Buy Clean Copy (R{{ number_format($photo->personal_price ?: 75, 0) }})
-                    </a>
+                    </button>
                   </div>
                 @endif
               </div>
@@ -295,6 +297,24 @@
         }
       })
       .catch(err => console.error(err));
+    }
+
+    function addSavedPhotoToCart(photoId, title, price, img, eventTitle) {
+      if (window.PhotoXCart) {
+        const item = {
+          id: String(photoId),
+          title: title || `Photo #${photoId}`,
+          price: parseFloat(price) || 75.0,
+          licenseType: 'personal',
+          licenseName: 'Personal Digital License',
+          image: img || `/protected-photo/${photoId}`,
+          eventTitle: eventTitle || 'Saved Photos',
+          eventSlug: '',
+          photographer: 'PhotoX Creator'
+        };
+        window.PhotoXCart.addItem(item);
+      }
+      window.location.href = '/cart';
     }
   </script>
 @endsection

@@ -47,10 +47,12 @@
                         <i class="bi bi-download me-1"></i>Download
                       </a>
                     @else
-                      <span class="small font-monospace text-muted"><i class="bi bi-shield-lock me-1 text-warning"></i>Protected Preview</span>
-                      <a href="{{ route('events.show', $photo->event?->slug ?: $photo->event_id) }}" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3">
+                      <span class="small font-monospace text-muted"><i class="bi bi-shield-lock me-1 text-warning"></i>Protected</span>
+                      <button type="button" 
+                              onclick="addSavedPhotoToCart({{ $photo->id }}, {!! json_encode($photo->title ?: 'Action Photo') !!}, {{ $photo->personal_price ?: 75 }}, {!! json_encode($photo->thumbnail_url ?: $photo->file_path) !!}, {!! json_encode($photo->event?->title ?: 'Sports Event') !!})" 
+                              class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm">
                         <i class="bi bi-cart-plus me-1"></i>Buy Clean Copy
-                      </a>
+                      </button>
                     @endif
                   </div>
                 </div>
@@ -91,6 +93,24 @@
         }
       })
       .catch(err => console.error(err));
+    }
+
+    function addSavedPhotoToCart(photoId, title, price, img, eventTitle) {
+      if (window.PhotoXCart) {
+        const item = {
+          id: String(photoId),
+          title: title || `Photo #${photoId}`,
+          price: parseFloat(price) || 75.0,
+          licenseType: 'personal',
+          licenseName: 'Personal Digital License',
+          image: img || `/protected-photo/${photoId}`,
+          eventTitle: eventTitle || 'Saved Photos',
+          eventSlug: '',
+          photographer: 'PhotoX Creator'
+        };
+        window.PhotoXCart.addItem(item);
+      }
+      window.location.href = '/cart';
     }
   </script>
 @endsection

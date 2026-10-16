@@ -576,9 +576,9 @@
     const purchasedPhotoIds = @json($purchasedPhotoIds ?? []);
 
     document.addEventListener('DOMContentLoaded', function() {
-      // 1. Clear cart after successful payment redirect or session flag
+      // 1. Clear cart only after explicit successful payment redirect
       const params = new URLSearchParams(window.location.search);
-      const shouldClear = params.get('status') === 'success' || {{ $cartCleared ? 'true' : 'false' }};
+      const shouldClear = params.get('status') === 'success';
       if (shouldClear) {
         try {
           localStorage.removeItem('photox_user_cart');

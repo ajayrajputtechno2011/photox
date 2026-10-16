@@ -1795,9 +1795,9 @@
           licenseType: 'personal',
           licenseName: 'Personal Digital License',
           image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
-          eventTitle: '{{ $event->title ?? "Event Gallery" }}',
-          eventSlug: '{{ $event->slug ?? "" }}',
-          photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+          eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
+          eventSlug: {!! json_encode($event->slug ?? '') !!},
+          photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
         };
         const res = window.PhotoXCart.addItem(item);
         if (res.added) addedCount++;
@@ -2118,9 +2118,9 @@
       licenseType: 'full_gallery',
       licenseName: 'Complete Gallery Digital Package',
       image: '{{ $event->cover_image ?: ($photos->first()?->file_path ?: asset("logo.png")) }}',
-      eventTitle: '{{ addslashes($event->title ?? "Event Gallery") }}',
-      eventSlug: '{{ $event->slug ?? "" }}',
-      photographer: '{{ addslashes($event->photographer->name ?? "PhotoX Creator") }}'
+      eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
+      eventSlug: {!! json_encode($event->slug ?? '') !!},
+      photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
     };
 
     if (window.PhotoXCart) {
@@ -2155,9 +2155,9 @@
       licenseType: 'personal',
       licenseName: 'Personal Digital License',
       image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
-      eventTitle: '{{ $event->title ?? "Event Gallery" }}',
-      eventSlug: '{{ $event->slug ?? "" }}',
-      photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+      eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
+      eventSlug: {!! json_encode($event->slug ?? '') !!},
+      photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
     };
 
     if (!window.PhotoXCart) return;
@@ -2205,9 +2205,9 @@
       licenseType: license,
       licenseName: licenseNames[license] || 'Personal License',
       image: currentPhoto.preview_url || currentPhoto.image_path || `/protected-photo/${currentPhoto.id}`,
-      eventTitle: '{{ $event->title ?? "Event Gallery" }}',
-      eventSlug: '{{ $event->slug ?? "" }}',
-      photographer: '{{ $event->photographer->name ?? "PhotoX Creator" }}'
+      eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
+      eventSlug: {!! json_encode($event->slug ?? '') !!},
+      photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
     };
 
     if (!window.PhotoXCart) return;

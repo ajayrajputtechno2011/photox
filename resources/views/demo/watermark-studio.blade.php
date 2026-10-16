@@ -793,6 +793,34 @@
 				</div>
 
 				<div class="wm-studio-container">
+					<!-- Photographer Selector Bar -->
+					<div class="p-3 mb-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: #f8fafc;">
+						<div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 620px;">
+							<label class="fw-bold small text-dark text-nowrap mb-0">
+								<i class="bi bi-camera-fill text-warning me-1"></i> Target Photographer / Scope:
+							</label>
+							<select class="form-select form-select-sm border-warning fw-semibold" id="adminPhotographerPicker" onchange="switchPhotographerScope(this.value)">
+								<option value="">— PhotoX Platform Default (Global Admin) —</option>
+								@foreach($photographers as $ph)
+									<option value="{{ $ph->id }}" {{ (string)request('photographer_id') === (string)$ph->id ? 'selected' : '' }}>
+										{{ $ph->name }} ({{ $ph->email }}) — {{ $ph->business_name ?? 'Photographer' }}
+									</option>
+								@endforeach
+							</select>
+						</div>
+						<div>
+							@if(isset($activePhotographer))
+								<span class="badge bg-warning text-dark px-3 py-2 font-monospace" style="font-size: 0.78rem;">
+									<i class="bi bi-shield-check me-1"></i> Custom Watermark for: <strong>{{ $activePhotographer->name }}</strong>
+								</span>
+							@else
+								<span class="badge bg-secondary px-3 py-2" style="font-size: 0.78rem;">
+									<i class="bi bi-globe me-1"></i> Global Platform Watermark (Fallback)
+								</span>
+							@endif
+						</div>
+					</div>
+
 					<!-- Top 4 Large Tabs -->
 					<div class="wm-top-tabs">
 						<button class="wm-top-tab active" id="tabWatermarkBtn" type="button" onclick="switchMainTab('watermark')">
@@ -1375,17 +1403,14 @@
 							<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
 								<h4 class="h6 fw-bold mb-0">Live Canvas</h4>
 								<div class="d-flex gap-2">
-									<button type="button" class="btn btn-sm btn-outline-warning rounded-pill active" id="btnPhotoMarathon" onclick="switchPreviewPhoto('marathon')">
-										<i class="bi bi-person-walking me-1"></i> Marathon
-									</button>
-									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnPhotoCycling" onclick="switchPreviewPhoto('cycling')">
-										<i class="bi bi-bicycle me-1"></i> Cycling
+									<button type="button" class="btn btn-sm btn-outline-warning rounded-pill active" id="btnPhotoLandscape" onclick="switchPreviewPhoto('landscape')">
+										<i class="bi bi-image me-1"></i> Landscape
 									</button>
 									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnPhotoPortrait" onclick="switchPreviewPhoto('portrait')">
-										<i class="bi bi-phone me-1"></i> Portrait Athlete (3:4)
+										<i class="bi bi-phone me-1"></i> Portrait
 									</button>
-									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="document.getElementById('testPhotoInput').click()">
-										<i class="bi bi-cloud-upload me-1"></i> Custom Photo
+									<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnPhotoCustom" onclick="document.getElementById('testPhotoInput').click()">
+										<i class="bi bi-cloud-upload me-1"></i> Custom
 									</button>
 									<input type="file" id="testPhotoInput" accept="image/*" style="display: none;" onchange="handleTestPhotoUpload(event)">
 								</div>
@@ -1591,9 +1616,8 @@
 		let sponsorLogoUrl = "{{ asset($setting->sponsor_logo_path ?? 'uploads/watermarks/sample_sponsor_badge.svg') }}";
 		let uploadedSponsorFile = null;
 
-		const marathonPhotoUrl = "{{ asset('uploads/watermarks/photox_dummy_marathon.jpg') }}";
-		const cyclingPhotoUrl = "{{ asset('uploads/watermarks/photox_dummy_cycling.jpg') }}";
-		const portraitPhotoUrl = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=1200&q=88";
+		const landscapePhotoUrl = "{{ asset('uploads/watermarks/photox_dummy_marathon.jpg') }}";
+		const portraitPhotoUrl = "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&h=1067&q=88";
 
 		function switchMainTab(tab) {
 			currentTab = tab;
@@ -1922,28 +1946,37 @@
 
 		function switchPreviewPhoto(photoKey) {
 			const stage = document.getElementById('previewStage');
-			const btnMarathon = document.getElementById('btnPhotoMarathon');
-			const btnCycling = document.getElementById('btnPhotoCycling');
+			const btnLandscape = document.getElementById('btnPhotoLandscape');
 			const btnPortrait = document.getElementById('btnPhotoPortrait');
+			const btnCustom = document.getElementById('btnPhotoCustom');
+			const dimText = document.getElementById('stageFooterDimensionsText');
 
-			if (photoKey === 'cycling') {
-				document.getElementById('previewBasePhoto').src = cyclingPhotoUrl;
-				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-warning rounded-pill active';
-				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-				if (stage) { stage.style.maxWidth = '100%'; stage.style.margin = '0'; }
-			} else if (photoKey === 'portrait') {
+			if (photoKey === 'portrait') {
 				document.getElementById('previewBasePhoto').src = portraitPhotoUrl;
 				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-warning rounded-pill active';
-				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-				if (stage) { stage.style.maxWidth = '460px'; stage.style.margin = '0 auto'; }
-			} else {
-				document.getElementById('previewBasePhoto').src = marathonPhotoUrl;
-				if (btnMarathon) btnMarathon.className = 'btn btn-sm btn-outline-warning rounded-pill active';
-				if (btnCycling) btnCycling.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnLandscape) btnLandscape.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnCustom) btnCustom.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (stage) {
+					stage.style.aspectRatio = '3 / 4';
+					stage.style.maxWidth = '390px';
+					stage.style.margin = '0 auto';
+				}
+				if (dimText) dimText.innerHTML = '3000 &times; 4000 Portrait';
+			} else if (photoKey === 'custom') {
+				if (btnCustom) btnCustom.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+				if (btnLandscape) btnLandscape.className = 'btn btn-sm btn-outline-secondary rounded-pill';
 				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-				if (stage) { stage.style.maxWidth = '100%'; stage.style.margin = '0'; }
+			} else {
+				document.getElementById('previewBasePhoto').src = landscapePhotoUrl;
+				if (btnLandscape) btnLandscape.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+				if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (btnCustom) btnCustom.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+				if (stage) {
+					stage.style.aspectRatio = '16 / 10';
+					stage.style.maxWidth = '100%';
+					stage.style.margin = '0';
+				}
+				if (dimText) dimText.innerHTML = '1920 &times; 1200 Landscape';
 			}
 			updateLivePreview();
 		}
@@ -1951,7 +1984,33 @@
 		function handleTestPhotoUpload(event) {
 			const file = event.target.files[0];
 			if (file) {
-				document.getElementById('previewBasePhoto').src = URL.createObjectURL(file);
+				const img = new Image();
+				img.onload = function() {
+					const stage = document.getElementById('previewStage');
+					const dimText = document.getElementById('stageFooterDimensionsText');
+					if (stage) {
+						if (img.naturalHeight > img.naturalWidth) {
+							stage.style.aspectRatio = '3 / 4';
+							stage.style.maxWidth = '390px';
+							stage.style.margin = '0 auto';
+							if (dimText) dimText.innerHTML = `${img.naturalWidth} &times; ${img.naturalHeight} Portrait`;
+						} else {
+							stage.style.aspectRatio = '16 / 10';
+							stage.style.maxWidth = '100%';
+							stage.style.margin = '0';
+							if (dimText) dimText.innerHTML = `${img.naturalWidth} &times; ${img.naturalHeight} Landscape`;
+						}
+					}
+					document.getElementById('previewBasePhoto').src = img.src;
+					const btnLandscape = document.getElementById('btnPhotoLandscape');
+					const btnPortrait = document.getElementById('btnPhotoPortrait');
+					const btnCustom = document.getElementById('btnPhotoCustom');
+					if (btnCustom) btnCustom.className = 'btn btn-sm btn-outline-warning rounded-pill active';
+					if (btnLandscape) btnLandscape.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+					if (btnPortrait) btnPortrait.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+					updateLivePreview();
+				};
+				img.src = URL.createObjectURL(file);
 			}
 		}
 
@@ -2392,6 +2451,11 @@
 				formData.append('logo', uploadedLogoFile);
 			}
 
+			const photographerId = "{{ request('photographer_id') }}";
+			if (photographerId) {
+				formData.append('photographer_id', photographerId);
+			}
+
 			fetch("{{ route('admin.dummy.save') }}", {
 				method: 'POST',
 				headers: {
@@ -2487,6 +2551,15 @@
 			onWaterLensControlChange();
 			updateLivePreview();
 		});
+		function switchPhotographerScope(photographerId) {
+			const url = new URL(window.location.href);
+			if (photographerId) {
+				url.searchParams.set('photographer_id', photographerId);
+			} else {
+				url.searchParams.delete('photographer_id');
+			}
+			window.location.href = url.toString();
+		}
 	</script>
 </body>
 </html>

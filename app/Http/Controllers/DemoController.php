@@ -62,7 +62,9 @@ class DemoController extends Controller
             ]
         );
 
-        return view('demo.admin-dummy-event', compact('categories', 'dummyEvents', 'selectedEvent', 'watermarkSetting'));
+        $photographers = User::where('role', 'photographer')->orderBy('name')->get();
+
+        return view('demo.admin-dummy-event', compact('categories', 'dummyEvents', 'selectedEvent', 'watermarkSetting', 'photographers'));
     }
 
     /**
@@ -76,6 +78,7 @@ class DemoController extends Controller
             'event_date' => 'required|date',
             'location' => 'required|string|max:255',
             'starting_price' => 'nullable|string|max:50',
+            'photographer_id' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
             'cover_image' => 'nullable|image|max:10240',
             'cover_image_url' => 'nullable|url',
@@ -83,6 +86,7 @@ class DemoController extends Controller
 
         $category = Category::find($validated['category_id']);
         $coverImageUrl = $validated['cover_image_url'] ?? null;
+        $photographer = ! empty($validated['photographer_id']) ? User::find($validated['photographer_id']) : null;
 
         if ($request->hasFile('cover_image')) {
             $path = $request->file('cover_image')->store('uploads/demo/covers', 'public');
@@ -100,6 +104,8 @@ class DemoController extends Controller
             'slug' => $slug,
             'category_id' => $category->id,
             'category_name' => $category->name,
+            'photographer_id' => $photographer?->id,
+            'photographer_name' => $photographer?->name,
             'location' => $validated['location'],
             'event_date' => $validated['event_date'],
             'starting_price' => $validated['starting_price'] ?? 'From R50',
@@ -191,6 +197,7 @@ class DemoController extends Controller
 
                 $photo = EventPhoto::create([
                     'event_id' => $event->id,
+                    'photographer_id' => $event->photographer_id,
                     'file_path' => $publicPath,
                     'original_name' => $originalName,
                     'title' => pathinfo($originalName, PATHINFO_FILENAME),
@@ -205,7 +212,7 @@ class DemoController extends Controller
                     'dimensions' => $meta['dimensions'],
                     'file_size' => $meta['file_size'],
                     'captured_at' => $meta['captured_at'],
-                    'photographer_name' => $meta['photographer_name'] ?? 'Demo Photographer',
+                    'photographer_name' => $event->photographer_name ?? ($meta['photographer_name'] ?? 'Demo Photographer'),
                     'copyright' => $meta['copyright'] ?? '© 2026 PhotoX All Rights Reserved',
                     'personal_price' => $personalPrice,
                     'commercial_price' => $commercialPrice,
@@ -306,6 +313,7 @@ class DemoController extends Controller
             'event_date' => 'required|date',
             'location' => 'required|string|max:255',
             'starting_price' => 'nullable|string|max:50',
+            'photographer_id' => 'nullable|exists:users,id',
             'allow_individual_sales' => 'nullable|boolean',
             'full_gallery_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
@@ -315,16 +323,21 @@ class DemoController extends Controller
 
         $category = Category::find($validated['category_id']);
         $coverImageUrl = $validated['cover_image_url'] ?? $event->cover_image;
+        $photographer = ! empty($validated['photographer_id']) ? User::find($validated['photographer_id']) : null;
 
         if ($request->hasFile('cover_image')) {
             $path = $request->file('cover_image')->store('uploads/demo/covers', 'public');
             $coverImageUrl = '/storage/'.$path;
         }
 
+        $photographerChanged = ($event->photographer_id != ($photographer?->id));
+
         $event->update([
             'title' => $validated['title'],
             'category_id' => $category->id,
             'category_name' => $category->name,
+            'photographer_id' => $photographer?->id,
+            'photographer_name' => $photographer?->name,
             'location' => $validated['location'],
             'event_date' => $validated['event_date'],
             'starting_price' => $validated['starting_price'] ?? 'From R50',
@@ -333,6 +346,21 @@ class DemoController extends Controller
             'description' => $validated['description'] ?? $event->description,
             'cover_image' => $coverImageUrl,
         ]);
+
+        // When photographer changes, update event photos and invalidate watermark cache
+        if ($photographerChanged) {
+            EventPhoto::where('event_id', $event->id)->update([
+                'photographer_id' => $photographer?->id,
+                'photographer_name' => $photographer?->name ?? 'Demo Photographer',
+            ]);
+
+            foreach ($event->photos as $p) {
+                $wmPath = storage_path('app/public/uploads/demo/watermarked/'.$p->id.'_wm.jpg');
+                if (file_exists($wmPath)) {
+                    @unlink($wmPath);
+                }
+            }
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
@@ -343,7 +371,7 @@ class DemoController extends Controller
         }
 
         return redirect()->route('admin.dummy.event', ['event_id' => $event->id])
-            ->with('success', 'Event settings and pricing rules updated successfully!');
+            ->with('success', 'Event settings and photographer watermark association updated successfully!');
     }
 
     /**
@@ -955,18 +983,20 @@ class DemoController extends Controller
             $count++;
         }
 
-        $setting = WatermarkSetting::firstOrCreate(['user_id' => null]);
+        $photographerId = $event->photographer_id;
+        $setting = $this->resolveWatermarkSetting($photographerId);
+        $creatorName = $event->photographer_name ?? 'PhotoX Platform Default';
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => "Re-applied saved watermark '{$setting->watermark_pattern}' (Color: {$setting->watermark_color}) to all {$count} photos!",
+                'message' => "Re-applied watermark ({$creatorName} - '{$setting->watermark_pattern}', Color: {$setting->watermark_color}) to all {$count} photos!",
                 'count' => $count,
             ]);
         }
 
         return redirect()->route('admin.dummy.event', ['event_id' => $eventId])
-            ->with('success', "Re-applied saved watermark '{$setting->watermark_pattern}' (Color: {$setting->watermark_color}) to all {$count} photos successfully!");
+            ->with('success', "Re-applied watermark ({$creatorName} - '{$setting->watermark_pattern}', Color: {$setting->watermark_color}) to all {$count} photos successfully!");
     }
 
     /**

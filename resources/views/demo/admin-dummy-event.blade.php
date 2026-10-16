@@ -459,21 +459,132 @@
 								</form>
 								@if($selectedEvent)
 									<div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid #1a2c3d;">
-										<div class="d-flex gap-3 align-items-center justify-content-between">
+										<div class="d-flex gap-3 align-items-center justify-content-between flex-wrap">
 											<div class="d-flex gap-3 align-items-center">
 												<img src="{{ $selectedEvent->cover_image }}" alt="{{ $selectedEvent->title }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
 												<div>
 													<h6 class="mb-1 text-white fw-bold">{{ $selectedEvent->title }}</h6>
 													<span class="badge bg-primary" style="font-size: 0.7rem;">{{ $selectedEvent->category_name }}</span>
+													@if($selectedEvent->allow_individual_sales ?? true)
+														<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.7rem;">
+															<i class="bi bi-tag me-1"></i> Individual &amp; Bundle
+														</span>
+													@else
+														<span class="badge bg-warning text-dark fw-bold" style="font-size: 0.7rem;">
+															<i class="bi bi-box-seam-fill me-1"></i> Complete Gallery Only (R{{ number_format($selectedEvent->full_gallery_price ?: 450, 0) }})
+														</span>
+													@endif
+													@if($selectedEvent->photographer_id)
+														<span class="badge bg-warning text-dark font-monospace" style="font-size: 0.7rem;">
+															<i class="bi bi-camera-fill me-1"></i> {{ $selectedEvent->photographer_name }} (Custom Watermark)
+														</span>
+													@else
+														<span class="badge bg-secondary bg-opacity-50 text-white" style="font-size: 0.7rem;">
+															<i class="bi bi-shield-lock me-1"></i> PhotoX Platform (Admin Watermark)
+														</span>
+													@endif
 													<small class="text-muted d-block mt-1"><i class="bi bi-calendar3 me-1"></i>{{ $selectedEvent->event_date ? $selectedEvent->event_date->format('M d, Y') : '' }} · {{ $selectedEvent->location }}</small>
 												</div>
 											</div>
-											<form action="{{ route('admin.dummy.event.delete', $selectedEvent->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event and all its photos from the server?');">
-												@csrf
-												@method('DELETE')
-												<button type="submit" class="btn btn-sm btn-outline-danger" title="Delete event and all photos">
-													<i class="bi bi-trash me-1"></i> Delete Event
+											<div class="d-flex gap-2 align-items-center">
+												<button type="button" class="btn btn-sm btn-outline-warning" onclick="document.getElementById('editEventSettingsBox').classList.toggle('d-none');">
+													<i class="bi bi-pencil-square me-1"></i> Edit Settings &amp; Pricing
 												</button>
+												<form action="{{ route('admin.dummy.event.delete', $selectedEvent->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event and all its photos from the server?');">
+													@csrf
+													@method('DELETE')
+													<button type="submit" class="btn btn-sm btn-outline-danger" title="Delete event and all photos">
+														<i class="bi bi-trash me-1"></i> Delete
+													</button>
+												</form>
+											</div>
+										</div>
+
+										<!-- Collapsible Edit Gallery Form -->
+										<div id="editEventSettingsBox" class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-none">
+											<h6 class="text-warning fw-bold mb-3"><i class="bi bi-sliders me-1"></i> Update Gallery Settings &amp; Pricing Mode</h6>
+											<form action="{{ route('admin.dummy.event.update', $selectedEvent->id) }}" method="POST" enctype="multipart/form-data">
+												@csrf
+												<div class="mb-3">
+													<label class="form-label">Event Title</label>
+													<input type="text" name="title" class="form-control" value="{{ $selectedEvent->title }}" required>
+												</div>
+
+												<div class="mb-3">
+													<label class="form-label text-warning"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+													<select name="photographer_id" class="form-select border-warning">
+														<option value="">— PhotoX Platform Default (Admin Watermark) —</option>
+														@foreach($photographers as $ph)
+															<option value="{{ $ph->id }}" {{ (string)old('photographer_id', $selectedEvent->photographer_id) === (string)$ph->id ? 'selected' : '' }}>
+																{{ $ph->name }} ({{ $ph->email }}) — {{ $ph->business_name ?? 'Photographer' }}
+															</option>
+														@endforeach
+													</select>
+													<small class="text-muted d-block mt-1">Photos and watermark proofs in this event will use this photographer's custom watermark settings.</small>
+												</div>
+
+												<div class="row g-2 mb-3">
+													<div class="col-sm-6">
+														<label class="form-label">Category</label>
+														<select name="category_id" class="form-select" required>
+															@foreach($categories as $cat)
+																<option value="{{ $cat->id }}" {{ $selectedEvent->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+															@endforeach
+														</select>
+													</div>
+													<div class="col-sm-6">
+														<label class="form-label">Event Date</label>
+														<input type="date" name="event_date" class="form-control" value="{{ $selectedEvent->event_date ? $selectedEvent->event_date->format('Y-m-d') : date('Y-m-d') }}" required>
+													</div>
+												</div>
+
+												<div class="row g-2 mb-3">
+													<div class="col-sm-6">
+														<label class="form-label">Location</label>
+														<input type="text" name="location" class="form-control" value="{{ $selectedEvent->location }}" required>
+													</div>
+													<div class="col-sm-6">
+														<label class="form-label">Starting Price Display</label>
+														<input type="text" name="starting_price" class="form-control" value="{{ $selectedEvent->starting_price }}">
+													</div>
+												</div>
+
+												<!-- Pricing Mode: Complete Gallery Only vs Individual Sales -->
+												<div class="p-3 mb-3 rounded" style="background: rgba(255, 138, 0, 0.08); border: 1px solid rgba(255, 138, 0, 0.3);">
+													<label class="form-label text-warning d-block mb-2"><i class="bi bi-cash-coin me-1"></i> Gallery Sales &amp; Pricing Mode</label>
+													<div class="form-check mb-2">
+														<input class="form-check-input" type="radio" name="allow_individual_sales" id="modeBoth_{{ $selectedEvent->id }}" value="1" {{ ($selectedEvent->allow_individual_sales ?? true) ? 'checked' : '' }}>
+														<label class="form-check-label text-white" for="modeBoth_{{ $selectedEvent->id }}">
+															<strong>Allow Individual Photos &amp; Complete Bundle</strong>
+															<small class="d-block text-muted">Customers can buy individual photos (e.g. R50/R75) OR buy the whole gallery.</small>
+														</label>
+													</div>
+													<div class="form-check mb-3">
+														<input class="form-check-input" type="radio" name="allow_individual_sales" id="modeGalleryOnly_{{ $selectedEvent->id }}" value="0" {{ !($selectedEvent->allow_individual_sales ?? true) ? 'checked' : '' }}>
+														<label class="form-check-label text-white" for="modeGalleryOnly_{{ $selectedEvent->id }}">
+															<strong class="text-warning">Sell ONLY Complete Gallery (No Individual Sales)</strong>
+															<small class="d-block text-muted">Only the complete gallery price is offered. Individual photo purchase is disabled on cards.</small>
+														</label>
+													</div>
+
+													<div>
+														<label class="form-label text-white">Complete Gallery Package Price (ZAR)</label>
+														<div class="input-group">
+															<span class="input-group-text bg-dark text-warning border-secondary">R</span>
+															<input type="number" step="0.01" min="0" name="full_gallery_price" class="form-control" value="{{ $selectedEvent->full_gallery_price ?: 450.00 }}">
+														</div>
+													</div>
+												</div>
+
+												<div class="mb-3">
+													<label class="form-label">Description</label>
+													<textarea name="description" rows="2" class="form-control">{{ $selectedEvent->description }}</textarea>
+												</div>
+
+												<div class="d-flex justify-content-end gap-2">
+													<button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('editEventSettingsBox').classList.add('d-none');">Cancel</button>
+													<button type="submit" class="btn btn-sm btn-primary-px">Save Changes</button>
+												</div>
 											</form>
 										</div>
 									</div>
@@ -493,6 +604,19 @@
 								<div class="mb-3">
 									<label class="form-label">Event Title *</label>
 									<input type="text" name="title" class="form-control" placeholder="e.g. Cape Town Marathon 2026 Test" required value="{{ old('title') }}">
+								</div>
+
+								<div class="mb-3">
+									<label class="form-label text-warning"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+									<select name="photographer_id" class="form-select border-warning">
+										<option value="">— PhotoX Platform Default (Admin Watermark) —</option>
+										@foreach($photographers as $ph)
+											<option value="{{ $ph->id }}" {{ (string)old('photographer_id') === (string)$ph->id ? 'selected' : '' }}>
+												{{ $ph->name }} ({{ $ph->email }}) — {{ $ph->business_name ?? 'Photographer' }}
+											</option>
+										@endforeach
+									</select>
+									<small class="text-muted d-block mt-1">Select a photographer so their custom watermark studio settings are automatically applied to photos in this event.</small>
 								</div>
 
 								<div class="row g-2 mb-3">
@@ -665,10 +789,18 @@
 							@if($selectedEvent && $selectedEvent->photos->isNotEmpty())
 								<div class="row g-3" id="photosGrid">
 									@foreach($selectedEvent->photos as $photo)
+										@php
+											$isBestPhoto = ($selectedEvent->cover_photo_id == $photo->id) || (!empty($photo->is_featured));
+										@endphp
 										<div class="col-md-6 photo-col">
-											<div class="photo-card">
+											<div class="photo-card position-relative {{ $isBestPhoto ? 'border-warning border-2' : '' }}">
 												<!-- Photo Preview with Watermark Overlay -->
-												<div class="photo-preview-box">
+												<div class="photo-preview-box position-relative">
+													@if($isBestPhoto)
+														<span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark shadow-sm fw-bold" style="z-index: 10; font-size: 0.72rem;">
+															<i class="bi bi-star-fill me-1"></i> BEST COVER PHOTO (HOMEPAGE)
+														</span>
+													@endif
 													<img class="main-img" src="/protected-photo/{{ $photo->id }}?v={{ time() }}" alt="{{ $photo->title }}" oncontextmenu="return false;" draggable="false">
 													<img class="clean-img d-none position-absolute top-0 start-0 w-100 h-100 object-fit-cover" src="{{ $photo->file_path }}" alt="Clean Original" oncontextmenu="return false;" draggable="false">
 
@@ -705,8 +837,14 @@
 													<div class="d-flex justify-content-between align-items-start mb-2 pb-1 border-bottom border-secondary">
 														<span class="text-truncate fw-bold text-white" style="max-width: 160px;">{{ $photo->title }}</span>
 														<div>
-															<span class="price-pill personal me-1">Personal: R{{ number_format($photo->personal_price, 0) }}</span>
-															<span class="price-pill commercial">Commercial: R{{ number_format($photo->commercial_price, 0) }}</span>
+															@if($selectedEvent->allow_individual_sales ?? true)
+																<span class="price-pill personal me-1">Personal: R{{ number_format($photo->personal_price, 0) }}</span>
+																<span class="price-pill commercial">Commercial: R{{ number_format($photo->commercial_price, 0) }}</span>
+															@else
+																<span class="badge bg-warning text-dark py-1 px-2" style="font-size: 0.68rem; font-weight: 700;">
+																	<i class="bi bi-box-seam-fill me-1"></i> Complete Gallery Only
+																</span>
+															@endif
 														</div>
 													</div>
 
@@ -732,12 +870,26 @@
 														<span>{{ $photo->dimensions ?? '6.1MP • 3013 x 2010' }} · {{ $photo->file_size ?? '4.2 MB' }}</span>
 													</div>
 
-													<div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary">
-														<small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ $photo->captured_at ? $photo->captured_at->format('M d, Y · g:i A') : 'Aug 18, 2026' }}</small>
+													<div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-secondary flex-wrap gap-1">
+														<div class="d-flex align-items-center gap-2">
+															<small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ $photo->captured_at ? $photo->captured_at->format('M d, Y') : 'Recent' }}</small>
+															@if($isBestPhoto)
+																<span class="badge bg-warning text-dark py-1 px-2" style="font-size: 0.68rem; font-weight: 700;">
+																	<i class="bi bi-star-fill me-1"></i> ACTIVE HOME COVER
+																</span>
+															@else
+																<form action="{{ route('admin.dummy.photo.cover', $photo->id) }}" method="POST" class="d-inline">
+																	@csrf
+																	<button type="submit" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size: 0.68rem;" title="Select this photo as the single best image to display on homepage">
+																		<i class="bi bi-star me-1"></i> Set as Best Cover
+																	</button>
+																</form>
+															@endif
+														</div>
 														<form action="{{ route('admin.dummy.photo.delete', $photo->id) }}" method="POST" onsubmit="return confirm('Delete this test photo?')">
 															@csrf
 															@method('DELETE')
-															<button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none">
+															<button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" style="font-size: 0.75rem;">
 																<i class="bi bi-trash"></i> Delete
 															</button>
 														</form>
@@ -900,84 +1052,93 @@
 			const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '{{ csrf_token() }}';
 
 			const total = queuedFiles.length;
+			const batchSize = 15;
+			let processedCount = 0;
 
-			const formData = new FormData();
-			formData.append('event_id', eventId);
-			formData.append('personal_price', personalPrice);
-			formData.append('commercial_price', commercialPrice);
-			formData.append('_token', csrfToken);
-
-			queuedFiles.forEach(file => {
-				formData.append('photos[]', file);
-			});
-
-			progressText.textContent = `Uploading ${total} photo(s) to server...`;
-			progressBar.style.width = '10%';
-			progressPercent.textContent = '10%';
-
-			const xhr = new XMLHttpRequest();
-			xhr.open('POST', "{{ route('admin.dummy.photos.upload') }}", true);
-			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-			xhr.setRequestHeader('Accept', 'application/json');
-			xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
-
-			xhr.upload.onprogress = function(e) {
-				if (e.lengthComputable) {
-					const pct = Math.min(85, Math.round((e.loaded / e.total) * 85));
-					progressBar.style.width = pct + '%';
-					progressPercent.textContent = pct + '%';
-					if (pct >= 85) {
-						progressText.textContent = 'Server extracting EXIF metadata & burning Fotto watermarks...';
-					} else {
-						progressText.textContent = `Uploading ${total} photo(s) (${pct}%)...`;
-					}
-				}
-			};
-
-			xhr.onload = function() {
-				if (xhr.status >= 200 && xhr.status < 300) {
-					try {
-						const result = JSON.parse(xhr.responseText);
-						if (result.success) {
-							progressBar.style.width = '100%';
-							progressPercent.textContent = '100%';
-							progressText.textContent = result.message || 'Photos uploaded & watermarked successfully!';
-							setTimeout(() => {
-								window.location.reload();
-							}, 800);
-							return;
-						} else {
-							alert('Upload failed: ' + (result.message || 'Unknown error.'));
-						}
-					} catch(err) {
-						// Server returned non-JSON 200 (redirect or HTML)
+			function uploadBatch(startIndex) {
+				if (startIndex >= total) {
+					progressBar.style.width = '100%';
+					progressPercent.textContent = '100%';
+					progressText.textContent = `All ${total} photos uploaded & watermarked successfully!`;
+					setTimeout(() => {
 						window.location.reload();
-						return;
-					}
-				} else if (xhr.status === 419) {
-					alert('Session expired! Please refresh this page and try uploading again.');
-				} else if (xhr.status === 413) {
-					alert('File upload too large! Total payload exceeds server limits.');
-				} else {
-					let errorMsg = 'Server returned HTTP ' + xhr.status;
-					try {
-						const errData = JSON.parse(xhr.responseText);
-						if (errData && errData.message) errorMsg = errData.message;
-					} catch(e) {}
-					alert('Upload Failed: ' + errorMsg);
+					}, 900);
+					return;
 				}
 
-				startBtn.disabled = false;
-				startBtn.innerHTML = '<i class="bi bi-shield-lock-fill me-1"></i> Upload Queue &amp; Generate Watermarked Proofs';
-				progressContainer.classList.add('d-none');
-			};
+				const endIndex = Math.min(startIndex + batchSize, total);
+				const batchFiles = queuedFiles.slice(startIndex, endIndex);
 
-			xhr.onerror = function() {
-				alert('Network error occurred while uploading. Please check connection and try again.');
+				const formData = new FormData();
+				formData.append('event_id', eventId);
+				formData.append('personal_price', personalPrice);
+				formData.append('commercial_price', commercialPrice);
+				formData.append('_token', csrfToken);
+
+				batchFiles.forEach(file => {
+					formData.append('photos[]', file);
+				});
+
+				const batchNum = Math.floor(startIndex / batchSize) + 1;
+				const totalBatches = Math.ceil(total / batchSize);
+				progressText.textContent = `Uploading batch ${batchNum} of ${totalBatches} (${startIndex + 1}–${endIndex} of ${total} photos)...`;
+
+				const xhr = new XMLHttpRequest();
+				xhr.open('POST', "{{ route('admin.dummy.photos.upload') }}", true);
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+				xhr.setRequestHeader('Accept', 'application/json');
+				xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+
+				xhr.upload.onprogress = function(e) {
+					if (e.lengthComputable) {
+						const batchPct = e.loaded / e.total;
+						const overallPct = Math.min(95, Math.round(((startIndex + (batchFiles.length * batchPct)) / total) * 100));
+						progressBar.style.width = overallPct + '%';
+						progressPercent.textContent = overallPct + '%';
+					}
+				};
+
+				xhr.onload = function() {
+					if (xhr.status >= 200 && xhr.status < 300) {
+						processedCount += batchFiles.length;
+						const overallPct = Math.round((processedCount / total) * 100);
+						progressBar.style.width = overallPct + '%';
+						progressPercent.textContent = overallPct + '%';
+						// Upload next batch
+						uploadBatch(endIndex);
+					} else if (xhr.status === 419) {
+						alert('Session expired! Please refresh this page and try uploading again.');
+						resetUploadBtn();
+					} else if (xhr.status === 413) {
+						alert('Batch payload too large! Please try uploading smaller batches.');
+						resetUploadBtn();
+					} else {
+						let errorMsg = 'Server returned HTTP ' + xhr.status;
+						try {
+							const errData = JSON.parse(xhr.responseText);
+							if (errData && errData.message) errorMsg = errData.message;
+						} catch(e) {}
+						alert('Upload Failed: ' + errorMsg);
+						resetUploadBtn();
+					}
+				};
+
+				xhr.onerror = function() {
+					alert('Network error occurred while uploading. Please check connection and try again.');
+					resetUploadBtn();
+				};
+
+				xhr.send(formData);
+			}
+
+			function resetUploadBtn() {
 				startBtn.disabled = false;
 				startBtn.innerHTML = '<i class="bi bi-shield-lock-fill me-1"></i> Upload Queue &amp; Generate Watermarked Proofs';
 				progressContainer.classList.add('d-none');
-			};
+			}
+
+			// Start uploading first batch
+			uploadBatch(0);
 
 			xhr.send(formData);
 		}

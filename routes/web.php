@@ -23,7 +23,9 @@ use App\Http\Controllers\Web\MembershipController as WebMembershipController;
 use App\Http\Controllers\Web\PhotographerController as WebPhotographerController;
 use App\Http\Controllers\Web\PhotographerPortalController;
 use App\Http\Controllers\Web\YocoTestController;
+use App\Models\User;
 use App\Models\WatermarkSetting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -204,14 +206,19 @@ Route::prefix('admin')->group(function () {
 
     // Dedicated Dynamic Watermark Studio route for admin/dummy (Used for client video recording)
     // Watermark Studio (Full SuperAdmin Configuration & Database Save)
-    Route::get('/watermarks', function () {
+    Route::get('/watermarks', function (Request $request) {
+        $photographers = User::where('role', 'photographer')->orderBy('name')->get();
+        $photographerId = $request->query('photographer_id');
+        $queryUserId = ! empty($photographerId) ? (int) $photographerId : null;
+        $activePhotographer = $queryUserId ? User::find($queryUserId) : null;
+
         $setting = WatermarkSetting::firstOrCreate(
-            ['user_id' => null],
+            ['user_id' => $queryUserId],
             [
                 'is_watermark_enabled' => true,
                 'watermark_type' => 'both',
                 'watermark_color' => '#ff8a00',
-                'watermark_text' => 'PhotoX',
+                'watermark_text' => $activePhotographer ? $activePhotographer->name : 'PhotoX',
                 'font_size' => 25,
                 'opacity' => 65,
                 'rotation' => -12,
@@ -228,7 +235,7 @@ Route::prefix('admin')->group(function () {
             ]
         );
 
-        return view('demo.watermark-studio', compact('setting'));
+        return view('demo.watermark-studio', compact('setting', 'photographers', 'activePhotographer'));
     })->name('admin.watermarks.index');
 
     Route::get('/watermark', fn () => redirect()->route('admin.watermarks.index'));
@@ -256,10 +263,36 @@ Route::prefix('admin')->group(function () {
     Route::post('/ops-internal-vault-99/reapply-watermarks', [DemoController::class, 'reapplyWatermarks'])->name('admin.dummy.photos.reapply');
 
     // Dedicated Client Test / Interactive Demonstration Route (Read-Only / No Save Button)
-    Route::get('/client_test-dummy', function () {
-        $setting = WatermarkSetting::firstOrCreate(['user_id' => null]);
+    Route::get('/client_test-dummy', function (Request $request) {
+        $photographers = User::where('role', 'photographer')->orderBy('name')->get();
+        $photographerId = $request->query('photographer_id');
+        $queryUserId = ! empty($photographerId) ? (int) $photographerId : null;
+        $activePhotographer = $queryUserId ? User::find($queryUserId) : null;
 
-        return view('demo.client-test-watermark', compact('setting'));
+        $setting = WatermarkSetting::firstOrCreate(
+            ['user_id' => $queryUserId],
+            [
+                'is_watermark_enabled' => true,
+                'watermark_type' => 'both',
+                'watermark_color' => '#ff8a00',
+                'watermark_text' => $activePhotographer ? $activePhotographer->name : 'PhotoX',
+                'font_size' => 25,
+                'opacity' => 65,
+                'rotation' => -12,
+                'is_tiled' => true,
+                'logo_path' => '/uploads/watermarks/swirl_logo.png',
+                'logo_size' => 45,
+                'both_layout' => 'fotto_style',
+                'both_gap' => 8,
+                'security_badge_text' => 'Do not screenshot',
+                'has_cross_lines' => true,
+                'has_security_badge' => true,
+                'is_download_protection_enabled' => true,
+                'is_motion_mask_enabled' => false,
+            ]
+        );
+
+        return view('demo.client-test-watermark', compact('setting', 'photographers', 'activePhotographer'));
     })->name('admin.client.test.dummy');
     Route::get('/client-test-dummy', fn () => redirect()->route('admin.client.test.dummy'));
     Route::get('/client_test', fn () => redirect()->route('admin.client.test.dummy'));

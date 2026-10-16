@@ -71,9 +71,12 @@ class WatermarkController extends Controller
             'sponsor_margin' => 'nullable|integer|min:0|max:100',
             'logo' => 'nullable|image|mimes:png,svg,webp|max:4096',
             'sponsor_logo' => 'nullable|image|mimes:png,svg,webp,jpg,jpeg|max:4096',
+            'photographer_id' => 'nullable|exists:users,id',
         ]);
 
-        $setting = WatermarkSetting::firstOrCreate(['user_id' => null]);
+        $photographerId = $request->input('photographer_id');
+        $userId = ! empty($photographerId) ? (int) $photographerId : null;
+        $setting = WatermarkSetting::firstOrCreate(['user_id' => $userId]);
 
         $data = [
             'is_watermark_enabled' => $request->boolean('is_watermark_enabled', true),

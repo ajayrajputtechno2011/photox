@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\MediaAsset;
 use Illuminate\Http\Request;
 
 class BannerController extends Controller
@@ -59,9 +60,33 @@ class BannerController extends Controller
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('banners', 'public');
             $imageUrl = '/storage/'.$path;
+            MediaAsset::firstOrCreate(
+                ['file_path' => $imageUrl],
+                [
+                    'filename' => basename($path),
+                    'original_name' => $request->file('image_file')->getClientOriginalName(),
+                    'disk' => 'public',
+                    'mime_type' => $request->file('image_file')->getClientMimeType(),
+                    'file_size' => $request->file('image_file')->getSize(),
+                    'title' => $validated['title'] ?? 'Banner Creative',
+                    'folder' => 'banners',
+                ]
+            );
         } elseif ($request->hasFile('image')) {
             $path = $request->file('image')->store('banners', 'public');
             $imageUrl = '/storage/'.$path;
+            MediaAsset::firstOrCreate(
+                ['file_path' => $imageUrl],
+                [
+                    'filename' => basename($path),
+                    'original_name' => $request->file('image')->getClientOriginalName(),
+                    'disk' => 'public',
+                    'mime_type' => $request->file('image')->getClientMimeType(),
+                    'file_size' => $request->file('image')->getSize(),
+                    'title' => $validated['title'] ?? 'Banner Creative',
+                    'folder' => 'banners',
+                ]
+            );
         }
 
         if (empty($imageUrl)) {
@@ -114,9 +139,33 @@ class BannerController extends Controller
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('banners', 'public');
             $imageUrl = '/storage/'.$path;
+            MediaAsset::firstOrCreate(
+                ['file_path' => $imageUrl],
+                [
+                    'filename' => basename($path),
+                    'original_name' => $request->file('image_file')->getClientOriginalName(),
+                    'disk' => 'public',
+                    'mime_type' => $request->file('image_file')->getClientMimeType(),
+                    'file_size' => $request->file('image_file')->getSize(),
+                    'title' => $validated['title'] ?? ($banner->title ?: 'Banner Creative'),
+                    'folder' => 'banners',
+                ]
+            );
         } elseif ($request->hasFile('image')) {
             $path = $request->file('image')->store('banners', 'public');
             $imageUrl = '/storage/'.$path;
+            MediaAsset::firstOrCreate(
+                ['file_path' => $imageUrl],
+                [
+                    'filename' => basename($path),
+                    'original_name' => $request->file('image')->getClientOriginalName(),
+                    'disk' => 'public',
+                    'mime_type' => $request->file('image')->getClientMimeType(),
+                    'file_size' => $request->file('image')->getSize(),
+                    'title' => $validated['title'] ?? ($banner->title ?: 'Banner Creative'),
+                    'folder' => 'banners',
+                ]
+            );
         } elseif (! empty($validated['image_url'])) {
             $imageUrl = $validated['image_url'];
         }

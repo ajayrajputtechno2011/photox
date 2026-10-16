@@ -114,6 +114,7 @@
         <div class="nav-label nav-label-spaced">AI &amp; Media</div>
         <nav class="nav flex-column sidebar-nav">
           <a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
+          <a class="nav-link" href="/admin/media"><i class="bi bi-images"></i><span>Media Manager</span></a>
           <a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
           <a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
         </nav>
@@ -380,12 +381,14 @@
 																<div class="mb-3">
 																	<label class="form-label">Current Image</label>
 																	<div class="mb-2 p-2 rounded w-100 text-center" style="background: #f8fafc; border: 1px solid #e2e8f0; overflow: hidden; max-width: 100%;">
-																		<img src="{{ $banner->image_url }}" alt="Preview" style="max-width: 100%; max-height: 140px; width: auto; height: auto; border-radius: 6px; object-fit: contain; display: block; margin: 0 auto;">
+																		<img id="bannerPreviewImg{{ $banner->id }}" src="{{ $banner->image_url }}" alt="Preview" style="max-width: 100%; max-height: 140px; width: auto; height: auto; border-radius: 6px; object-fit: contain; display: block; margin: 0 auto;">
 																	</div>
-																	<label class="form-label mt-2">Update Image URL</label>
-																	<input type="text" name="image_url" class="form-control" value="{{ $banner->image_url }}" placeholder="https://... or /storage/...">
-																	<div class="text-center my-2 text-muted small fw-semibold">— OR UPLOAD FILE —</div>
-																	<input type="file" name="image_file" class="form-control" accept="image/*">
+																	<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-2 py-2 fw-semibold" onclick="openMediaLibraryPicker('#bannerImageUrlInput{{ $banner->id }}', '#bannerPreviewImg{{ $banner->id }}')">
+																		<i class="bi bi-images me-1"></i> Choose from Media Library
+																	</button>
+																	<div class="text-center my-1 text-muted small fw-semibold">— OR UPDATE URL / UPLOAD NEW —</div>
+																	<input type="text" id="bannerImageUrlInput{{ $banner->id }}" name="image_url" class="form-control mb-2" value="{{ $banner->image_url }}" placeholder="https://... or /storage/..." oninput="document.getElementById('bannerPreviewImg{{ $banner->id }}').src = this.value">
+																	<input type="file" name="image_file" class="form-control" accept="image/*" onchange="if(this.files[0]){ const r = new FileReader(); r.onload=e=>document.getElementById('bannerPreviewImg{{ $banner->id }}').src=e.target.result; r.readAsDataURL(this.files[0]); }">
 																</div>
 																<div class="row">
 																	<div class="col-6 mb-3">
@@ -502,10 +505,16 @@
 							• <strong>Image Preview (Lightbox Ad):</strong> 1200 &times; 600 px or standard landscape
 						</div>
 						<div class="mb-3">
-							<label class="form-label">Image URL <small class="text-muted fw-normal">(or upload file below)</small></label>
-							<input type="text" name="image_url" class="form-control" placeholder="https://images.unsplash.com/... or /storage/...">
-							<div class="text-center my-2 text-muted small fw-semibold">— OR UPLOAD FILE —</div>
-							<input type="file" name="image_file" class="form-control" accept="image/*">
+							<label class="form-label">Banner Image</label>
+							<div class="mb-2 p-2 rounded w-100 text-center" id="newBannerPreviewContainer" style="background: #f8fafc; border: 1px solid #e2e8f0; overflow: hidden; max-width: 100%; display: none;">
+								<img id="newBannerPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 140px; width: auto; height: auto; border-radius: 6px; object-fit: contain; display: block; margin: 0 auto;">
+							</div>
+							<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-2 py-2 fw-semibold" onclick="openMediaLibraryPicker('#newBannerImageUrlInput', '#newBannerPreviewImg'); document.getElementById('newBannerPreviewContainer').style.display='block';">
+								<i class="bi bi-images me-1"></i> Choose from Media Library
+							</button>
+							<div class="text-center my-1 text-muted small fw-semibold">— OR PASTE URL / UPLOAD FILE —</div>
+							<input type="text" id="newBannerImageUrlInput" name="image_url" class="form-control mb-2" placeholder="https://images.unsplash.com/... or /storage/..." oninput="if(this.value){ document.getElementById('newBannerPreviewContainer').style.display='block'; document.getElementById('newBannerPreviewImg').src=this.value; }">
+							<input type="file" name="image_file" class="form-control" accept="image/*" onchange="if(this.files[0]){ const r = new FileReader(); r.onload=e=>{ document.getElementById('newBannerPreviewContainer').style.display='block'; document.getElementById('newBannerPreviewImg').src=e.target.result; }; r.readAsDataURL(this.files[0]); }">
 						</div>
 						<div class="row">
 							<div class="col-6 mb-3">
@@ -567,6 +576,8 @@
 			</div>
 		</div>
 	</div>
+
+	@include('admin.partials.media-picker-modal')
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="{{ asset('admin-assets/js/app.js') }}"></script>

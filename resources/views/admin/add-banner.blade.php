@@ -44,6 +44,7 @@
         <div class="nav-label nav-label-spaced">AI &amp; Media</div>
         <nav class="nav flex-column sidebar-nav">
           <a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
+          <a class="nav-link" href="/admin/media"><i class="bi bi-images"></i><span>Media Manager</span></a>
           <a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
           <a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
         </nav>
@@ -216,13 +217,29 @@
               </div>
               <span class="form-step">03 / 03</span>
             </div>
+            <div class="mb-3 text-center">
+              <button type="button" class="btn btn-outline-info px-4 py-2 fw-semibold" onclick="openMediaLibraryPicker('#addBannerImageUrl', '#addBannerImagePreview')">
+                <i class="bi bi-images me-2"></i> Select from Media Library
+              </button>
+              <div class="text-muted small mt-1">Reuse an already uploaded banner artwork without re-uploading</div>
+            </div>
+
+            <div id="addBannerPreviewWrap" class="mb-3 text-center p-2 rounded" style="background: rgba(255,255,255,0.05); display: none;">
+              <img id="addBannerImagePreview" src="" alt="Selected Media" style="max-height: 180px; max-width: 100%; border-radius: 8px; object-fit: contain;">
+              <div class="mt-1"><span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i> Image Selected from Library</span></div>
+            </div>
+
+            <input type="hidden" id="addBannerImageUrl" name="image_url" value="" onchange="if(this.value){ document.getElementById('addBannerPreviewWrap').style.display='block'; document.getElementById('addBannerImagePreview').src=this.value; document.getElementById('selected-file-name').innerText = 'Selected from Library: ' + this.value; }">
+
+            <div class="text-center my-3 text-muted small fw-semibold">— OR UPLOAD NEW FILE FROM DEVICE —</div>
+
             <div class="upload-zone" onclick="document.getElementById('banner-image-input').click();" style="cursor: pointer;">
               <i class="bi bi-image"></i>
               <div>
                 <strong>Upload banner creative</strong>
                 <p>PNG, JPG or WebP · Recommended: 1200 x 600px (Hero 16:9) or 1200 x 200px (Wide Banner)</p>
               </div>
-              <input type="file" id="banner-image-input" name="image" accept="image/*" style="display:none;" onchange="if(this.files[0]) document.getElementById('selected-file-name').innerText = this.files[0].name;" />
+              <input type="file" id="banner-image-input" name="image" accept="image/*" style="display:none;" onchange="if(this.files[0]) { document.getElementById('selected-file-name').innerText = this.files[0].name; document.getElementById('addBannerPreviewWrap').style.display='none'; document.getElementById('addBannerImageUrl').value=''; }" />
               <button class="btn btn-outline-light" type="button" onclick="document.getElementById('banner-image-input').click();">
                 Choose file
               </button>
@@ -245,6 +262,9 @@
     </div>
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  @include('admin.partials.media-picker-modal')
+
   <script src="{{ asset('admin-assets/js/app.js') }}"></script>
 </body>
 </html>

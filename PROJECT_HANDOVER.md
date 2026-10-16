@@ -87,3 +87,40 @@ ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.live /etc/nginx/conf.d/
   - Active: `/etc/nginx/conf.d/photox.conf`
   - Live backup: `/etc/nginx/conf.d/photox.conf.live`
   - Holding backup: `/etc/nginx/conf.d/photox.conf.holding`
+
+---
+
+## 7. Client Feedback & Pending Tasks (Pending Backlog)
+
+The following points were provided by the client and are recorded in the backlog for completion:
+
+1. **Remove Stray Floater Arrow (`/photographers`):**
+   - **Client Note:** *"1 - we have a floater lol"*
+   - **Details:** A stray left arrow (`<`) floating element appears at the left edge of the screen on the Photographers page. Needs removal or proper containment within the slider track.
+
+2. **Spacing Reference Confirmed (`/membership`):**
+   - **Client Note:** *"2 - this spacing works best I think"*
+   - **Details:** The hero layout and banner frame spacing on `/membership` is approved by client and serves as the visual benchmark.
+
+3. **Lightbox Modal Banner Width (Portrait Photos):**
+   - **Client Note:** *"3 - I think we need to keep the banner full width of the black frame same as the landscape orientation. It becomes a bit small like this"*
+   - **Details:** In `#photoInspectorModal`, when viewing a vertical/portrait photo, the sponsor banner at the bottom shrinks to the portrait width. Fix so the banner always stays 100% full width of the black frame, identical to landscape orientation.
+
+4. **Landscape Lightbox Verification:**
+   - **Client Note:** *"4 - This is great, we can still shot the portrait orientation here"*
+   - **Details:** Landscape orientation preview is approved.
+
+5. **Conditional Banner Text Overlay (Event Details & Partner Frames):**
+   - **Client Note:** *"5 - text overlay still there even when I keep it blank"*
+   - **Details:** When the client uploads an image with pre-baked graphics and leaves the text/title empty in Admin, the template must NOT render default overlay text (`PHOTOX PARTNER`, `Explore events ↗`). Hide all overlay text elements whenever title/badge text is empty.
+
+6. **Payment Gateway Live Activation:**
+   - Yoco payment gateway is fully operational on dev (`https://photox.aitechnotech.in`).
+   - Kept in client presentation mode on live domain (`https://photox.co.za`) until final client instruction to enable live transactions.
+
+7. **Media Manager & Banner Dynamic Rotation (October 2026):**
+   - Added `rotation_interval` column to `banners` table; ad carousel rotates dynamically based on configured seconds per slide with hover pause/resume.
+   - Added `media_assets` table, `MediaAsset` model, and centralized Media Library at `/admin/media`.
+   - Integrated reusable Media Picker modal (`media-picker-modal.blade.php`) into Banner Add/Edit modals for seamless 1-click asset reuse without re-uploading.
+   - Synced and migrated on local dev and live VPS (`168.231.79.67`).
+

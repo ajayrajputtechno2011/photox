@@ -32,13 +32,14 @@ class AppServiceProvider extends ServiceProvider
             if (Schema::hasTable('banners')) {
                 View::composer('*', function ($view) {
                     $categoryFilter = request('category');
+                    $heroPlacements = ['events_hero', 'explore_hero', 'home_top'];
                     $baseQuery = Banner::where('is_active', true)
-                        ->where('placement', 'events_hero')
+                        ->whereIn('placement', $heroPlacements)
                         ->orderBy('sort_order');
 
                     if (! empty($categoryFilter) && $categoryFilter !== 'All categories') {
                         $targeted = Banner::where('is_active', true)
-                            ->where('placement', 'events_hero')
+                            ->whereIn('placement', $heroPlacements)
                             ->where(function ($q) use ($categoryFilter) {
                                 $q->where('category_name', $categoryFilter)
                                     ->orWhereHas('category', function ($sub) use ($categoryFilter) {
@@ -51,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
 
                         // Global banners (not assigned to any specific category) should display on all categories
                         $globalBanners = Banner::where('is_active', true)
-                            ->where('placement', 'events_hero')
+                            ->whereIn('placement', $heroPlacements)
                             ->whereNull('category_id')
                             ->where(function ($q) {
                                 $q->whereNull('category_name')->orWhere('category_name', '');

@@ -189,11 +189,16 @@
                 <label class="form-label" for="end-date">End date</label>
                 <input class="form-control" id="end-date" name="end_date" type="date" />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label class="form-label" for="order">Sort Order</label>
-                <input class="form-control" id="order" name="order" type="number" min="0" value="0" />
+                <input class="form-control" id="order" name="sort_order" type="number" min="0" value="0" />
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <label class="form-label" for="rotation_interval">Rotation Interval (Sec)</label>
+                <input class="form-control" id="rotation_interval" name="rotation_interval" type="number" min="1" max="120" value="5" placeholder="5" />
+                <small class="text-muted">Seconds banner stays active</small>
+              </div>
+              <div class="col-md-4">
                 <label class="form-label" for="status">Status</label>
                 <select class="form-select" id="status" name="is_active">
                   <option value="1">Active</option>
@@ -215,7 +220,7 @@
               <i class="bi bi-image"></i>
               <div>
                 <strong>Upload banner creative</strong>
-                <p>PNG, JPG or WebP · recommended 1200 x 400px or 728 x 90px</p>
+                <p>PNG, JPG or WebP · Recommended: 1200 x 600px (Hero 16:9) or 1200 x 200px (Wide Banner)</p>
               </div>
               <input type="file" id="banner-image-input" name="image" accept="image/*" style="display:none;" onchange="if(this.files[0]) document.getElementById('selected-file-name').innerText = this.files[0].name;" />
               <button class="btn btn-outline-light" type="button" onclick="document.getElementById('banner-image-input').click();">

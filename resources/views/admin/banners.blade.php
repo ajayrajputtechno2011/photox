@@ -253,6 +253,10 @@
 						<select name="placement" class="management-select" onchange="this.form.submit()">
 							<option value="">All Placements</option>
 							<option value="events_hero" {{ request('placement') === 'events_hero' ? 'selected' : '' }}>Explore Hero (Carousel)</option>
+							<option value="home_before_featured" {{ request('placement') === 'home_before_featured' ? 'selected' : '' }}>Home - Before Featured (100% Width)</option>
+							<option value="user_dashboard" {{ request('placement') === 'user_dashboard' ? 'selected' : '' }}>User / Customer Dashboard</option>
+							<option value="photographer_dashboard" {{ request('placement') === 'photographer_dashboard' ? 'selected' : '' }}>Photographer Dashboard</option>
+							<option value="mailer_banner" {{ request('placement') === 'mailer_banner' ? 'selected' : '' }}>Email Mailers &amp; Invoices</option>
 							<option value="home_top" {{ request('placement') === 'home_top' ? 'selected' : '' }}>Home Top</option>
 							<option value="event_detail" {{ request('placement') === 'event_detail' ? 'selected' : '' }}>Event Detail</option>
 							<option value="marketplace" {{ request('placement') === 'marketplace' ? 'selected' : '' }}>Marketplace</option>
@@ -279,6 +283,7 @@
 									<th>Placement</th>
 									<th>Target Category</th>
 									<th>Sort Order</th>
+									<th>Rotation</th>
 									<th>Status</th>
 									<th>Actions</th>
 								</tr>
@@ -308,6 +313,9 @@
 											@endif
 										</td>
 										<td>{{ $banner->sort_order }}</td>
+										<td>
+											<span class="badge bg-light text-dark border"><i class="bi bi-clock-history me-1 text-primary"></i>{{ $banner->rotation_interval ?? 5 }}s</span>
+										</td>
 										<td>
 											<form action="{{ route('admin.banners.toggle', $banner) }}" method="POST" class="d-inline">
 												@csrf
@@ -354,12 +362,20 @@
 																	<small class="text-muted d-block mt-1">Leave blank if the graphic banner already contains text. Use Enter for line breaks.</small>
 																</div>
 																<div class="mb-3">
-																	<label class="form-label">Subtitle <small class="text-muted fw-normal">(Optional)</small></label>
-																	<input type="text" name="subtitle" class="form-control" value="{{ $banner->subtitle }}" placeholder="e.g. Official Match Gear 2026">
+																	<label class="form-label">Indicator / Subtitle <small class="text-muted fw-normal">(e.g. Featured Partner, Match Sponsor, General Info)</small></label>
+																	<input type="text" name="subtitle" class="form-control" value="{{ $banner->subtitle }}" placeholder="e.g. Featured Partner, Official Match Gear 2026">
+																	<small class="text-muted d-block mt-1">Appears next to the glowing status dot on the banner frame.</small>
 																</div>
 																<div class="mb-3">
-																	<label class="form-label">Sponsor / Company <small class="text-muted fw-normal">(Optional)</small></label>
-																	<input type="text" name="badge_text" class="form-control" value="{{ $banner->badge_text }}" placeholder="e.g. Gilbert Rugby, Peak Energy">
+																	<label class="form-label">Pill Badge Text <small class="text-muted fw-normal">(e.g. OFFICIAL SPONSOR, PARTNER, GENERAL INFO)</small></label>
+																	<input type="text" name="badge_text" class="form-control" value="{{ $banner->badge_text }}" placeholder="e.g. OFFICIAL SPONSOR, PARTNER, GENERAL INFO">
+																	<small class="text-muted d-block mt-1">Appears in the right-hand pill badge (e.g. OFFICIAL SPONSOR, PARTNER, INFO).</small>
+																</div>
+																<div class="alert alert-info py-2 px-3 small mb-3 border-0 bg-primary-subtle text-primary-emphasis rounded-3">
+																	<i class="bi bi-aspect-ratio me-1 fw-bold"></i> <strong>Recommended Aspect Ratios &amp; Sizes:</strong><br>
+																	• <strong>Explore Hero (Carousel):</strong> 1200 &times; 600 px (Landscape 16:9 / 16:10)<br>
+																	• <strong>Home / Event Detail / Marketplace:</strong> 1200 &times; 200 px (Wide banner)<br>
+																	• <strong>Image Preview (Lightbox Ad):</strong> 1200 &times; 600 px or standard landscape
 																</div>
 																<div class="mb-3">
 																	<label class="form-label">Current Image</label>
@@ -380,6 +396,10 @@
 																		<label class="form-label">Placement</label>
 																		<select name="placement" class="form-select">
 																			<option value="events_hero" {{ in_array($banner->placement, ['events_hero', 'explore_hero']) ? 'selected' : '' }}>Explore Hero (Carousel)</option>
+																			<option value="home_before_featured" {{ $banner->placement === 'home_before_featured' ? 'selected' : '' }}>Home - Before Featured (100% Width)</option>
+																			<option value="user_dashboard" {{ $banner->placement === 'user_dashboard' ? 'selected' : '' }}>User / Customer Dashboard</option>
+																			<option value="photographer_dashboard" {{ $banner->placement === 'photographer_dashboard' ? 'selected' : '' }}>Photographer Dashboard</option>
+																			<option value="mailer_banner" {{ $banner->placement === 'mailer_banner' ? 'selected' : '' }}>Email Mailers &amp; Invoices</option>
 																			<option value="image_preview" {{ $banner->placement === 'image_preview' ? 'selected' : '' }}>Image Preview (Lightbox Ad)</option>
 																			<option value="home_top" {{ $banner->placement === 'home_top' ? 'selected' : '' }}>Home Top</option>
 																			<option value="event_detail" {{ $banner->placement === 'event_detail' ? 'selected' : '' }}>Event Detail</option>
@@ -399,11 +419,19 @@
 																	</div>
 																</div>
 																<div class="row">
-																	<div class="col-6 mb-3">
+																	<div class="col-4 mb-3">
 																		<label class="form-label">Sort Order</label>
 																		<input type="number" name="sort_order" class="form-control" value="{{ $banner->sort_order }}">
 																	</div>
-																	<div class="col-6 mb-3 d-flex align-items-center pt-4">
+																	<div class="col-5 mb-3">
+																		<label class="form-label">Rotation Interval</label>
+																		<div class="input-group">
+																			<input type="number" name="rotation_interval" class="form-control" min="1" max="120" value="{{ $banner->rotation_interval ?? 5 }}" placeholder="5">
+																			<span class="input-group-text">sec</span>
+																		</div>
+																		<small class="text-muted d-block mt-1">Seconds active before next ad.</small>
+																	</div>
+																	<div class="col-3 mb-3 d-flex align-items-center pt-4">
 																		<div class="form-check form-switch">
 																			<input class="form-check-input" type="checkbox" name="is_active" value="1" id="bannerActiveSwitch{{ $banner->id }}" {{ $banner->is_active ? 'checked' : '' }}>
 																			<label class="form-check-label ms-2" for="bannerActiveSwitch{{ $banner->id }}">Active</label>
@@ -423,7 +451,7 @@
 									</tr>
 								@empty
 									<tr>
-										<td colspan="7" class="text-center py-4 text-muted">
+										<td colspan="8" class="text-center py-4 text-muted">
 											<i class="bi bi-inbox fs-2 d-block mb-2"></i>
 											No banners found.
 										</td>
@@ -458,12 +486,20 @@
 							<small class="text-muted d-block mt-1">Leave blank if your banner artwork already contains text/branding. Use Enter for line breaks.</small>
 						</div>
 						<div class="mb-3">
-							<label class="form-label">Subtitle <small class="text-muted fw-normal">(Optional)</small></label>
-							<input type="text" name="subtitle" class="form-control" placeholder="e.g. Official Match Gear 2026">
+							<label class="form-label">Indicator / Subtitle <small class="text-muted fw-normal">(e.g. Featured Partner, Match Sponsor, General Info)</small></label>
+							<input type="text" name="subtitle" class="form-control" placeholder="e.g. Featured Partner, Official Match Gear 2026">
+							<small class="text-muted d-block mt-1">Appears next to the glowing status dot on the banner frame.</small>
 						</div>
 						<div class="mb-3">
-							<label class="form-label">Sponsor / Company <small class="text-muted fw-normal">(Optional)</small></label>
-							<input type="text" name="badge_text" class="form-control" placeholder="e.g. Gilbert Rugby, Peak Energy">
+							<label class="form-label">Pill Badge Text <small class="text-muted fw-normal">(e.g. OFFICIAL SPONSOR, PARTNER, GENERAL INFO)</small></label>
+							<input type="text" name="badge_text" class="form-control" placeholder="e.g. OFFICIAL SPONSOR, PARTNER, GENERAL INFO">
+							<small class="text-muted d-block mt-1">Appears in the right-hand pill badge (e.g. OFFICIAL SPONSOR, PARTNER, INFO).</small>
+						</div>
+						<div class="alert alert-info py-2 px-3 small mb-3 border-0 bg-primary-subtle text-primary-emphasis rounded-3">
+							<i class="bi bi-aspect-ratio me-1 fw-bold"></i> <strong>Recommended Aspect Ratios &amp; Sizes:</strong><br>
+							• <strong>Explore Hero (Carousel):</strong> 1200 &times; 600 px (Landscape 16:9 / 16:10)<br>
+							• <strong>Home / Event Detail / Marketplace:</strong> 1200 &times; 200 px (Wide banner)<br>
+							• <strong>Image Preview (Lightbox Ad):</strong> 1200 &times; 600 px or standard landscape
 						</div>
 						<div class="mb-3">
 							<label class="form-label">Image URL <small class="text-muted fw-normal">(or upload file below)</small></label>
@@ -480,6 +516,10 @@
 								<label class="form-label">Placement</label>
 								<select name="placement" class="form-select">
 									<option value="events_hero" selected>Explore Hero (Carousel)</option>
+									<option value="home_before_featured">Home - Before Featured (100% Width)</option>
+									<option value="user_dashboard">User / Customer Dashboard</option>
+									<option value="photographer_dashboard">Photographer Dashboard</option>
+									<option value="mailer_banner">Email Mailers &amp; Invoices</option>
 									<option value="image_preview">Image Preview (Lightbox Ad)</option>
 									<option value="home_top">Home Top</option>
 									<option value="event_detail">Event Detail</option>
@@ -499,11 +539,19 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-6 mb-3">
+							<div class="col-4 mb-3">
 								<label class="form-label">Sort Order</label>
 								<input type="number" name="sort_order" class="form-control" value="0">
 							</div>
-							<div class="col-6 mb-3 d-flex align-items-center pt-4">
+							<div class="col-5 mb-3">
+								<label class="form-label">Rotation Interval</label>
+								<div class="input-group">
+									<input type="number" name="rotation_interval" class="form-control" min="1" max="120" value="5" placeholder="5">
+									<span class="input-group-text">sec</span>
+								</div>
+								<small class="text-muted d-block mt-1">Seconds active before next ad.</small>
+							</div>
+							<div class="col-3 mb-3 d-flex align-items-center pt-4">
 								<div class="form-check form-switch">
 									<input class="form-check-input" type="checkbox" name="is_active" value="1" id="newBannerActive" checked>
 									<label class="form-check-label ms-2" for="newBannerActive">Active</label>

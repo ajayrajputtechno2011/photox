@@ -9,6 +9,7 @@ use App\Models\EventPhoto;
 use App\Models\PageHero;
 use App\Models\User;
 use App\Models\WatermarkSetting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -211,9 +212,7 @@ class DemoController extends Controller
                     'is_demo' => true,
                 ]);
 
-                // Automatically generate burned-in Fotto-style watermarked preview image using GD
-                $this->generateWatermarkedPreview($photo);
-
+                // Watermarked proof is generated on-demand when requested by browser, decoupling upload from heavy CPU processing
                 $createdPhotos[] = $photo;
                 $uploadedCount++;
             } catch (\Throwable $e) {
@@ -295,15 +294,132 @@ class DemoController extends Controller
     }
 
     /**
+     * Update dummy event settings (Title, Category, Dates, Pricing Mode, Full Gallery Price, etc.).
+     */
+    public function adminEventUpdate(Request $request, int $id): RedirectResponse|JsonResponse
+    {
+        $event = Event::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'event_date' => 'required|date',
+            'location' => 'required|string|max:255',
+            'starting_price' => 'nullable|string|max:50',
+            'allow_individual_sales' => 'nullable|boolean',
+            'full_gallery_price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:10240',
+            'cover_image_url' => 'nullable|url',
+        ]);
+
+        $category = Category::find($validated['category_id']);
+        $coverImageUrl = $validated['cover_image_url'] ?? $event->cover_image;
+
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('uploads/demo/covers', 'public');
+            $coverImageUrl = '/storage/'.$path;
+        }
+
+        $event->update([
+            'title' => $validated['title'],
+            'category_id' => $category->id,
+            'category_name' => $category->name,
+            'location' => $validated['location'],
+            'event_date' => $validated['event_date'],
+            'starting_price' => $validated['starting_price'] ?? 'From R50',
+            'allow_individual_sales' => $request->boolean('allow_individual_sales', true),
+            'full_gallery_price' => $request->input('full_gallery_price', 450.00),
+            'description' => $validated['description'] ?? $event->description,
+            'cover_image' => $coverImageUrl,
+        ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Event settings updated successfully!',
+                'event' => $event->fresh(),
+            ]);
+        }
+
+        return redirect()->route('admin.dummy.event', ['event_id' => $event->id])
+            ->with('success', 'Event settings and pricing rules updated successfully!');
+    }
+
+    /**
+     * Mark a photo as the best / featured cover image for this event (used on Homepage).
+     */
+    public function adminSetCoverPhoto(Request $request, int $id): RedirectResponse|JsonResponse
+    {
+        $photo = EventPhoto::findOrFail($id);
+        $event = Event::findOrFail($photo->event_id);
+
+        // Reset other photos in this event
+        EventPhoto::where('event_id', $event->id)->update(['is_featured' => false]);
+        $photo->update(['is_featured' => true]);
+
+        // Set event cover photo
+        $event->update([
+            'cover_photo_id' => $photo->id,
+            'cover_image' => $photo->file_path,
+        ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Photo #{$photo->id} is now set as the Best Featured Cover Photo for the Homepage!",
+                'photo_id' => $photo->id,
+                'cover_image' => $photo->file_path,
+            ]);
+        }
+
+        return redirect()->route('admin.dummy.event', ['event_id' => $event->id])
+            ->with('success', "Photo '{$photo->title}' is now selected as the Best / Featured Cover Image for the Homepage!");
+    }
+
+    /**
+     * Resolve watermark settings: photographer's custom watermark if exists and enabled,
+     * otherwise falls back to the global admin watermark.
+     */
+    public function resolveWatermarkSetting(?int $photographerId = null): WatermarkSetting
+    {
+        if ($photographerId) {
+            $creatorSetting = WatermarkSetting::where('user_id', $photographerId)
+                ->where('is_watermark_enabled', true)
+                ->first();
+            if ($creatorSetting) {
+                return $creatorSetting;
+            }
+        }
+
+        return WatermarkSetting::whereNull('user_id')->first()
+            ?? WatermarkSetting::firstOrCreate(
+                ['user_id' => null],
+                [
+                    'is_watermark_enabled' => true,
+                    'watermark_type' => 'both',
+                    'watermark_color' => '#ff8a00',
+                    'watermark_text' => 'PhotoX',
+                    'font_size' => 25,
+                    'opacity' => 65,
+                    'rotation' => -12,
+                    'is_tiled' => true,
+                    'watermark_pattern' => 'fotto_pro',
+                ]
+            );
+    }
+
+    /**
      * Serve burned-in watermarked image for web preview (Anti-theft defense).
      * Even if inspected or opened in a new tab, users ONLY get the watermarked image.
      */
     public function protectedImage(Request $request, int $id)
     {
-        $photo = EventPhoto::findOrFail($id);
+        $photo = EventPhoto::with('event')->findOrFail($id);
         $watermarkedPath = storage_path('app/public/uploads/demo/watermarked/'.$photo->id.'_wm.jpg');
 
-        $setting = WatermarkSetting::firstOrCreate(['user_id' => null]);
+        $photographerId = $photo->photographer_id ?? ($photo->event ? $photo->event->photographer_id : null);
+        $setting = $this->resolveWatermarkSetting($photographerId);
         $settingTimestamp = $setting->updated_at ? $setting->updated_at->timestamp : 0;
 
         if (! file_exists($watermarkedPath) || (file_exists($watermarkedPath) && filemtime($watermarkedPath) < $settingTimestamp)) {
@@ -416,8 +532,9 @@ class DemoController extends Controller
         imagealphablending($im, true);
         imagesavealpha($im, true);
 
-        // Fetch dynamic user-saved watermark settings from Watermark Studio
-        $setting = WatermarkSetting::firstOrCreate(['user_id' => null]);
+        // Fetch dynamic user-saved watermark settings (Photographer custom or Admin default fallback)
+        $photographerId = $photo->photographer_id ?? ($photo->event ? $photo->event->photographer_id : null);
+        $setting = $this->resolveWatermarkSetting($photographerId);
 
         $pattern = $setting->watermark_pattern ?? 'fotto_pro';
         $type = $setting->watermark_type ?? 'logo';
@@ -904,7 +1021,7 @@ class DemoController extends Controller
     public function dummyHome(Request $request): View
     {
         $banners = Banner::where('is_active', true)
-            ->whereIn('placement', ['events_hero', 'explore_hero'])
+            ->whereIn('placement', ['events_hero', 'explore_hero', 'home_top'])
             ->orderBy('sort_order')
             ->get();
 
@@ -950,9 +1067,9 @@ class DemoController extends Controller
             });
         }
 
-        $galleryPhotos = $photosQuery->get();
+        $galleryPhotos = $photosQuery->take(12)->get();
         if ($galleryPhotos->isEmpty()) {
-            $galleryPhotos = EventPhoto::with(['event.category', 'photographer'])->latest()->take(24)->get();
+            $galleryPhotos = EventPhoto::with(['event.category', 'photographer'])->latest()->take(12)->get();
         }
 
         // 3. The 6 Verified Photographers for the Showcase Section
@@ -978,6 +1095,54 @@ class DemoController extends Controller
             'photographers',
             'watermarkSetting'
         ));
+    }
+
+    /**
+     * AJAX endpoint to load more gallery photos on the homepage with infinite scroll / load more.
+     */
+    public function apiLoadMorePhotos(Request $request): JsonResponse
+    {
+        $page = max(1, (int) $request->input('page', 2));
+        $perPage = max(1, min(24, (int) $request->input('per_page', 12)));
+        $skip = ($page - 1) * $perPage;
+
+        $photosQuery = EventPhoto::with(['event.category', 'photographer'])->latest();
+
+        if ($request->filled('event_id')) {
+            $photosQuery->where('event_id', (int) $request->input('event_id'));
+        }
+
+        if ($request->filled('category') && $request->input('category') !== 'all') {
+            $cat = $request->input('category');
+            $photosQuery->whereHas('event', function ($q) use ($cat) {
+                $q->where('category_name', $cat);
+            });
+        }
+
+        if ($request->filled('q')) {
+            $term = trim($request->input('q'));
+            $photosQuery->where(function ($q) use ($term) {
+                $q->where('title', 'like', "%{$term}%")
+                    ->orWhere('original_name', 'like', "%{$term}%")
+                    ->orWhere('bib_number', 'like', "%{$term}%")
+                    ->orWhereHas('event', function ($eq) use ($term) {
+                        $eq->where('title', 'like', "%{$term}%")
+                            ->orWhere('location', 'like', "%{$term}%");
+                    });
+            });
+        }
+
+        $total = $photosQuery->count();
+        $photos = $photosQuery->skip($skip)->take($perPage)->get();
+        $hasMore = ($skip + $photos->count()) < $total;
+
+        return response()->json([
+            'success' => true,
+            'page' => $page,
+            'photos' => $photos,
+            'has_more' => $hasMore,
+            'total' => $total,
+        ]);
     }
 
     /**

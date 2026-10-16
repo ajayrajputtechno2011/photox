@@ -3,34 +3,112 @@
   const isHomePage = window.location.pathname === '/' || /(?:^|\/)index(?:\.html)?$/i.test(window.location.pathname);
   const isAuthPage = /(?:^|\/)(?:login|signup)(?:\.html)?$/i.test(window.location.pathname);
 
-  document.querySelectorAll('.hero-ad-carousel').forEach((carousel) => {
-    const slides = [...carousel.querySelectorAll('.hero-ad-slide')];
-    const dots = [...carousel.querySelectorAll('[data-ad-slide]')];
-    const previous = carousel.querySelector('[data-ad-prev]');
-    const next = carousel.querySelector('[data-ad-next]');
-    let activeIndex = 0;
+  const initHeroCarousel = () => {
+    document.querySelectorAll('.hero-ad-carousel').forEach((carousel) => {
+      if (carousel.dataset.initialized === 'true') return;
+      carousel.dataset.initialized = 'true';
 
-    const showSlide = (index) => {
-      activeIndex = (index + slides.length) % slides.length;
-      slides.forEach((slide, slideIndex) => slide.classList.toggle('active', slideIndex === activeIndex));
-      dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === activeIndex));
-    };
+      const slides = [...carousel.querySelectorAll('.hero-ad-slide')];
+      const dots = [...carousel.querySelectorAll('[data-ad-slide]')];
+      const previous = carousel.querySelector('[data-ad-prev]');
+      const next = carousel.querySelector('[data-ad-next]');
+      let activeIndex = 0;
+      let rotationTimer = null;
+      let isPaused = false;
 
-    previous?.addEventListener('click', () => showSlide(activeIndex - 1));
-    next?.addEventListener('click', () => showSlide(activeIndex + 1));
-    dots.forEach((dot) => dot.addEventListener('click', () => showSlide(Number(dot.dataset.adSlide))));
-    showSlide(0);
-    window.setInterval(() => showSlide(activeIndex + 1), 5200);
-  });
+      const getSlideDuration = (slide) => {
+        if (!slide) return 5000;
+        const rawSec = parseFloat(slide.dataset.interval);
+        if (!isNaN(rawSec) && rawSec >= 1) {
+          return Math.round(rawSec * 1000);
+        }
+        const carouselDefault = parseFloat(carousel.dataset.defaultInterval);
+        if (!isNaN(carouselDefault) && carouselDefault >= 1) {
+          return Math.round(carouselDefault * 1000);
+        }
+        return 5000;
+      };
+
+      const scheduleNext = () => {
+        if (rotationTimer) {
+          clearTimeout(rotationTimer);
+          rotationTimer = null;
+        }
+        if (slides.length <= 1 || isPaused) return;
+
+        const currentSlide = slides[activeIndex];
+        const duration = getSlideDuration(currentSlide);
+
+        rotationTimer = setTimeout(() => {
+          showSlide(activeIndex + 1);
+        }, duration);
+      };
+
+      const showSlide = (index) => {
+        if (slides.length === 0) return;
+        activeIndex = (index + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => slide.classList.toggle('active', slideIndex === activeIndex));
+        dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === activeIndex));
+
+        const activeSlide = slides[activeIndex];
+        if (activeSlide) {
+          const badge = activeSlide.dataset.badge;
+          const subtitle = activeSlide.dataset.subtitle;
+          const badgeEl = document.getElementById('heroBannerBadge');
+          const labelEl = document.getElementById('heroBannerFrameLabel');
+          if (badgeEl && badge) badgeEl.textContent = badge;
+          if (labelEl && subtitle) labelEl.innerHTML = `<span class="frame-dot"></span> ${subtitle}`;
+        }
+
+        scheduleNext();
+      };
+
+      previous?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSlide(activeIndex - 1);
+      });
+      next?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSlide(activeIndex + 1);
+      });
+      dots.forEach((dot) => dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSlide(Number(dot.dataset.adSlide));
+      }));
+
+      carousel.addEventListener('mouseenter', () => {
+        isPaused = true;
+        if (rotationTimer) {
+          clearTimeout(rotationTimer);
+          rotationTimer = null;
+        }
+      });
+
+      carousel.addEventListener('mouseleave', () => {
+        isPaused = false;
+        scheduleNext();
+      });
+
+      showSlide(0);
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroCarousel);
+  } else {
+    initHeroCarousel();
+  }
 
   const isPhotographerDetails = document.body.classList.contains('page-photographer-details');
+  const isEventDetails = window.location.pathname.includes('event-details') || document.body.classList.contains('page-event-details') || !!document.querySelector('.event-details-hero');
 
-  if (isHomePage || isAuthPage || isPhotographerDetails) return;
+  if (isHomePage || isAuthPage || isPhotographerDetails || isEventDetails) return;
+  if (document.querySelector('.site-ad-banner')) return;
 
   const adClass = isDashboardPage ? ' dashboard-ad' : '';
   const adMarkup = `
     <aside class="site-ad-banner${adClass}" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events">
+      <a class="site-ad-link" href="/#latest-events">
         <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
         <span class="site-ad-overlay"></span>
         <span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span>
@@ -39,8 +117,6 @@
 
   document.body.classList.add('has-site-ad');
   if (document.querySelector('.hero-ad-carousel')) return;
-  const existingAd = document.querySelector('.site-ad-banner');
-  if (existingAd) existingAd.remove();
 
   const dashboardSidebar = isDashboardPage
     ? document.querySelector('.workspace-sidebar')

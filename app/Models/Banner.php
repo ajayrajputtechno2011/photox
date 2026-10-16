@@ -20,12 +20,14 @@ class Banner extends Model
         'category_id',
         'category_name',
         'sort_order',
+        'rotation_interval',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'rotation_interval' => 'integer',
         'category_id' => 'integer',
     ];
 

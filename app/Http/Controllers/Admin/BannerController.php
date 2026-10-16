@@ -50,6 +50,7 @@ class BannerController extends Controller
             'placement' => 'required|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
             'sort_order' => 'nullable|integer',
+            'rotation_interval' => 'nullable|integer|min:1|max:300',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -85,6 +86,7 @@ class BannerController extends Controller
             'category_id' => $validated['category_id'] ?? null,
             'category_name' => $categoryName,
             'sort_order' => $validated['sort_order'] ?? (Banner::max('sort_order') + 1),
+            'rotation_interval' => ! empty($validated['rotation_interval']) ? (int) $validated['rotation_interval'] : 5,
             'is_active' => $request->has('is_active'),
         ]);
 
@@ -103,6 +105,7 @@ class BannerController extends Controller
             'placement' => 'required|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
             'sort_order' => 'nullable|integer',
+            'rotation_interval' => 'nullable|integer|min:1|max:300',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -136,6 +139,7 @@ class BannerController extends Controller
             'category_id' => $validated['category_id'] ?? null,
             'category_name' => $categoryName,
             'sort_order' => $validated['sort_order'] ?? $banner->sort_order,
+            'rotation_interval' => ! empty($validated['rotation_interval']) ? (int) $validated['rotation_interval'] : ($banner->rotation_interval ?? 5),
             'is_active' => $request->has('is_active'),
         ]);
 

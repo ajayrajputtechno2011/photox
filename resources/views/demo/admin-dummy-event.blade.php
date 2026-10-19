@@ -268,135 +268,120 @@
 			color: #94a3b8;
 		}
 
-		.ops-layout {
-			display: flex;
-			min-height: 100vh;
-		}
-		.ops-sidebar {
-			width: 260px;
-			min-width: 260px;
-			background: #09141f;
-			border-right: 1px solid #192a39;
-			padding: 24px 16px;
-			display: flex;
-			flex-direction: column;
-		}
-		.ops-main {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			min-width: 0;
+		.ops-page {
 			background: #060e17;
-		}
-		.ops-topbar {
-			background: #0a1622;
-			border-bottom: 1px solid #192a39;
-			padding: 16px 28px;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex-wrap: wrap;
-			gap: 16px;
-		}
-		.ops-title {
-			font-size: 1.35rem;
-			font-weight: 700;
-			color: #fff;
-			font-family: 'Space Grotesk', sans-serif;
-		}
-		.sidebar-toggle {
-			background: transparent;
-			border: 1px solid #1e3346;
-			color: #94a3b8;
-			border-radius: 8px;
-			padding: 6px 10px;
-			font-size: 1.1rem;
-			display: none;
-		}
-		@media (max-width: 991px) {
-			.ops-sidebar { display: none; }
-			.ops-sidebar.show { display: block; position: fixed; inset: 0 auto 0 0; z-index: 1050; }
-			.sidebar-toggle { display: inline-block; }
+			min-height: calc(100vh - 78px);
 		}
 	</style>
 </head>
 <body>
-	<div class="ops-layout">
+	<div class="app-shell">
 		<!-- Admin Sidebar -->
-		<aside class="ops-sidebar" id="sidebar">
-			<a class="brand d-block mb-4" href="/admin/dashboard" aria-label="PhotoX Admin home">
-				<img src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin" style="max-height: 38px;">
-			</a>
-			<div class="mb-3 p-2 rounded" style="background: #112233; color: #fff; display: flex; align-items: center; gap: 10px;">
-				<span style="background: var(--px-orange); color: #fff; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">ES</span>
-				<span style="font-size: 0.85rem;"><small class="d-block text-muted" style="font-size: 0.7rem;">Active Module</small><strong>Event Studio</strong></span>
-			</div>
-			
-			<div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-2" style="font-size: 0.68rem; letter-spacing: 0.08em;">Event Operations</div>
-			<nav class="nav flex-column gap-1">
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 active" href="/admin/event-studio" style="background: var(--px-orange); color: #fff; font-weight: 600;">
-					<i class="bi bi-calendar-event"></i><span>Event &amp; Gallery Studio</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/events">
-					<i class="bi bi-grid-3x3-gap"></i><span>All Events List</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/watermarks">
-					<i class="bi bi-droplet"></i><span>Watermark Studio</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/events" target="_blank">
-					<i class="bi bi-globe"></i><span>Live Marketplace <i class="bi bi-box-arrow-up-right ms-auto small"></i></span>
-				</a>
-			</nav>
-
-			<div class="text-uppercase text-muted fw-bold px-2 mt-4 mb-2" style="font-size: 0.68rem; letter-spacing: 0.08em;">Live Admin Management</div>
-			<nav class="nav flex-column gap-1">
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/dashboard">
-					<i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/photographers">
-					<i class="bi bi-camera2"></i><span>Photographers</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/categories">
-					<i class="bi bi-tag"></i><span>Categories</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/banners">
-					<i class="bi bi-layout-text-window"></i><span>Banners</span>
-				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/memberships">
-					<i class="bi bi-person-vcard"></i><span>Memberships</span>
-				</a>
-			</nav>
-
-			<div class="mt-auto pt-4">
-				<a href="/" target="_blank" class="btn btn-outline-px w-100 btn-sm text-center">
-					<i class="bi bi-box-arrow-up-right me-1"></i> View Live Site
-				</a>
+		<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+			<div class="sidebar-inner">
+				<a class="brand" href="/admin/dashboard" aria-label="PhotoX Admin home"><img class="brand-logo" src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin"></a>
+				<div class="workspace-switcher"><span class="workspace-avatar">PS</span><span class="workspace-copy"><small>Workspace</small><strong>Photo Studio</strong></span><i class="bi bi-chevron-down"></i></div>
+				<a class="dashboard-link nav-link" href="/admin/dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+				<div class="nav-label nav-label-spaced">Marketplace</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link active" href="/admin/events"><i class="bi bi-calendar-event"></i><span>Events</span></a>
+					<a class="nav-link" href="/admin/galleries"><i class="bi bi-collection"></i><span>Galleries</span></a>
+					<a class="nav-link" href="/admin/images"><i class="bi bi-image"></i><span>Images</span></a>
+					<a class="nav-link" href="/admin/orders"><i class="bi bi-bag-check"></i><span>Orders</span></a>
+					<a class="nav-link" href="/admin/customers"><i class="bi bi-people"></i><span>Customers</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">Photographers</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/photographers"><i class="bi bi-camera2"></i><span>Photographers</span></a>
+					<a class="nav-link" href="/admin/memberships"><i class="bi bi-person-vcard"></i><span>Memberships</span></a>
+					<a class="nav-link" href="/admin/commissions"><i class="bi bi-percent"></i><span>Commissions</span></a>
+					<a class="nav-link" href="/admin/payouts"><i class="bi bi-wallet2"></i><span>Payouts</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">AI &amp; Media</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
+					<a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
+					<a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">Business</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/payments"><i class="bi bi-credit-card"></i><span>Payments</span></a>
+					<a class="nav-link" href="/admin/coupons-discounts"><i class="bi bi-tags"></i><span>Coupons &amp; Discounts</span></a>
+					<a class="nav-link" href="/admin/sponsors"><i class="bi bi-award"></i><span>Sponsors</span></a>
+					<a class="nav-link" href="/admin/banners"><i class="bi bi-layout-text-window"></i><span>Banners</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">Organisations</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
+					<a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
+					<a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">Content</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
+					<a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>
+					<a class="nav-link" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
+					<a class="nav-link" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
+					<a class="nav-link" href="/admin/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
+					<a class="nav-link" href="/admin/email-templates"><i class="bi bi-envelope-paper"></i><span>Email Templates</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">Reporting</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/reports"><i class="bi bi-bar-chart"></i><span>Reports</span></a>
+					<a class="nav-link" href="/admin/banner-analytics"><i class="bi bi-graph-up-arrow"></i><span>Banner Analytics</span></a>
+				</nav>
+				<div class="nav-label nav-label-spaced">System</div>
+				<nav class="nav flex-column sidebar-nav">
+					<a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
+					<a class="nav-link" href="/admin/audit-logs"><i class="bi bi-shield-check"></i><span>Audit Logs</span></a>
+				</nav>
 			</div>
 		</aside>
 
-		<div class="ops-main">
-			<header class="ops-topbar">
+		<div class="main-panel">
+			<header class="topbar">
 				<div class="d-flex align-items-center gap-3">
-					<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation">
-						<i class="bi bi-list"></i>
-					</button>
-					<div>
-						<h1 class="ops-title mb-0">Event &amp; Photo Gallery Studio</h1>
-						<small class="text-muted">Master Event Creator · Bulk Photo Uploader · Auto Watermarking · EXIF Engine</small>
+					<button aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation" class="icon-button menu-trigger" id="menuToggle" type="button"><i class="bi bi-list"></i></button>
+					<div class="breadcrumb-wrap">
+						<span class="breadcrumb-muted">Admin</span><i class="bi bi-chevron-right"></i><a href="/admin/events" class="text-decoration-none text-muted">Events</a><i class="bi bi-chevron-right"></i><strong>Create event &amp; Gallery Studio</strong>
 					</div>
 				</div>
-				<div class="d-flex align-items-center gap-2">
-					<span class="studio-badge"><i class="bi bi-shield-check"></i> Live Production</span>
-					<a href="{{ route('events.index') }}" target="_blank" class="btn btn-outline-px btn-sm">
-						<i class="bi bi-box-arrow-up-right me-1"></i> View Marketplace
-					</a>
-					<a href="/admin/watermarks" class="btn btn-primary-px btn-sm">
-						<i class="bi bi-droplet-half me-1"></i> Watermark Studio
-					</a>
+				<div class="topbar-actions">
+					<div class="d-flex align-items-center gap-2 me-3">
+						<span class="studio-badge"><i class="bi bi-shield-check"></i> Live Production</span>
+						<a href="{{ route('events.index') }}" target="_blank" class="btn btn-outline-px btn-sm">
+							<i class="bi bi-box-arrow-up-right me-1"></i> View Live Site
+						</a>
+						<a href="/admin/watermarks" class="btn btn-primary-px btn-sm">
+							<i class="bi bi-droplet-half me-1"></i> Watermark Studio
+						</a>
+					</div>
+					<div class="profile-menu-wrap">
+						<button class="profile-button" type="button" aria-haspopup="true" aria-expanded="false"><span class="profile-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}</span><span class="profile-copy"><strong>{{ Auth::user()->name ?? 'Admin' }}</strong><small>Administrator</small></span><i class="bi bi-chevron-down"></i></button>
+						<div class="profile-dropdown-menu" role="menu">
+							<form action="{{ route('logout') }}" method="POST" class="d-inline">
+								@csrf
+								<button type="submit" class="profile-menu-item danger border-0 bg-transparent w-100 text-start py-2 px-3" role="menuitem" style="cursor:pointer;">
+									<i class="bi bi-box-arrow-right"></i><span class="ms-2">Logout</span>
+								</button>
+							</form>
+						</div>
+					</div>
 				</div>
 			</header>
 
-			<main class="ops-content p-4">
+			<main class="content-area module-page ops-page p-4">
+				<div class="page-intro d-flex align-items-end justify-content-between gap-3 flex-wrap mb-4">
+					<div>
+						<p class="eyebrow">Event workspace</p>
+						<h1>Event &amp; Photo Gallery Studio</h1>
+						<p class="intro-copy">Master Event Creator · Bulk Photo Uploader · Auto Watermarking · EXIF Engine</p>
+					</div>
+					<div class="d-flex gap-2">
+						<a href="/admin/events" class="btn btn-outline-px btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to All Events</a>
+						<a href="#createEventSection" class="btn btn-primary-px btn-sm"><i class="bi bi-plus-circle me-1"></i> New Event</a>
+					</div>
+				</div>
 				@if(session('success'))
 					<div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert" style="background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.3); color: #4ade80;">
 						<i class="bi bi-check-circle-fill fs-5"></i>
@@ -930,6 +915,7 @@
 	</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="{{ asset('admin-assets/js/app.js') }}"></script>
 	<script>
 		// Drag & Drop Queue Logic
 		let queuedFiles = [];

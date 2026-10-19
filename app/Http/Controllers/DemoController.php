@@ -24,7 +24,8 @@ class DemoController extends Controller
     public function adminEvent(Request $request): View
     {
         $categories = Category::where('is_active', true)->orderBy('name', 'asc')->get();
-        $dummyEvents = Event::where('is_demo', true)->withCount('photos')->latest()->get();
+        // Load all events so admin can manage and upload galleries for any event
+        $dummyEvents = Event::withCount('photos')->latest()->get();
         $selectedEvent = null;
 
         if ($request->filled('event_id')) {
@@ -68,7 +69,7 @@ class DemoController extends Controller
     }
 
     /**
-     * Store a new dummy event.
+     * Store a new event and gallery.
      */
     public function adminEventStore(Request $request): RedirectResponse
     {
@@ -97,7 +98,13 @@ class DemoController extends Controller
             $coverImageUrl = 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=80';
         }
 
-        $slug = Str::slug($validated['title']).'-demo-'.Str::random(5);
+        $slug = Str::slug($validated['title']);
+        $baseSlug = $slug;
+        $counter = 1;
+        while (Event::where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$counter}";
+            $counter++;
+        }
 
         $event = Event::create([
             'title' => $validated['title'],
@@ -111,15 +118,15 @@ class DemoController extends Controller
             'starting_price' => $validated['starting_price'] ?? 'From R50',
             'total_photos' => 0,
             'photographers_count' => 1,
-            'description' => $validated['description'] ?? 'Sandbox dummy event for testing watermark rendering and metadata extraction.',
+            'description' => $validated['description'] ?? null,
             'cover_image' => $coverImageUrl,
             'is_featured' => true,
             'status' => 'published',
-            'is_demo' => true,
+            'is_demo' => false,
         ]);
 
         return redirect()->route('admin.dummy.event', ['event_id' => $event->id])
-            ->with('success', 'Dummy Event "'.$event->title.'" created successfully! Now upload sample photos below.');
+            ->with('success', 'Event "'.$event->title.'" created successfully! You can now upload gallery photos below.');
     }
 
     /**
@@ -216,7 +223,7 @@ class DemoController extends Controller
                     'copyright' => $meta['copyright'] ?? '© 2026 PhotoX All Rights Reserved',
                     'personal_price' => $personalPrice,
                     'commercial_price' => $commercialPrice,
-                    'is_demo' => true,
+                    'is_demo' => false,
                 ]);
 
                 // Watermarked proof is generated on-demand when requested by browser, decoupling upload from heavy CPU processing

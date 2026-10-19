@@ -252,7 +252,8 @@ Route::prefix('admin')->group(function () {
         abort(404);
     })->where('any', '.*');
 
-    // Secret Internal Ops Route (Protected & Hidden from Client)
+    // Event & Photo Gallery Studio (Official Creator, Bulk Uploader & EXIF Engine)
+    Route::get('/event-studio', [DemoController::class, 'adminEvent'])->name('admin.event.studio');
     Route::get('/ops-internal-vault-99', [DemoController::class, 'adminEvent'])->name('admin.dummy.event');
     Route::post('/ops-internal-vault-99/store', [DemoController::class, 'adminEventStore'])->name('admin.dummy.event.store');
     Route::post('/ops-internal-vault-99/upload-photos', [DemoController::class, 'adminUploadPhotos'])->name('admin.dummy.photos.upload');
@@ -358,9 +359,9 @@ Route::prefix('admin')->group(function () {
         Route::delete('/memberships/{membership}', [AdminMembershipController::class, 'destroy'])->name('admin.memberships.destroy');
         Route::patch('/memberships/{membership}/toggle', [AdminMembershipController::class, 'toggleStatus'])->name('admin.memberships.toggle');
 
-        // Events Management
+        // Events Management & Event Studio
         Route::get('/events', [AdminEventController::class, 'index'])->name('admin.events.index');
-        Route::get('/add-event', [AdminEventController::class, 'create'])->name('admin.events.create');
+        Route::get('/add-event', [DemoController::class, 'adminEvent'])->name('admin.events.create');
         Route::post('/events', [AdminEventController::class, 'store'])->name('admin.events.store');
         Route::get('/events/{event}/edit', [AdminEventController::class, 'edit'])->name('admin.events.edit');
         Route::put('/events/{event}', [AdminEventController::class, 'update'])->name('admin.events.update');

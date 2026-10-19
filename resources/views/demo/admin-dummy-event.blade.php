@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta content="width=device-width, initial-scale=1" name="viewport">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
-	<title>PhotoX Admin | Dummy Event &amp; Photo Studio</title>
+	<title>PhotoX Admin | Event &amp; Photo Gallery Studio</title>
 	<link href="https://fonts.googleapis.com" rel="preconnect">
 	<link href="https://fonts.gstatic.com" rel="preconnect">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,15 +22,15 @@
 			color: #e2e8f0;
 			font-family: 'DM Sans', sans-serif;
 		}
-		.sandbox-badge {
+		.sandbox-badge, .studio-badge {
 			display: inline-flex;
 			align-items: center;
 			gap: 6px;
 			padding: 4px 12px;
 			border-radius: 999px;
-			background: rgba(255, 138, 0, 0.18);
-			border: 1px solid rgba(255, 138, 0, 0.4);
-			color: #ff8a00;
+			background: rgba(34, 197, 94, 0.15);
+			border: 1px solid rgba(34, 197, 94, 0.4);
+			color: #4ade80;
 			font-weight: 600;
 			font-size: 0.75rem;
 			text-transform: uppercase;
@@ -328,20 +328,23 @@
 				<img src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin" style="max-height: 38px;">
 			</a>
 			<div class="mb-3 p-2 rounded" style="background: #112233; color: #fff; display: flex; align-items: center; gap: 10px;">
-				<span style="background: var(--px-orange); color: #fff; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">PS</span>
-				<span style="font-size: 0.85rem;"><small class="d-block text-muted" style="font-size: 0.7rem;">Active Sandbox</small><strong>Dummy Studio</strong></span>
+				<span style="background: var(--px-orange); color: #fff; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">ES</span>
+				<span style="font-size: 0.85rem;"><small class="d-block text-muted" style="font-size: 0.7rem;">Active Module</small><strong>Event Studio</strong></span>
 			</div>
 			
-			<div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-2" style="font-size: 0.68rem; letter-spacing: 0.08em;">Sandbox Testing</div>
+			<div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-2" style="font-size: 0.68rem; letter-spacing: 0.08em;">Event Operations</div>
 			<nav class="nav flex-column gap-1">
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 active" href="/admin/dummy-event" style="background: var(--px-orange); color: #fff; font-weight: 600;">
-					<i class="bi bi-calendar-event"></i><span>Dummy Events &amp; Photos</span>
+				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 active" href="/admin/event-studio" style="background: var(--px-orange); color: #fff; font-weight: 600;">
+					<i class="bi bi-calendar-event"></i><span>Event &amp; Gallery Studio</span>
+				</a>
+				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/events">
+					<i class="bi bi-grid-3x3-gap"></i><span>All Events List</span>
 				</a>
 				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/watermarks">
 					<i class="bi bi-droplet"></i><span>Watermark Studio</span>
 				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/dummy-home_testing" target="_blank">
-					<i class="bi bi-globe"></i><span>Dummy Home Page <i class="bi bi-box-arrow-up-right ms-auto small"></i></span>
+				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/events" target="_blank">
+					<i class="bi bi-globe"></i><span>Live Marketplace <i class="bi bi-box-arrow-up-right ms-auto small"></i></span>
 				</a>
 			</nav>
 
@@ -350,8 +353,8 @@
 				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/dashboard">
 					<i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
 				</a>
-				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/events">
-					<i class="bi bi-calendar-event"></i><span>Live Events</span>
+				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/photographers">
+					<i class="bi bi-camera2"></i><span>Photographers</span>
 				</a>
 				<a class="nav-link py-2 px-3 rounded d-flex align-items-center gap-2 text-secondary" href="/admin/categories">
 					<i class="bi bi-tag"></i><span>Categories</span>
@@ -378,16 +381,16 @@
 						<i class="bi bi-list"></i>
 					</button>
 					<div>
-						<h1 class="ops-title mb-0">Dummy Event &amp; Photo Studio</h1>
-						<small class="text-muted">Testing Sandbox · Watermark Verification · EXIF Metadata</small>
+						<h1 class="ops-title mb-0">Event &amp; Photo Gallery Studio</h1>
+						<small class="text-muted">Master Event Creator · Bulk Photo Uploader · Auto Watermarking · EXIF Engine</small>
 					</div>
 				</div>
 				<div class="d-flex align-items-center gap-2">
-					<span class="sandbox-badge"><i class="bi bi-shield-check"></i> Safe Sandbox</span>
-					<a href="{{ route('dummy.home') }}" target="_blank" class="btn btn-outline-px btn-sm">
-						<i class="bi bi-box-arrow-up-right me-1"></i> Preview Dummy Home
+					<span class="studio-badge"><i class="bi bi-shield-check"></i> Live Production</span>
+					<a href="{{ route('events.index') }}" target="_blank" class="btn btn-outline-px btn-sm">
+						<i class="bi bi-box-arrow-up-right me-1"></i> View Marketplace
 					</a>
-					<a href="{{ route('admin.dummy') }}" class="btn btn-primary-px btn-sm">
+					<a href="/admin/watermarks" class="btn btn-primary-px btn-sm">
 						<i class="bi bi-droplet-half me-1"></i> Watermark Studio
 					</a>
 				</div>
@@ -417,19 +420,18 @@
 					</div>
 				@endif
 
-				<!-- Top Sandbox Notice Card -->
+				<!-- Top Event Studio Notice Card -->
 				<div class="ops-card" style="background: linear-gradient(135deg, #0e1e2d 0%, #08131d 100%); border-left: 4px solid var(--px-orange);">
 					<div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
 						<div>
-							<h4 class="mb-1 text-white fw-bold"><i class="bi bi-info-circle text-warning me-2"></i>Isolated Testing Sandbox</h4>
+							<h4 class="mb-1 text-white fw-bold"><i class="bi bi-camera-reels text-warning me-2"></i>Official Event &amp; Photo Gallery Management</h4>
 							<p class="mb-0 text-muted" style="font-size: 0.9rem;">
-								Yahan banaye gaye dummy events aur upload ki gayi photos <strong>Live Homepage par bilkul show nahi hongi</strong>. Unko sirf 
-								<a href="/dummy-home_testing" target="_blank" class="text-warning text-decoration-none fw-semibold">Dummy Home Page (/dummy-home_testing)</a> par test aur verify kiya ja sakta hai.
+								Create events, assign photographers with custom watermarks, drag &amp; drop high-resolution photos with automated EXIF extraction, and publish directly to the live PhotoX marketplace.
 							</p>
 						</div>
 						<div class="d-flex gap-2">
-							<a href="#createEventSection" class="btn btn-outline-px btn-sm"><i class="bi bi-plus-circle me-1"></i> New Dummy Event</a>
-							<a href="#uploadPhotosSection" class="btn btn-primary-px btn-sm"><i class="bi bi-cloud-arrow-up me-1"></i> Upload Test Photos</a>
+							<a href="#createEventSection" class="btn btn-outline-px btn-sm"><i class="bi bi-plus-circle me-1"></i> Create New Event</a>
+							<a href="#uploadPhotosSection" class="btn btn-primary-px btn-sm"><i class="bi bi-cloud-arrow-up me-1"></i> Bulk Upload Photos</a>
 						</div>
 					</div>
 				</div>
@@ -440,12 +442,12 @@
 						<!-- Event Selector -->
 						<div class="ops-card">
 							<div class="ops-card-header">
-								<h3 class="ops-card-title"><i class="bi bi-collection"></i> Select Dummy Event</h3>
+								<h3 class="ops-card-title"><i class="bi bi-collection"></i> Select Event &amp; Gallery</h3>
 								<span class="badge bg-secondary">{{ $dummyEvents->count() }} Events</span>
 							</div>
 							@if($dummyEvents->isNotEmpty())
 								<form method="GET" action="{{ route('admin.dummy.event') }}">
-									<label class="form-label">Active Sandbox Event</label>
+									<label class="form-label">Choose Active Event</label>
 									<div class="d-flex gap-2">
 										<select name="event_id" class="form-select" onchange="this.form.submit()">
 											@foreach($dummyEvents as $dev)
@@ -476,8 +478,11 @@
 													@endif
 													@if($selectedEvent->photographer_id)
 														<span class="badge bg-warning text-dark font-monospace" style="font-size: 0.7rem;">
-															<i class="bi bi-camera-fill me-1"></i> {{ $selectedEvent->photographer_name }} (Custom Watermark)
+															<i class="bi bi-camera-fill me-1"></i> {{ $selectedEvent->photographer_name }}
 														</span>
+														<a href="/admin/watermarks?photographer_id={{ $selectedEvent->photographer_id }}" target="_blank" class="badge bg-dark border border-warning text-warning text-decoration-none" title="Watermark Studio" style="font-size: 0.68rem;">
+															<i class="bi bi-sliders me-1"></i> Watermark
+														</a>
 													@else
 														<span class="badge bg-secondary bg-opacity-50 text-white" style="font-size: 0.7rem;">
 															<i class="bi bi-shield-lock me-1"></i> PhotoX Platform (Admin Watermark)
@@ -487,6 +492,11 @@
 												</div>
 											</div>
 											<div class="d-flex gap-2 align-items-center">
+												@if(!empty($selectedEvent->slug))
+													<a href="{{ route('events.show', $selectedEvent->slug) }}" target="_blank" class="btn btn-sm btn-outline-info" title="View live event details page on website">
+														<i class="bi bi-box-arrow-up-right me-1"></i> Live Page
+													</a>
+												@endif
 												<button type="button" class="btn btn-sm btn-outline-warning" onclick="document.getElementById('editEventSettingsBox').classList.toggle('d-none');">
 													<i class="bi bi-pencil-square me-1"></i> Edit Settings &amp; Pricing
 												</button>
@@ -511,7 +521,10 @@
 												</div>
 
 												<div class="mb-3">
-													<label class="form-label text-warning"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+													<div class="d-flex justify-content-between align-items-center mb-1">
+														<label class="form-label text-warning mb-0"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+														<a href="/admin/add-photographer" target="_blank" class="text-warning text-decoration-none small" style="font-size: 0.75rem;"><i class="bi bi-plus-circle me-1"></i> Add New Photographer</a>
+													</div>
 													<select name="photographer_id" class="form-select border-warning">
 														<option value="">— PhotoX Platform Default (Admin Watermark) —</option>
 														@foreach($photographers as $ph)
@@ -590,26 +603,29 @@
 									</div>
 								@endif
 							@else
-								<p class="text-muted mb-0 small">No dummy events created yet. Use the form below to create one!</p>
+								<p class="text-muted mb-0 small">No events created yet. Use the form below to create one!</p>
 							@endif
 						</div>
 
-						<!-- Create Dummy Event Form -->
+						<!-- Create Event Form -->
 						<div class="ops-card" id="createEventSection">
 							<div class="ops-card-header">
-								<h3 class="ops-card-title"><i class="bi bi-calendar-plus"></i> Create New Dummy Event</h3>
+								<h3 class="ops-card-title"><i class="bi bi-calendar-plus"></i> Create New Event</h3>
 							</div>
 							<form action="{{ route('admin.dummy.event.store') }}" method="POST" enctype="multipart/form-data">
 								@csrf
 								<div class="mb-3">
 									<label class="form-label">Event Title *</label>
-									<input type="text" name="title" class="form-control" placeholder="e.g. Cape Town Marathon 2026 Test" required value="{{ old('title') }}">
+									<input type="text" name="title" class="form-control" placeholder="e.g. Cape Town Marathon 2026" required value="{{ old('title') }}">
 								</div>
 
 								<div class="mb-3">
-									<label class="form-label text-warning"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+									<div class="d-flex justify-content-between align-items-center mb-1">
+										<label class="form-label text-warning mb-0"><i class="bi bi-camera-fill me-1"></i> Lead Photographer &amp; Watermark Creator</label>
+										<a href="/admin/add-photographer" target="_blank" class="text-warning text-decoration-none small" style="font-size: 0.75rem;"><i class="bi bi-plus-circle me-1"></i> Add New Photographer</a>
+									</div>
 									<select name="photographer_id" class="form-select border-warning">
-										<option value="">— PhotoX Platform Default (Admin Watermark) —</option>
+										<option value="">— PhotoX Platform Default (Standard Admin Watermark) —</option>
 										@foreach($photographers as $ph)
 											<option value="{{ $ph->id }}" {{ (string)old('photographer_id') === (string)$ph->id ? 'selected' : '' }}>
 												{{ $ph->name }} ({{ $ph->email }}) — {{ $ph->business_name ?? 'Photographer' }}
@@ -648,7 +664,7 @@
 
 								<div class="mb-3">
 									<label class="form-label">Description</label>
-									<textarea name="description" rows="2" class="form-control" placeholder="Brief event summary...">{{ old('description', 'Official sandbox testing event for watermarks and EXIF extraction.') }}</textarea>
+									<textarea name="description" rows="2" class="form-control" placeholder="Brief event summary...">{{ old('description', 'Official sports and event photography gallery.') }}</textarea>
 								</div>
 
 								<div class="mb-4">
@@ -658,7 +674,7 @@
 								</div>
 
 								<button type="submit" class="btn btn-primary-px w-100">
-									<i class="bi bi-check-lg me-1"></i> Save Dummy Event
+									<i class="bi bi-check-lg me-1"></i> Create &amp; Publish Event
 								</button>
 							</form>
 						</div>
@@ -687,7 +703,7 @@
 											<h5 class="text-white fw-bold mb-1">Drag &amp; Drop Photos Here</h5>
 											<p class="text-muted small mb-2">or <span class="text-warning text-decoration-underline">Browse files</span> from your computer</p>
 											<span class="badge bg-secondary bg-opacity-25 text-light border border-secondary px-3 py-1 font-monospace" style="font-size: 0.72rem;">
-												Bulk Upload · Automated Pixieset EXIF &amp; Server-Burned Watermarks
+												Bulk Upload · Automated EXIF Extraction &amp; Server-Burned Watermarks
 											</span>
 										</div>
 										<input type="file" id="fileInput" name="photos[]" multiple accept="image/*" class="d-none" onchange="handleFileSelect(this.files)">
@@ -747,17 +763,17 @@
 							@else
 								<div class="text-center py-4 text-muted">
 									<i class="bi bi-arrow-left-circle fs-2 d-block mb-2 text-warning"></i>
-									Please select or create a dummy event first before uploading photos.
+									Please select or create an event first before uploading photos.
 								</div>
 							@endif
 						</div>
 
-						<!-- Photos Grid with Live Watermark & Pixieset Metadata -->
+						<!-- Photos Grid with Live Watermark & EXIF Metadata -->
 						<div class="ops-card">
 							<div class="ops-card-header flex-wrap gap-2">
 								<div>
-									<h3 class="ops-card-title"><i class="bi bi-images"></i> Uploaded Photos &amp; Watermark Verification</h3>
-									<small class="text-muted">Test watermark overlay &amp; EXIF metadata on photos</small>
+									<h3 class="ops-card-title"><i class="bi bi-images"></i> Uploaded Photos &amp; Live Proofs</h3>
+									<small class="text-muted">Live anti-theft protected proofs with photographer watermark overlay &amp; EXIF metadata</small>
 								</div>
 								<!-- Live Watermark Controls Toggle -->
 								<div class="d-flex align-items-center gap-2 flex-wrap">
@@ -886,7 +902,7 @@
 																</form>
 															@endif
 														</div>
-														<form action="{{ route('admin.dummy.photo.delete', $photo->id) }}" method="POST" onsubmit="return confirm('Delete this test photo?')">
+														<form action="{{ route('admin.dummy.photo.delete', $photo->id) }}" method="POST" onsubmit="return confirm('Delete this photo?')">
 															@csrf
 															@method('DELETE')
 															<button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" style="font-size: 0.75rem;">
@@ -902,8 +918,8 @@
 							@else
 								<div class="text-center py-5 text-muted">
 									<i class="bi bi-camera fs-1 d-block mb-2 text-secondary"></i>
-									<h5>No test photos uploaded yet for this event</h5>
-									<p class="small">Upload 1 or more photos using the form above to see the live watermark overlay and extracted EXIF metadata!</p>
+									<h5>No photos uploaded yet for this event</h5>
+									<p class="small">Upload photos using the drag-and-drop form above to automatically burn watermarks and extract camera EXIF metadata!</p>
 								</div>
 							@endif
 						</div>

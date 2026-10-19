@@ -240,8 +240,9 @@
 										</td>
 										<td>
 											<div class="ops-actions">
-												<a aria-label="Edit event" class="row-action text-primary" href="{{ route('admin.events.edit', $event) }}" title="Edit event & photographer"><i class="bi bi-pencil-square"></i></a>
-												<a aria-label="View on site" class="row-action" href="/events" target="_blank" title="View on site"><i class="bi bi-box-arrow-up-right"></i></a>
+												<a aria-label="Open in Event Studio" class="row-action text-warning" href="/admin/event-studio?event_id={{ $event->id }}" title="Open in Event Studio (Bulk Photos & Watermarks)"><i class="bi bi-camera"></i></a>
+												<a aria-label="Edit event" class="row-action text-primary" href="{{ route('admin.events.edit', $event) }}" title="Edit event"><i class="bi bi-pencil-square"></i></a>
+												<a aria-label="View on site" class="row-action" href="/events/{{ $event->slug }}" target="_blank" title="View live event"><i class="bi bi-box-arrow-up-right"></i></a>
 												<form action="{{ route('admin.events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete \'{{ $event->title }}\'?');">
 													@csrf
 													@method('DELETE')

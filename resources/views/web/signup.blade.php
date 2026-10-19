@@ -22,6 +22,10 @@
         <div class="eyebrow-blue">Welcome to PhotoX</div>
         <h2 class="mt-2 mb-2">Create your account.</h2>
 
+        @php
+          $defaultAccountType = in_array(request('type'), ['photographer', 'creator']) ? 'photographer' : 'member';
+        @endphp
+
         <form id="signupForm" action="{{ route('signup.post') }}" method="POST">
           @csrf
 
@@ -29,7 +33,7 @@
             <legend>Choose your PhotoX account</legend>
             <div class="signup-choice-grid">
               <label class="signup-choice-card">
-                <input {{ old('account-type', 'member') === 'member' ? 'checked' : '' }} name="account-type" type="radio" value="member">
+                <input {{ old('account-type', $defaultAccountType) === 'member' ? 'checked' : '' }} name="account-type" type="radio" value="member">
                 <span class="signup-choice-content">
                   <i class="bi bi-person-heart"></i>
                   <strong>PhotoX member</strong>
@@ -37,7 +41,7 @@
                 </span>
               </label>
               <label class="signup-choice-card">
-                <input {{ old('account-type') === 'photographer' ? 'checked' : '' }} name="account-type" type="radio" value="photographer">
+                <input {{ old('account-type', $defaultAccountType) === 'photographer' ? 'checked' : '' }} name="account-type" type="radio" value="photographer">
                 <span class="signup-choice-content">
                   <i class="bi bi-camera"></i>
                   <strong>Photographer</strong>
@@ -59,7 +63,7 @@
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
 
-          <fieldset class="signup-tiers mt-4" id="photographerTiers" {{ old('account-type') === 'photographer' ? '' : 'hidden' }}>
+          <fieldset class="signup-tiers mt-4" id="photographerTiers" {{ old('account-type', $defaultAccountType) === 'photographer' ? '' : 'hidden' }}>
             <legend>Choose your photographer membership tier</legend>
             <p class="signup-section-help">Photographers can choose a membership plan for their creator workspace.</p>
             <div class="tier-grid">
@@ -127,17 +131,7 @@
       </section>
     </div>
 
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="{{ url('/events') }}">
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
-        <span class="site-ad-overlay"></span>
-        <span class="site-ad-copy">
-          <small>PHOTOX PARTNER</small>
-          <strong>BUILT FOR MORE<br>THAN ROADS</strong>
-          <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-        </span>
-      </a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 @endsection
 

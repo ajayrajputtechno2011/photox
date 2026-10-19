@@ -86,8 +86,8 @@
           </div>
         </div>
 
-        <div class="hero-ad-slot">
-          @include('web.partials.hero-ad-carousel')
+        <div class="hero-banner-col">
+          @include('web.partials.hero-partner-frame')
         </div>
       </div>
     </section>
@@ -233,30 +233,10 @@
         </div>
       </div>
     </section>
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road"><span class="site-ad-overlay"></span><span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span></a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5">
-          <a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a>
-          <p class="footer-copy">The feeling of being there,<br>kept in a frame.</p>
-          <div class="footer-social d-flex gap-3">
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>
-        <div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/contact">Contact</a></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/login">Creator login</a><a href="/signup">Join PhotoX</a><a href="/events">Upload photos</a><a href="/blog">Support</a></div>
-        <div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div>
-    </div>
-  </footer>
+  @include('web.partials.footer')
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

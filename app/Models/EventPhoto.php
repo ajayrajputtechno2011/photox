@@ -35,6 +35,7 @@ class EventPhoto extends Model
         'personal_price',
         'commercial_price',
         'is_demo',
+        'is_featured',
     ];
 
     protected $casts = [
@@ -42,6 +43,7 @@ class EventPhoto extends Model
         'personal_price' => 'decimal:2',
         'commercial_price' => 'decimal:2',
         'is_demo' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     public function event(): BelongsTo

@@ -23,10 +23,28 @@
         <h2 class="mt-2">Log in to PhotoX.</h2>
         <p class="login-help mt-2">Access your saved photos and creator workspace.</p>
 
+        @php
+          $activeTab = old('account_type', request('tab') ?: (request('type') ?: 'customer'));
+        @endphp
+
+        @if($errors->any())
+          <div class="alert alert-danger rounded-4 border-0 shadow-sm mt-3 py-2 px-3 small d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-danger flex-shrink-0"></i>
+            <div>{{ $errors->first() }}</div>
+          </div>
+        @endif
+
+        @if(session('info'))
+          <div class="alert alert-info rounded-4 border-0 shadow-sm mt-3 py-2 px-3 small d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle-fill fs-5 text-info flex-shrink-0"></i>
+            <div>{{ session('info') }}</div>
+          </div>
+        @endif
+
         <div class="login-tabs mt-4">
-          <input checked class="login-tab-input" id="customerTab" name="login-tab" type="radio">
+          <input {{ $activeTab === 'customer' ? 'checked' : '' }} class="login-tab-input" id="customerTab" name="login-tab" type="radio">
           <label class="login-tab-label" for="customerTab"><i class="bi bi-person-heart"></i> Customer</label>
-          <input class="login-tab-input" id="photographerTab" name="login-tab" type="radio">
+          <input {{ $activeTab === 'photographer' ? 'checked' : '' }} class="login-tab-input" id="photographerTab" name="login-tab" type="radio">
           <label class="login-tab-label" for="photographerTab"><i class="bi bi-camera"></i> Photographer</label>
 
           {{-- Customer Login Panel --}}
@@ -34,6 +52,8 @@
             <p class="login-tab-help">Sign in to view saved photos, orders and favourite events.</p>
             <form action="{{ route('login.post') }}" method="POST">
               @csrf
+              <input type="hidden" name="account_type" value="customer">
+
               <label class="form-label" for="customerEmail">Email address</label>
               <input class="form-control @error('email') is-invalid @enderror" id="customerEmail" name="email" type="email" placeholder="you@example.com" value="{{ old('email') }}" required autocomplete="email">
               @error('email')
@@ -59,6 +79,8 @@
             <p class="login-tab-help">Sign in to manage bookings, galleries, earnings and your creator profile.</p>
             <form action="{{ route('login.post') }}" method="POST">
               @csrf
+              <input type="hidden" name="account_type" value="photographer">
+
               <label class="form-label" for="photographerEmail">Photographer email</label>
               <input class="form-control @error('email') is-invalid @enderror" id="photographerEmail" name="email" type="email" placeholder="creator@example.com" value="{{ old('email') }}" required autocomplete="email">
               @error('email')
@@ -90,16 +112,6 @@
       </section>
     </div>
 
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="{{ url('/events') }}">
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
-        <span class="site-ad-overlay"></span>
-        <span class="site-ad-copy">
-          <small>PHOTOX PARTNER</small>
-          <strong>BUILT FOR MORE<br>THAN ROADS</strong>
-          <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-        </span>
-      </a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 @endsection

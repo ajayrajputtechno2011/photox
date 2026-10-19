@@ -83,20 +83,42 @@ class EventController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        // 2. Dynamic Categories (Sorted alphabetically A-Z)
+        // 2. Dynamic Categories with Event Counts (Sorted alphabetically A-Z)
         $categories = Category::where('is_active', true)
+            ->withCount(['events' => function ($q) {
+                $q->where('status', 'published');
+            }])
             ->orderBy('name', 'asc')
+            ->get();
+
+        $popularCategories = Category::where('is_active', true)
+            ->withCount(['events' => function ($q) {
+                $q->where('status', 'published');
+            }])
+            ->orderByRaw('CASE WHEN sort_order > 0 THEN sort_order ELSE 9999 END ASC, name ASC')
+            ->take(8)
             ->get();
 
         // 3. Featured Events
         $featuredEvents = Event::where('status', 'published')
             ->where('is_featured', true)
+            ->with('photographer')
             ->latest('event_date')
             ->take(3)
             ->get();
 
+        if ($featuredEvents->isEmpty()) {
+            $featuredEvents = Event::where('status', 'published')
+                ->with('photographer')
+                ->latest('event_date')
+                ->take(3)
+                ->get();
+        }
+
         // 4. All Events with filtering
-        $eventsQuery = Event::where('status', 'published')->latest('event_date');
+        $eventsQuery = Event::where('status', 'published')
+            ->with('photographer')
+            ->latest('event_date');
 
         if ($request->filled('q')) {
             $keyword = $request->input('q');
@@ -108,7 +130,7 @@ class EventController extends Controller
             });
         }
 
-        if ($request->filled('category') && $request->input('category') !== 'All categories') {
+        if ($request->filled('category') && ! in_array($request->input('category'), ['All categories', 'all', ''])) {
             $catSlugOrName = $request->input('category');
             $eventsQuery->where(function ($q) use ($catSlugOrName) {
                 $q->where('category_name', $catSlugOrName)
@@ -130,8 +152,17 @@ class EventController extends Controller
         }
 
         $events = $eventsQuery->get();
+        $totalEventsCount = Event::where('status', 'published')->count();
 
-        return view('web.events', compact('banners', 'categories', 'featuredEvents', 'events'));
+        // 5. In-page sponsor banner placement (collection for dynamic auto-rotation)
+        $sponsorBanners = Banner::where('is_active', true)
+            ->whereIn('placement', ['home_before_featured', 'event_detail', 'marketplace', 'explore_hero', 'image_preview'])
+            ->orderBy('sort_order')
+            ->get();
+
+        $sponsorBanner = $sponsorBanners->first();
+
+        return view('web.events', compact('banners', 'categories', 'popularCategories', 'featuredEvents', 'events', 'totalEventsCount', 'sponsorBanner', 'sponsorBanners'));
     }
 
     public function show($slug = null)
@@ -169,17 +200,33 @@ class EventController extends Controller
 
         $relatedEvents = Event::where('id', '!=', $event->id ?? 0)
             ->where('status', 'published')
+            ->when(! empty($event->category_name), function ($q) use ($event) {
+                $q->orderByRaw('CASE WHEN category_name = ? THEN 0 ELSE 1 END', [$event->category_name]);
+            })
             ->latest('event_date')
-            ->take(6)
+            ->take(4)
             ->get();
 
         if ($relatedEvents->isEmpty()) {
-            $relatedEvents = Event::where('id', '!=', $event->id ?? 0)->take(4)->get();
+            $relatedEvents = Event::where('id', '!=', $event->id ?? 0)->where('status', 'published')->take(4)->get();
         }
 
-        $sponsorBanner = Banner::where('is_active', true)->where('placement', 'image_preview')->first();
-        if (! $sponsorBanner && ! empty($event->category_id)) {
+        // Prioritize category-targeted banner if event belongs to a category (e.g. Rugby)
+        $sponsorBanner = null;
+        if (! empty($event->category_id)) {
             $sponsorBanner = Banner::where('is_active', true)->where('category_id', $event->category_id)->first();
+        }
+        if (! $sponsorBanner && ! empty($event->category_name)) {
+            $sponsorBanner = Banner::where('is_active', true)->where('category_name', $event->category_name)->first();
+        }
+        if (! $sponsorBanner) {
+            $sponsorBanner = Banner::where('is_active', true)->where('placement', 'event_detail')->first();
+        }
+        if (! $sponsorBanner) {
+            $sponsorBanner = Banner::where('is_active', true)->where('placement', 'home_before_featured')->first();
+        }
+        if (! $sponsorBanner) {
+            $sponsorBanner = Banner::where('is_active', true)->where('placement', 'image_preview')->first();
         }
         if (! $sponsorBanner) {
             $sponsorBanner = Banner::where('is_active', true)->first();
@@ -187,6 +234,9 @@ class EventController extends Controller
 
         $watermarkSetting = WatermarkSetting::firstOrCreate(['user_id' => null]);
 
-        return view('web.event-details', compact('event', 'photos', 'relatedEvents', 'sponsorBanner', 'watermarkSetting'));
+        $savedPhotoIds = auth()->check() ? auth()->user()->savedPhotos()->pluck('event_photo_id')->toArray() : [];
+        $isEventSaved = auth()->check() && ! empty($event->id) ? auth()->user()->savedEvents()->where('event_id', $event->id)->exists() : false;
+
+        return view('web.event-details', compact('event', 'photos', 'relatedEvents', 'sponsorBanner', 'watermarkSetting', 'savedPhotoIds', 'isEventSaved'));
     }
 }

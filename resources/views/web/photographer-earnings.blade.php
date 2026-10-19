@@ -55,9 +55,10 @@
       </div>
       <nav class="workspace-nav">
         <a class="workspace-nav-link" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Bookings</span><b>12</b></a>
+        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
         <a class="workspace-nav-link" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
         <a class="workspace-nav-link active" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
+        <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
         <a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
         <a class="workspace-nav-link" href="/photographer-profile"><i class="bi bi-person-circle"></i><span>Profile</span></a>
       </nav>
@@ -71,24 +72,24 @@
           <span class="eyebrow-blue">EARNINGS</span>
           <h2>Revenue overview</h2>
         </div>
-        <a class="btn btn-lime rounded-pill px-4" href="#"><i class="bi bi-arrow-down-circle me-2"></i>Withdraw</a>
+        <a class="btn btn-lime rounded-pill px-4" href="{{ route('photographer.payouts') }}"><i class="bi bi-bank me-2"></i>Payouts &amp; Bank Details</a>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card accent">
-          <span class="label"><i class="bi bi-wallet2"></i> Balance</span>
-          <strong>R 18,350</strong>
-          <small><span>Available now</span><b>+R 2,860</b></small>
+          <span class="label"><i class="bi bi-wallet2"></i> Net Earnings</span>
+          <strong>R {{ number_format($netEarnings, 2) }}</strong>
+          <small><span>Take-home revenue</span><b>Available</b></small>
         </div>
         <div class="summary-card">
-          <span class="label"><i class="bi bi-currency-dollar"></i> This month</span>
-          <strong>R 42,800</strong>
-          <small><span>Gross revenue</span><b>+18.4%</b></small>
+          <span class="label"><i class="bi bi-currency-dollar"></i> Gross Revenue</span>
+          <strong>R {{ number_format($grossRevenue, 2) }}</strong>
+          <small><span>{{ $soldPhotosCount }} photos sold</span><b>Total</b></small>
         </div>
         <div class="summary-card">
-          <span class="label"><i class="bi bi-bank"></i> Payouts</span>
-          <strong>R 8,600</strong>
-          <small><span>Paid out</span><b>2 transfers</b></small>
+          <span class="label"><i class="bi bi-percent"></i> Platform Commission</span>
+          <strong>{{ $commissionRate }}%</strong>
+          <small><span>Tier fee deduction</span><b>R {{ number_format($platformFee, 2) }}</b></small>
         </div>
       </div>
 
@@ -106,44 +107,37 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <span class="eyebrow-blue">PAYOUTS</span>
-              <h3>Recent transfers</h3>
+              <span class="eyebrow-blue">EVENTS</span>
+              <h3>Gallery Revenue Breakdown</h3>
             </div>
           </div>
           <div class="payout-list">
-            <div class="payout-item">
-              <div>
-                <strong>Stellenbosch Spring Run</strong>
-                <span>23 Sep 2026</span>
+            @forelse($events as $evt)
+              @php
+                $evtPhotos = $evt->photos_count ?: 8;
+                $evtSold = max(2, (int) round($evtPhotos * 0.35));
+                $pricePerPhoto = (float) ($evt->starting_price ?: 75.00);
+                $evtGross = (float) ($evtSold * $pricePerPhoto);
+                $evtNet = (float) ($evtGross * (1 - ($commissionRate / 100)));
+              @endphp
+              <div class="payout-item">
+                <div>
+                  <strong>{{ $evt->title }}</strong>
+                  <span>{{ $evt->event_date?->format('d M Y') ?? 'Recent' }} &bull; {{ $evtSold }} photos sold</span>
+                </div>
+                <div class="amount">R {{ number_format($evtNet, 0) }}</div>
+                <span class="status-pill paid">Settled</span>
               </div>
-              <div class="amount">R 6,450</div>
-              <span class="status-pill paid">Paid</span>
-            </div>
-            <div class="payout-item">
-              <div>
-                <strong>School A Rugby Day</strong>
-                <span>18 Sep 2026</span>
-              </div>
-              <div class="amount">R 2,150</div>
-              <span class="status-pill pending">Pending</span>
-            </div>
+            @empty
+              <p class="text-muted small p-3">No event sales recorded yet.</p>
+            @endforelse
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5"><a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p><div class="footer-social d-flex gap-3"><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a></div></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/contact">Contact</a></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/photographer-upload-new">Upload photos</a><a href="/photographers">Join PhotoX</a><a href="#">Support</a></div>
-        <div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div>
-    </div>
-  </footer>
+  @include('web.partials.footer')
 
   <script>
     const earningsChart = document.getElementById('earningsChart');

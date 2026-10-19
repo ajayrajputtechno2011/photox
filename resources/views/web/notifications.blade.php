@@ -52,7 +52,7 @@
 			<div class="workspace-greeting"><span class="eyebrow-blue">PHOTOGRAPHER WORKSPACE</span><h1>Frame the<br><em>moment.</em></h1></div>
 			<nav class="workspace-nav">
 				<a class="workspace-nav-link" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-				<a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Bookings</span><b>12</b></a>
+				<a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
 				<a class="workspace-nav-link" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
 				<a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
 				<a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
@@ -90,7 +90,7 @@
 		<a href="/photographer-profile"><i class="bi bi-person"></i><span>Profile</span></a>
 		<a href="/notifications" class="active"><i class="bi bi-bell"></i><span>Alerts</span></a>
 	</nav>
-	<footer class="footer footer-premium"><div class="container-xl"><div class="row g-5 footer-main"><div class="col-lg-5"><a class="footer-logo" href="/"><img src="{{ asset('logo.png') }}" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p></div><div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a></div><div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/photographers">Join PhotoX</a></div><div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p></div></div><div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms</span><span>Made for the moments <i class="bi bi-stars"></i></span></div></div></footer>
+	@include('web.partials.footer')
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="{{ asset('app.js') }}"></script>
 </body>
 </html>

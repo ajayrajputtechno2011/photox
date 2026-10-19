@@ -197,12 +197,10 @@
         </nav>
         <div class="nav-label nav-label-spaced">Organisations</div>
         <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/sports"><i class="bi bi-trophy"></i><span>Sports</span></a>
-          <a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
+<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
           <a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
           <a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-          <a class="nav-link" href="/admin/vendors"><i class="bi bi-shop"></i><span>Vendors</span></a>
-        </nav>
+</nav>
         <div class="nav-label nav-label-spaced">Content</div>
         <nav class="nav flex-column sidebar-nav">
           <a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>

@@ -156,7 +156,11 @@
                     <h3>{{ $item->title }}</h3>
                     <p>{{ $item->location }} · {{ number_format($item->total_photos) }} photos · {{ $item->photographers_count }} photographers</p>
                     <div class="card-bottom">
-                      <span class="price">{{ $item->starting_price }}</span>
+                      @if(!($item->allow_individual_sales ?? true))
+                        <span class="price text-warning fw-bold" style="font-size: 0.85rem;">R{{ number_format($item->full_gallery_price ?: 450, 0) }} · Full Gallery</span>
+                      @else
+                        <span class="price">{{ $item->starting_price }}</span>
+                      @endif
                       <button class="cta" type="button">View gallery</button>
                     </div>
                   </div>
@@ -195,7 +199,7 @@
         <div class="event-list-wrapper">
           @forelse($events as $item)
             <article class="event-list-item">
-              <img class="mini-thumb" src="{{ $item->cover_image }}" alt="{{ $item->title }}">
+              <img class="mini-thumb" src="{{ $item->cover_image }}" alt="{{ $item->title }}" loading="lazy">
               <div class="top-row">
                 <span class="tag">{{ $item->category_name }}</span>
                 <span class="location">{{ $item->location }}</span>
@@ -203,7 +207,11 @@
               <h3>{{ $item->title }}</h3>
               <p>{{ number_format($item->total_photos) }} photos · {{ $item->photographers_count }} photographers · {{ Str::limit($item->description, 60) }}</p>
               <div class="foot">
-                <span class="price">{{ $item->starting_price }}</span>
+                @if(!($item->allow_individual_sales ?? true))
+                  <span class="price text-warning fw-bold" style="font-size: 0.85rem;">R{{ number_format($item->full_gallery_price ?: 450, 0) }} · Full Gallery</span>
+                @else
+                  <span class="price">{{ $item->starting_price }}</span>
+                @endif
                 <a class="cta text-decoration-none" href="/event-details/{{ $item->slug }}">Open <i class="bi bi-arrow-up-right ms-1"></i></a>
               </div>
             </article>

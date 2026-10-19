@@ -41,8 +41,9 @@
           <h2>Sign in to your workspace</h2>
           <p>Enter your details to continue to PhotoX Admin.</p>
         </div>
-        <form class="login-form" action="{{ route('login.post') }}" method="POST">
+        <form class="login-form" action="{{ route('admin.login.post') }}" method="POST">
           @csrf
+          <input type="hidden" name="account_type" value="admin">
           @if(session('error'))
             <div class="alert alert-danger py-2 small mb-3">{{ session('error') }}</div>
           @endif

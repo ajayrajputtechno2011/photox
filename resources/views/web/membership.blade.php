@@ -6,18 +6,23 @@
 @section('content')
   <main>
     <section class="membership-page-hero">
-      @include('web.partials.hero-ad-carousel')
-
       @php
         $hero = $pageHeroes['membership'] ?? null;
       @endphp
-      <div class="container-xl">
-        <div class="section-kicker"><span class="live-dot"></span>{{ $hero->kicker ?? 'Membership plans' }}</div>
-        <h1>{!! $hero->title ?? 'Pick a plan that grows with your work.' !!}</h1>
-        <p>{{ $hero->description ?? 'PhotoX buyer accounts are free. These creator plans are for photographers and studios who want to showcase, sell and scale with confidence.' }}</p>
-        <div class="hero-actions">
-          <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? '#plans' }}">{{ $hero->primary_button_text ?? 'Compare plans' }}</a>
-          <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? '/signup' }}">{{ $hero->secondary_button_text ?? 'Create a free account' }}</a>
+      <div class="container-xl position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-6 hero-intro-col">
+            <div class="section-kicker"><span class="live-dot"></span>{{ $hero->kicker ?? 'Membership plans' }}</div>
+            <h1>{!! $hero->title ?? 'Pick a plan that grows with your work.' !!}</h1>
+            <p>{{ $hero->description ?? 'PhotoX buyer accounts are free. These creator plans are for photographers and studios who want to showcase, sell and scale with confidence.' }}</p>
+            <div class="hero-actions">
+              <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? '#plans' }}">{{ $hero->primary_button_text ?? 'Compare plans' }}</a>
+              <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? '/signup' }}">{{ $hero->secondary_button_text ?? 'Create a free account' }}</a>
+            </div>
+          </div>
+          <div class="col-lg-6 hero-banner-col">
+            @include('web.partials.hero-partner-frame')
+          </div>
         </div>
       </div>
     </section>
@@ -61,7 +66,7 @@
                   <strong>{{ $plan->commission_rate }}</strong>
                 </span>
                 <span>
-                  <small>STORAGE</small>
+                  <small>PHOTO CAPACITY</small>
                   <strong>{{ $plan->storage_limit }}</strong>
                 </span>
               </div>
@@ -95,17 +100,7 @@
       </div>
     </section>
 
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events">
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
-        <span class="site-ad-overlay"></span>
-        <span class="site-ad-copy">
-          <small>PHOTOX PARTNER</small>
-          <strong>BUILT FOR MORE<br>THAN ROADS</strong>
-          <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-        </span>
-      </a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 @endsection
 

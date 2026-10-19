@@ -240,25 +240,66 @@
 
     items.forEach(item => {
       const card = document.createElement('div');
-      card.className = 'picker-media-item';
+      card.className = 'picker-media-item position-relative';
       card.title = 'Click to select: ' + (item.title || item.filename);
 
       const sizeStr = item.formatted_size || (item.file_size ? Math.round(item.file_size/1024) + ' KB' : '');
       const dimStr = item.dimensions ? ` · ${item.dimensions}` : '';
 
       card.innerHTML = `
-        <div class="picker-thumb-box">
+        <div class="picker-thumb-box position-relative">
           <img src="${item.url}" alt="${item.filename}" loading="lazy">
           <span class="picker-badge-size">${sizeStr}${dimStr}</span>
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-1 rounded-circle d-flex align-items-center justify-content-center delete-picker-btn" style="width: 24px; height: 24px; font-size: 0.72rem; z-index: 10; opacity: 0.85;" title="Delete this asset">
+            <i class="bi bi-trash-fill"></i>
+          </button>
         </div>
         <div class="picker-item-label">${item.title || item.filename}</div>
       `;
+
+      const delBtn = card.querySelector('.delete-picker-btn');
+      delBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        deleteMediaItemFromPicker(item);
+      });
 
       card.addEventListener('click', () => {
         selectMediaItem(item);
       });
 
       grid.appendChild(card);
+    });
+  }
+
+  function deleteMediaItemFromPicker(item) {
+    const itemName = item.title || item.filename || 'this asset';
+    if (!confirm(`Are you sure you want to permanently delete "${itemName}" from the Media Library?`)) {
+      return;
+    }
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                      document.querySelector('input[name="_token"]')?.value || '';
+
+    fetch('/admin/media/' + item.id, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        pickerMediaCache = pickerMediaCache.filter(m => m.id !== item.id);
+        renderPickerGrid(pickerMediaCache);
+      } else {
+        alert(res.message || 'Could not delete media asset.');
+      }
+    })
+    .catch(err => {
+      console.error('Delete asset failed:', err);
+      alert('Delete failed: ' + err.message);
     });
   }
 

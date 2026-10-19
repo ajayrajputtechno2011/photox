@@ -681,34 +681,49 @@
     </aside>
     @endif
 
-    <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number) -->
+    <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number & Action Buttons) -->
     <div class="find-photos-card">
       <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
         <div>
           <h5 class="fw-bold text-dark mb-1">Find your photos</h5>
           <span class="text-muted small">Filter captures by athlete bib number or selfie</span>
         </div>
-        <div class="d-flex align-items-stretch align-items-lg-center gap-2 flex-column flex-sm-row flex-lg-row justify-content-lg-end flex-wrap w-100 w-lg-auto">
-          <div class="input-group bib-search-group shadow-sm">
+        <div class="d-flex align-items-stretch align-items-md-center gap-2 flex-column flex-md-row justify-content-md-end w-100 w-lg-auto">
+          <div class="input-group bib-search-group shadow-sm action-toolbar-item" style="max-width: 100%;">
             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control border-start-0" id="bibSearchInput" placeholder="Bib search..." onkeyup="filterPhotosByBib(this.value)">
             <button class="btn btn-dark px-3 fw-semibold" type="button" onclick="filterPhotosByBib(document.getElementById('bibSearchInput').value)">Search</button>
           </div>
-          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap w-100 w-sm-auto" style="height: 38px;" onclick="openSelfieSearchModal()">
+          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="openSelfieSearchModal()">
             <i class="bi bi-camera-fill"></i>
             <span>Search by Selfie</span>
           </button>
-          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap w-100 w-sm-auto" style="height: 38px;" onclick="buyCompleteGalleryPackage();">
+          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="buyCompleteGalleryPackage();">
             <i class="bi bi-box-seam-fill"></i>
             <span>Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}</span>
           </button>
-          <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap d-none w-100 w-sm-auto" id="btnAddSearchResultsToCart" onclick="addSearchResultsToCart()" style="height: 38px;">
+          <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap d-none action-toolbar-item" id="btnAddSearchResultsToCart" onclick="addSearchResultsToCart()" style="height: 38px;">
             <i class="bi bi-bag-plus-fill"></i>
             <span id="btnAddSearchResultsLabel">Add Found Photos to Basket</span>
           </button>
         </div>
       </div>
     </div>
+
+    <style>
+      .action-toolbar-item {
+        width: 100%;
+      }
+      @media (min-width: 768px) {
+        .action-toolbar-item {
+          width: auto !important;
+          flex: 0 0 auto !important;
+        }
+        .bib-search-group {
+          width: 260px !important;
+        }
+      }
+    </style>
 
     @if(!($event->allow_individual_sales ?? true))
       <!-- Exclusive Complete Gallery Only Banner -->
@@ -1185,7 +1200,7 @@
                 </button>
                 <div class="d-flex align-items-center gap-2 mt-2">
                   <button type="button" class="btn btn-outline-warning rounded-pill flex-fill py-2 text-decoration-none text-center" id="btnModalSavePhoto" onclick="toggleModalSavePhoto()" style="font-size: 0.85rem; font-weight: 600;">
-                    <i class="bi bi-bookmark-star me-1" id="btnModalSavePhotoIcon"></i> <span id="btnModalSavePhotoText">Bookmark Photo</span>
+                    <i class="bi bi-bookmark-star me-1" id="btnModalSavePhotoIcon"></i> <span id="btnModalSavePhotoText">Bookmark</span>
                   </button>
                   <a href="{{ url('/cart') }}" class="btn btn-outline-warning rounded-pill flex-fill py-2 text-decoration-none text-center" style="font-size: 0.85rem; font-weight: 600;">
                     <i class="bi bi-bag-check me-1"></i> View Cart
@@ -2007,7 +2022,7 @@
       btn.classList.remove('btn-warning', 'text-dark', 'fw-bold');
       btn.classList.add('btn-outline-warning');
       icon.className = 'bi bi-bookmark-star me-1';
-      text.textContent = 'Bookmark Photo';
+      text.textContent = 'Bookmark';
     }
   }
 

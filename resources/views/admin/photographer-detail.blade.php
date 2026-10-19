@@ -87,12 +87,10 @@
         </nav>
         <div class="nav-label nav-label-spaced">Organisations</div>
         <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/sports"><i class="bi bi-trophy"></i><span>Sports</span></a>
-          <a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
+<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
           <a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
           <a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-          <a class="nav-link" href="/admin/vendors"><i class="bi bi-shop"></i><span>Vendors</span></a>
-        </nav>
+</nav>
         <div class="nav-label nav-label-spaced">System</div>
         <nav class="nav flex-column sidebar-nav">
           <a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
@@ -170,7 +168,7 @@
           </div>
           <div class="col-md-3">
             <article class="stat-card">
-              <p>Effective Storage Limit</p>
+              <p>Effective Photo Limit (Image Qty)</p>
               <h2 class="text-warning">{{ $photographer->effective_storage_limit }}</h2>
               <small class="{{ $photographer->custom_storage_limit ? 'text-warning fw-bold' : 'text-muted' }}">
                 {{ $photographer->custom_storage_limit ? '★ Admin Custom Override' : 'Plan Default' }}
@@ -225,7 +223,7 @@
                 </span>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted">Storage Quota:</span>
+                <span class="text-muted">Photo Limit (Image Qty):</span>
                 <span class="fw-semibold text-white">
                   {{ $photographer->effective_storage_limit }}
                   @if($photographer->custom_storage_limit)
@@ -333,6 +331,60 @@
               <strong class="text-white">{{ $photographer->created_at ? $photographer->created_at->format('d M Y') : 'N/A' }}</strong>
             </div>
           </div>
+        </section>
+
+        <!-- South African Banking Details for Automated Payouts -->
+        <section class="panel detail-card mt-4" style="border: 1px solid rgba(13, 202, 240, 0.25); background: linear-gradient(180deg, rgba(13, 202, 240, 0.04), rgba(0,0,0,0));">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow text-info">Banking &amp; Settlement</p>
+              <h3>South African Bank Account</h3>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              @if(!empty($photographer->bank_name) && !empty($photographer->account_number))
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                  <i class="bi bi-shield-check me-1"></i> EFT Ready
+                </span>
+              @else
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1">
+                  <i class="bi bi-exclamation-triangle me-1"></i> Banking Not Provided
+                </span>
+              @endif
+              <a href="{{ route('admin.photographers.edit', $photographer->id) }}" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-pencil me-1"></i> Edit Bank Info
+              </a>
+            </div>
+          </div>
+
+          @if(!empty($photographer->bank_name) && !empty($photographer->account_number))
+            <div class="row g-4 mt-1">
+              <div class="col-md-3">
+                <small class="text-muted d-block">Bank / Institution</small>
+                <strong class="text-white fs-6"><i class="bi bi-bank text-info me-1"></i> {{ $photographer->bank_name }}</strong>
+              </div>
+              <div class="col-md-3">
+                <small class="text-muted d-block">Account Holder</small>
+                <strong class="text-white">{{ $photographer->account_holder_name ?: $photographer->name }}</strong>
+              </div>
+              <div class="col-md-2">
+                <small class="text-muted d-block">Account Number</small>
+                <strong class="text-white font-monospace">{{ $photographer->account_number }}</strong>
+              </div>
+              <div class="col-md-2">
+                <small class="text-muted d-block">Branch Code</small>
+                <strong class="text-white font-monospace">{{ $photographer->branch_code ?: 'Universal' }}</strong>
+              </div>
+              <div class="col-md-2">
+                <small class="text-muted d-block">Account Type</small>
+                <strong class="text-white">{{ $photographer->account_type ?: 'Cheque/Current' }}</strong>
+              </div>
+            </div>
+          @else
+            <div class="p-3 rounded text-center my-2" style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);">
+              <i class="bi bi-wallet2 text-muted fs-3 d-block mb-1"></i>
+              <p class="text-muted mb-0 small">This photographer has not entered their South African bank details yet. They can set this up on their creator portal (`/photographer-payouts`), or an admin can enter it manually via the edit button.</p>
+            </div>
+          @endif
         </section>
       </main>
     </div>

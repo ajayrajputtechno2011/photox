@@ -49,12 +49,10 @@
         </nav>
         <div class="nav-label nav-label-spaced">Organisations</div>
         <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/sports"><i class="bi bi-trophy"></i><span>Sports</span></a>
-          <a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
+<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
           <a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
           <a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-          <a class="nav-link" href="/admin/vendors"><i class="bi bi-shop"></i><span>Vendors</span></a>
-        </nav>
+</nav>
         <div class="nav-label nav-label-spaced">System</div>
         <nav class="nav flex-column sidebar-nav">
           <a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
@@ -254,8 +252,8 @@
 
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label class="form-label" for="custom_storage_limit">Custom Storage Limit</label>
-                      <input class="form-control" name="custom_storage_limit" id="custom_storage_limit" value="{{ old('custom_storage_limit', $photographer->custom_storage_limit ?? '') }}" placeholder="e.g. 200 GB, 1 TB, Unlimited (leave empty for plan default)">
+                      <label class="form-label" for="custom_storage_limit">Custom Photo Limit (Image Qty)</label>
+                      <input class="form-control" name="custom_storage_limit" id="custom_storage_limit" value="{{ old('custom_storage_limit', $photographer->custom_storage_limit ?? '') }}" placeholder="e.g. 10,000 Photos, 50,000 Photos, Unlimited (leave empty for plan default)">
                     </div>
 
                     <div class="col-md-6">
@@ -335,6 +333,70 @@
             </div>
           </section>
 
+          <!-- Section 4: South African Banking & Automated Payout Details -->
+          <section class="panel detail-card mb-4" style="border: 1px solid rgba(13, 202, 240, 0.25); background: linear-gradient(180deg, rgba(13, 202, 240, 0.03), rgba(0,0,0,0));">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow text-info">Automated Payouts &amp; EFT</p>
+                <h3>South African Banking Details</h3>
+              </div>
+              <span class="badge bg-info text-dark fw-bold px-3 py-1"><i class="bi bi-bank me-1"></i> Bank Account</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="bank_name">Bank Name</label>
+                <select class="form-select" name="bank_name" id="bank_name" onchange="autoFillAdminBranch(this.value)">
+                  <option value="">Select Bank / Institution</option>
+                  @php
+                    $saBanks = [
+                      'Standard Bank' => '051001',
+                      'First National Bank (FNB)' => '250655',
+                      'Capitec Bank' => '470010',
+                      'Nedbank' => '198765',
+                      'ABSA Bank' => '632005',
+                      'Investec' => '580105',
+                      'TymeBank' => '678910',
+                      'Discovery Bank' => '679000',
+                      'African Bank' => '430000',
+                      'Bidvest Bank' => '462005',
+                    ];
+                  @endphp
+                  @foreach($saBanks as $bankName => $bCode)
+                    <option value="{{ $bankName }}" data-code="{{ $bCode }}" {{ old('bank_name', $photographer->bank_name ?? '') === $bankName ? 'selected' : '' }}>
+                      {{ $bankName }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="account_holder_name">Account Holder Name</label>
+                <input class="form-control" name="account_holder_name" id="account_holder_name" value="{{ old('account_holder_name', $photographer->account_holder_name ?? '') }}" placeholder="e.g. John Doe / Studio Pty Ltd">
+                <small class="text-muted">Must match recipient bank account registration name exactly.</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="account_number">Account Number</label>
+                <input class="form-control" name="account_number" id="account_number" value="{{ old('account_number', $photographer->account_number ?? '') }}" placeholder="e.g. 10123456789">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="branch_code">Universal Branch Code</label>
+                <input class="form-control" name="branch_code" id="branch_code" value="{{ old('branch_code', $photographer->branch_code ?? '') }}" placeholder="e.g. 051001">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="account_type">Account Type</label>
+                <select class="form-select" name="account_type" id="account_type">
+                  <option value="Cheque / Current" {{ old('account_type', $photographer->account_type ?? '') === 'Cheque / Current' ? 'selected' : '' }}>Cheque / Current Account</option>
+                  <option value="Savings" {{ old('account_type', $photographer->account_type ?? '') === 'Savings' ? 'selected' : '' }}>Savings Account</option>
+                  <option value="Transmission" {{ old('account_type', $photographer->account_type ?? '') === 'Transmission' ? 'selected' : '' }}>Transmission Account</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
           <div class="detail-actions form-actions">
             <a class="btn btn-outline-light" href="{{ route('admin.photographers.index') }}">Cancel</a>
             <button class="btn btn-primary" type="submit">
@@ -347,5 +409,15 @@
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <script src="{{ asset('admin-assets/js/app.js') }}"></script>
+  <script>
+    function autoFillAdminBranch(bankName) {
+      const select = document.getElementById('bank_name');
+      const selected = select.options[select.selectedIndex];
+      const code = selected.getAttribute('data-code');
+      if (code) {
+        document.getElementById('branch_code').value = code;
+      }
+    }
+  </script>
 </body>
 </html>

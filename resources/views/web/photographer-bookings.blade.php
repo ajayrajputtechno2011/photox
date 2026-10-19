@@ -54,9 +54,10 @@
       </div>
       <nav class="workspace-nav">
         <a class="workspace-nav-link" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link active" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Bookings</span><b>12</b></a>
+        <a class="workspace-nav-link active" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
         <a class="workspace-nav-link" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
         <a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
+        <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
         <a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
         <a class="workspace-nav-link" href="/photographer-profile"><i class="bi bi-person-circle"></i><span>Profile</span></a>
       </nav>
@@ -73,10 +74,10 @@
     <section class="workspace-main">
       <div class="workspace-topbar">
         <div>
-          <span class="eyebrow-blue">BOOKINGS</span>
+          <span class="eyebrow-blue">EVENTS</span>
           <h2>Event schedule</h2>
         </div>
-        <a class="btn btn-lime rounded-pill px-4" href="/photographer-new-booking"><i class="bi bi-plus-lg me-2"></i>New booking</a>
+        <a class="btn btn-lime rounded-pill px-4" href="/photographer-upload-new"><i class="bi bi-plus-lg me-2"></i>Add new gallery</a>
       </div>
 
       <div class="booking-toolbar">
@@ -87,119 +88,41 @@
       </div>
 
       <div class="table-card">
-        <div class="booking-row">
-          <div class="booking-main">
-            <img alt="Marathon event" src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=400&q=80">
+        @forelse($events as $evt)
+          <div class="booking-row">
+            <div class="booking-main">
+              <img alt="{{ $evt->title }}" src="{{ $evt->cover_image ?: ($evt->photos->first()?->thumbnail_url ?: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=400&q=80') }}" style="object-fit: cover;">
+              <div>
+                <strong>{{ $evt->title }}</strong>
+                <span>{{ $evt->event_date?->format('l, d M Y') ?? 'Recent Shoot' }}</span>
+              </div>
+            </div>
             <div>
-              <strong>Stellenbosch Spring Run</strong>
-              <span>Saturday · 8:00 AM</span>
+              <div class="table-label">Location</div>
+              <div class="table-value">{{ $evt->location ?: 'South Africa' }}</div>
+            </div>
+            <div>
+              <div class="table-label">Category</div>
+              <div class="table-value">{{ $evt->category_name ?: 'Sports' }}</div>
+            </div>
+            <div>
+              <div class="table-label">Photos / Coverage</div>
+              <div class="table-value">{{ $evt->photos_count ?? $evt->photos()->count() }} photos</div>
+            </div>
+            <div>
+              <a href="{{ route('events.show', $evt->slug ?: $evt->id) }}" target="_blank" class="mini-btn text-decoration-none">View Event</a>
             </div>
           </div>
-          <div>
-            <div class="table-label">Location</div>
-            <div class="table-value">Cape Town</div>
+        @empty
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+            No events currently scheduled.
           </div>
-          <div>
-            <div class="table-label">Client</div>
-            <div class="table-value">Run Collective</div>
-          </div>
-          <div>
-            <div class="table-label">Package</div>
-            <div class="table-value">Premium coverage</div>
-          </div>
-          <div>
-            <span class="status confirmed">Confirmed</span>
-          </div>
-        </div>
-
-        <div class="booking-row">
-          <div class="booking-main">
-            <img alt="Rugby event" src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=400&q=80">
-            <div>
-              <strong>School A Rugby Day</strong>
-              <span>Tuesday · 10:30 AM</span>
-            </div>
-          </div>
-          <div>
-            <div class="table-label">Location</div>
-            <div class="table-value">Green Point</div>
-          </div>
-          <div>
-            <div class="table-label">Client</div>
-            <div class="table-value">Greys Pass</div>
-          </div>
-          <div>
-            <div class="table-label">Package</div>
-            <div class="table-value">Team event</div>
-          </div>
-          <div>
-            <span class="status pending">Pending</span>
-          </div>
-        </div>
-
-        <div class="booking-row">
-          <div class="booking-main">
-            <img alt="Portrait session" src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=400&q=80">
-            <div>
-              <strong>Family portrait session</strong>
-              <span>Thursday · 3:00 PM</span>
-            </div>
-          </div>
-          <div>
-            <div class="table-label">Location</div>
-            <div class="table-value">Waterfront</div>
-          </div>
-          <div>
-            <div class="table-label">Client</div>
-            <div class="table-value">M. Van Wyk</div>
-          </div>
-          <div>
-            <div class="table-label">Package</div>
-            <div class="table-value">Portrait pack</div>
-          </div>
-          <div>
-            <button class="mini-btn" type="button">Review</button>
-          </div>
-        </div>
-
-        <div class="booking-row">
-          <div class="booking-main">
-            <img alt="Awards event" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80">
-            <div>
-              <strong>City Marathon Awards</strong>
-              <span>Sunday · 1:15 PM</span>
-            </div>
-          </div>
-          <div>
-            <div class="table-label">Location</div>
-            <div class="table-value">Mowbray</div>
-          </div>
-          <div>
-            <div class="table-label">Client</div>
-            <div class="table-value">Cape Sports</div>
-          </div>
-          <div>
-            <div class="table-label">Package</div>
-            <div class="table-value">Award shoot</div>
-          </div>
-          <div>
-            <span class="status action">Needs edit</span>
-          </div>
-        </div>
+        @endforelse
       </div>
     </section>
   </main>
 
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5"><a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p><div class="footer-social d-flex gap-3"><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a></div></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/contact">Contact</a></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/photographer-upload-new">Upload photos</a><a href="/photographers">Join PhotoX</a><a href="#">Support</a></div>
-        <div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div>
-    </div>
-  </footer>
+  @include('web.partials.footer')
 </body>
 </html>

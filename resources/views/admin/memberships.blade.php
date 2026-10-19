@@ -48,12 +48,10 @@
 				</nav>
 				<div class="nav-label nav-label-spaced">Organisations</div>
 				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/sports"><i class="bi bi-trophy"></i><span>Sports</span></a>
-					<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
+<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
 					<a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
 					<a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-					<a class="nav-link" href="/admin/vendors"><i class="bi bi-shop"></i><span>Vendors</span></a>
-				</nav>
+</nav>
 				<div class="nav-label nav-label-spaced">Content</div>
 				<nav class="nav flex-column sidebar-nav">
 					<a class="nav-link" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
@@ -193,7 +191,7 @@
 									<th>Monthly Price</th>
 									<th>Yearly Price</th>
 									<th>Commission</th>
-									<th>Storage</th>
+									<th>Photo Capacity</th>
 									<th>Features</th>
 									<th>Theme Style</th>
 									<th>Status</th>
@@ -438,8 +436,8 @@
 								<input type="text" name="commission_rate" class="form-control" value="6%" placeholder="e.g. 6%">
 							</div>
 							<div class="col-md-6">
-								<label class="form-label fw-semibold">Storage Allocation</label>
-								<input type="text" name="storage_limit" class="form-control" value="1 TB" placeholder="e.g. 1 TB">
+								<label class="form-label fw-semibold">Photo Capacity / Limit</label>
+								<input type="text" name="storage_limit" class="form-control" value="5,000 Photos" placeholder="e.g. 5,000 Photos or Unlimited Photos">
 							</div>
 							<div class="col-md-6">
 								<label class="form-label fw-semibold">Theme Style</label>

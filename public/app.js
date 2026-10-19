@@ -222,3 +222,86 @@ window.setInterval(() => {
   showTestimonial(activeTestimonial >= maxIndex ? 0 : activeTestimonial + 1);
 }, 6500);
 showTestimonial(0);
+
+// =========================================================================
+// PhotoX Global Cart Management (Client Requested: Add to Cart & Already Added)
+// =========================================================================
+window.PhotoXCart = {
+  STORAGE_KEY: 'photox_user_cart',
+
+  getItems: function() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveItems: function(items) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {}
+    this.updateBadge();
+  },
+
+  hasItem: function(photoId, licenseType) {
+    const items = this.getItems();
+    return items.some(item => String(item.id) === String(photoId) && (!licenseType || item.licenseType === licenseType));
+  },
+
+  addItem: function(photo) {
+    const items = this.getItems();
+    const existingIndex = items.findIndex(item => String(item.id) === String(photo.id) && item.licenseType === (photo.licenseType || 'personal'));
+
+    if (existingIndex > -1) {
+      return { added: false, message: 'Already in your cart' };
+    }
+
+    items.push({
+      id: String(photo.id),
+      title: photo.title || `Photo #${photo.id}`,
+      price: parseFloat(photo.price) || 75.0,
+      licenseType: photo.licenseType || 'personal',
+      licenseName: photo.licenseName || 'Personal Digital License',
+      image: photo.image || '',
+      eventTitle: photo.eventTitle || 'Event Gallery',
+      eventSlug: photo.eventSlug || '',
+      photographer: photo.photographer || 'PhotoX Creator',
+      addedAt: new Date().toISOString()
+    });
+
+    this.saveItems(items);
+    return { added: true, message: 'Added to cart' };
+  },
+
+  removeItem: function(photoId, licenseType) {
+    let items = this.getItems();
+    items = items.filter(item => !(String(item.id) === String(photoId) && item.licenseType === licenseType));
+    this.saveItems(items);
+    return items;
+  },
+
+  clear: function() {
+    this.saveItems([]);
+  },
+
+  count: function() {
+    return this.getItems().length;
+  },
+
+  updateBadge: function() {
+    const total = this.count();
+    document.querySelectorAll('.header-cart span').forEach(el => {
+      el.textContent = total;
+    });
+  }
+};
+
+// Auto update badge on DOM load
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.PhotoXCart) {
+    window.PhotoXCart.updateBadge();
+  }
+});
+

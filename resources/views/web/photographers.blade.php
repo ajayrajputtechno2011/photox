@@ -176,21 +176,24 @@
 @section('content')
   <main>
     <section class="events-page-hero">
-      @include('web.partials.hero-ad-carousel')
-
       @php
         $hero = $pageHeroes['photographers'] ?? null;
       @endphp
-      <div class="container-xl">
-        <div class="hero-intro-col">
-          <div class="section-kicker"><span class="live-dot"></span>{{ $hero->kicker ?? 'PhotoX / The Photographers' }}</div>
-          <h1>{!! $hero->title ?? 'Good eyes. <br><em>see more.</em>' !!}</h1>
-          <p>{{ $hero->description ?? 'Meet the photographers behind the moments. From race days to match days, they capture movement, emotion and stories that last. Find the right creative eye for your next event.' }}</p>
-          <div class="hero-actions">
-            <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? '#roster' }}">{{ $hero->primary_button_text ?? 'Meet the roster' }}</a>
-            @if(!empty($hero->secondary_button_text))
-              <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? '/signup' }}">{{ $hero->secondary_button_text }}</a>
-            @endif
+      <div class="container-xl position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-6 hero-intro-col">
+            <div class="section-kicker"><span class="live-dot"></span>{{ $hero->kicker ?? 'PhotoX / The Photographers' }}</div>
+            <h1>{!! $hero->title ?? 'Good eyes. <br><em>see more.</em>' !!}</h1>
+            <p>{{ $hero->description ?? 'Meet the photographers behind the moments. From race days to match days, they capture movement, emotion and stories that last. Find the right creative eye for your next event.' }}</p>
+            <div class="hero-actions">
+              <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? '#roster' }}">{{ $hero->primary_button_text ?? 'Meet the roster' }}</a>
+              @if(!empty($hero->secondary_button_text))
+                <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? '/signup' }}">{{ $hero->secondary_button_text }}</a>
+              @endif
+            </div>
+          </div>
+          <div class="col-lg-6 hero-banner-col">
+            @include('web.partials.hero-partner-frame')
           </div>
         </div>
       </div>
@@ -297,9 +300,7 @@
       </div>
     </section>
 
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road"><span class="site-ad-overlay"></span><span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span></a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 @endsection
 

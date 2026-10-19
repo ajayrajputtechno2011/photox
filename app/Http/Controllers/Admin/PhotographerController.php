@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PhotographerController extends Controller
 {
@@ -111,6 +112,11 @@ class PhotographerController extends Controller
             'membership_expires_at' => 'nullable|date',
             'payout_email' => 'nullable|email|max:190',
             'payout_method' => 'nullable|string|max:150',
+            'bank_name' => 'nullable|string|max:100',
+            'account_holder_name' => 'nullable|string|max:150',
+            'account_number' => 'nullable|string|max:50',
+            'branch_code' => 'nullable|string|max:20',
+            'account_type' => 'nullable|string|max:50',
             'admin_notes' => 'nullable|string|max:2000',
             'password' => 'nullable|string|min:6',
         ]);
@@ -155,6 +161,11 @@ class PhotographerController extends Controller
             'membership_expires_at' => $validated['membership_expires_at'] ?? null,
             'payout_email' => $validated['payout_email'] ?? $validated['email'],
             'payout_method' => $validated['payout_method'] ?? 'Bank Transfer',
+            'bank_name' => $validated['bank_name'] ?? null,
+            'account_holder_name' => $validated['account_holder_name'] ?? null,
+            'account_number' => $validated['account_number'] ?? null,
+            'branch_code' => $validated['branch_code'] ?? null,
+            'account_type' => $validated['account_type'] ?? null,
             'admin_notes' => $validated['admin_notes'] ?? null,
         ]);
 
@@ -231,6 +242,11 @@ class PhotographerController extends Controller
             'membership_expires_at' => 'nullable|date',
             'payout_email' => 'nullable|email|max:190',
             'payout_method' => 'nullable|string|max:150',
+            'bank_name' => 'nullable|string|max:100',
+            'account_holder_name' => 'nullable|string|max:150',
+            'account_number' => 'nullable|string|max:50',
+            'branch_code' => 'nullable|string|max:20',
+            'account_type' => 'nullable|string|max:50',
             'admin_notes' => 'nullable|string|max:2000',
         ]);
 
@@ -272,6 +288,11 @@ class PhotographerController extends Controller
             'membership_expires_at' => ($validated['membership_expires_at'] ?? null) ?: null,
             'payout_email' => $validated['payout_email'] ?? null,
             'payout_method' => $validated['payout_method'] ?? null,
+            'bank_name' => $validated['bank_name'] ?? null,
+            'account_holder_name' => $validated['account_holder_name'] ?? null,
+            'account_number' => $validated['account_number'] ?? null,
+            'branch_code' => $validated['branch_code'] ?? null,
+            'account_type' => $validated['account_type'] ?? null,
             'admin_notes' => $validated['admin_notes'] ?? null,
         ]);
 
@@ -317,5 +338,112 @@ class PhotographerController extends Controller
 
         return redirect()->route('admin.photographers.index')
             ->with('success', "Photographer {$name} removed.");
+    }
+
+    /**
+     * Display creator automated payouts and South African banking management.
+     */
+    public function payouts(Request $request): View
+    {
+        $query = User::where('role', 'photographer')->with('membership');
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('bank_name', 'like', "%{$search}%")
+                    ->orWhere('account_holder_name', 'like', "%{$search}%")
+                    ->orWhere('account_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('bank') && $request->input('bank') !== 'all') {
+            $query->where('bank_name', $request->input('bank'));
+        }
+
+        if ($request->input('status') === 'ready') {
+            $query->whereNotNull('bank_name')->whereNotNull('account_number');
+        } elseif ($request->input('status') === 'missing') {
+            $query->where(function ($q) {
+                $q->whereNull('bank_name')->orWhereNull('account_number');
+            });
+        }
+
+        $photographers = $query->latest('id')->paginate(15)->withQueryString();
+
+        $totalPhotographers = User::where('role', 'photographer')->count();
+        $readyCount = User::where('role', 'photographer')
+            ->whereNotNull('bank_name')
+            ->whereNotNull('account_number')
+            ->count();
+        $missingCount = $totalPhotographers - $readyCount;
+
+        $banks = [
+            'Standard Bank',
+            'First National Bank (FNB)',
+            'Capitec Bank',
+            'Nedbank',
+            'ABSA Bank',
+            'Investec',
+            'TymeBank',
+            'Discovery Bank',
+            'African Bank',
+            'Bidvest Bank',
+        ];
+
+        return view('admin.payouts', compact(
+            'photographers',
+            'totalPhotographers',
+            'readyCount',
+            'missingCount',
+            'banks'
+        ));
+    }
+
+    /**
+     * Export South African EFT batch payment CSV for automated bank payouts.
+     */
+    public function exportEftCsv(): StreamedResponse
+    {
+        $photographers = User::where('role', 'photographer')
+            ->whereNotNull('bank_name')
+            ->whereNotNull('account_number')
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="photox_eft_batch_'.date('Y-m-d').'.csv"',
+        ];
+
+        $callback = function () use ($photographers) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [
+                'Recipient Name',
+                'Account Holder Name',
+                'Bank Name',
+                'Account Number',
+                'Branch Code',
+                'Account Type',
+                'Reference',
+                'Contact Email',
+            ]);
+
+            foreach ($photographers as $p) {
+                fputcsv($file, [
+                    $p->name,
+                    $p->account_holder_name ?: $p->name,
+                    $p->bank_name,
+                    $p->account_number,
+                    $p->branch_code ?: 'Universal',
+                    $p->account_type ?: 'Cheque/Current',
+                    'PhotoX-'.$p->id,
+                    $p->email,
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

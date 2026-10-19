@@ -355,29 +355,7 @@
     </div>
 
     <!-- 7. SPONSORED PARTNER BANNER -->
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      @if(isset($imagePreviewBanner) && $imagePreviewBanner)
-        <a class="site-ad-link" href="{{ $imagePreviewBanner->target_url ?: '/events' }}">
-          <img src="{{ $imagePreviewBanner->image_path ?: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88' }}" alt="Sponsored partner banner">
-          <span class="site-ad-overlay"></span>
-          <span class="site-ad-copy">
-            <small>PHOTOX PARTNER</small>
-            <strong>{{ $imagePreviewBanner->title ?: 'BUILT FOR MORE THAN ROADS' }}</strong>
-            <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-          </span>
-        </a>
-      @else
-        <a class="site-ad-link" href="/events">
-          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road">
-          <span class="site-ad-overlay"></span>
-          <span class="site-ad-copy">
-            <small>PHOTOX PARTNER</small>
-            <strong>BUILT FOR MORE<br>THAN ROADS</strong>
-            <span>Explore events <i class="bi bi-arrow-up-right"></i></span>
-          </span>
-        </a>
-      @endif
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
 @endsection
 

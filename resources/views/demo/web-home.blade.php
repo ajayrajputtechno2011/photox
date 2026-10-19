@@ -3,15 +3,6 @@
 @section('title', 'PhotoX | Find the moment. Then keep it.')
 @section('body-class', 'page-events page-home')
 
-@section('content')
-  @php
-    $latestEvents = $latestEvents ?? collect();
-    $galleryPhotos = $galleryPhotos ?? collect();
-    $categories = $categories ?? collect();
-    $popularCategories = $popularCategories ?? collect();
-    $events = $latestEvents;
-  @endphp
-
 @section('styles')
   <style>
     /* Clean client presentation mode: hide admin pills and admin panel links */
@@ -131,14 +122,46 @@
       max-width: 100% !important;
       margin-bottom: 22px !important;
     }
+    /* Hero Banner: Premium Glassmorphism Anchor Frame (Fixes "Lost" Floating Banner) */
     body.page-home .events-page-hero .hero-banner-col {
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
       align-items: center;
     }
     body.page-home .events-page-hero .hero-banner-frame {
       width: 100%;
-      max-width: 620px;
+      max-width: 580px;
+      position: relative;
+      background: rgba(11, 23, 44, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.55), 0 0 30px rgba(255, 138, 0, 0.08);
+      backdrop-filter: blur(12px);
+    }
+    body.page-home .events-page-hero .hero-banner-frame-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 8px 10px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    body.page-home .events-page-hero .hero-banner-frame-header .frame-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    body.page-home .events-page-hero .hero-banner-frame-header .frame-dot {
+      width: 7px;
+      height: 7px;
+      background: #ff8a00;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ff8a00;
+      display: inline-block;
     }
     body.page-home .events-page-hero .hero-ad-carousel {
       position: relative !important;
@@ -151,14 +174,14 @@
       max-width: 100% !important;
       height: auto !important;
       aspect-ratio: 16 / 9.5 !important;
-      border-radius: 14px !important;
+      border-radius: 12px !important;
       overflow: hidden !important;
-      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
       margin: 0 !important;
     }
     body.page-home .events-page-hero .hero-ad-slide img {
-      border-radius: 14px !important;
+      border-radius: 12px !important;
       object-fit: cover !important;
     }
     @media (max-width: 991.98px) {
@@ -168,24 +191,29 @@
       body.page-home .events-page-hero .hero-intro-col {
         padding-right: 0;
       }
+      body.page-home .events-page-hero .hero-banner-col {
+        justify-content: center;
+      }
       body.page-home .events-page-hero .hero-banner-frame {
         max-width: 520px;
-        margin-top: 10px;
+        margin-top: 14px;
       }
     }
 
     #photoInspectorModal .image-preview-ad-wrapper {
-      max-height: 110px !important;
       width: 100%;
       max-width: 100%;
+      height: auto !important;
+      max-height: none !important;
       transition: width 0.15s ease;
       margin: 12px auto 0 !important;
     }
 
     #photoInspectorModal .image-preview-ad-wrapper img {
       width: 100% !important;
-      max-height: 95px !important;
-      object-fit: cover !important;
+      height: auto !important;
+      max-height: none !important;
+      object-fit: contain !important;
       display: block;
       border-radius: 8px;
     }
@@ -198,6 +226,15 @@
   </style>
 @endsection
 
+@section('content')
+  @php
+    $latestEvents = $latestEvents ?? collect();
+    $galleryPhotos = $galleryPhotos ?? collect();
+    $categories = $categories ?? collect();
+    $popularCategories = $popularCategories ?? collect();
+    $events = $latestEvents;
+  @endphp
+
   <main>
     <!-- 1. HERO SECTION (Balanced 50/50 Split & Compact Height - Client Requested) -->
     <section class="events-page-hero">
@@ -205,7 +242,7 @@
         $hero = $pageHeroes['home'] ?? ($pageHeroes['events'] ?? null);
       @endphp
       <div class="container-xl position-relative" style="z-index: 2;">
-        <div class="row align-items-center g-4 g-lg-5">
+        <div class="row align-items-center g-4">
           <!-- Left 50%: Hero Kicker, Title, Description, and Actions -->
           <div class="col-lg-6 hero-intro-col">
             <div class="section-kicker"><span class="live-dot"></span>{{ $hero->kicker ?? 'Live archive' }}</div>
@@ -216,11 +253,9 @@
               <a class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold" href="#browse-gallery">Browse gallery</a>
             </div>
           </div>
-          <!-- Right 50%: Prominent Banner Ad Carousel -->
+          <!-- Right 50%: Prominent Framed Banner Ad Carousel (Anchored Showcase) -->
           <div class="col-lg-6 hero-banner-col">
-            <div class="hero-banner-frame">
-              @include('web.partials.hero-ad-carousel')
-            </div>
+            @include('web.partials.hero-partner-frame')
           </div>
         </div>
       </div>
@@ -245,7 +280,7 @@
     </section>
 
     <!-- 3. LATEST EVENTS SECTION -->
-    <section class="content-section" id="latest-events">
+    <section class="content-section" id="latest-events" style="padding-bottom: 32px !important;">
       <div class="container-xl">
         <div class="section-header">
           <div>
@@ -262,12 +297,12 @@
 
         <div class="event-grid">
           @forelse($latestEvents as $item)
-            <article class="event-card" style="cursor: pointer;" onclick="filterByEvent({{ $item->id }}, '{{ addslashes($item->title) }}')">
-              <a href="javascript:void(0)" onclick="filterByEvent({{ $item->id }}, '{{ addslashes($item->title) }}')" class="text-decoration-none text-reset d-block">
+            <article class="event-card">
+              <a href="/event-details/{{ $item->slug }}" class="text-decoration-none text-reset d-block">
                 <div class="position-relative overflow-hidden" style="aspect-ratio: 16 / 10; background: #0b1a29;">
                   <img src="{{ $item->cover_image }}" alt="{{ $item->title }}" class="w-100 h-100 object-fit-cover" loading="lazy">
                   <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-75 text-warning border border-warning" style="font-size: 0.70rem;">
-                    <i class="bi bi-images me-1"></i> {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos
+                    <i class="bi bi-images me-1"></i> {{ number_format($item->photos_count ?? $item->total_photos ?? 0) }} photos
                   </span>
                 </div>
                 <div class="body">
@@ -276,12 +311,12 @@
                     <span class="date">{{ $item->event_date ? \Carbon\Carbon::parse($item->event_date)->format('d M Y') : '' }}</span>
                   </div>
                   <h3>{{ $item->title }}</h3>
-                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 24) }} photos @if($item->photographer || $item->photographer_name) · {{ $item->photographer?->name ?? $item->photographer_name }} @endif</p>
+                  <p>{{ $item->location }} · {{ number_format($item->photos_count ?? $item->total_photos ?? 0) }} photos @if($item->photographer || $item->photographer_name) · {{ $item->photographer?->name ?? $item->photographer_name }} @endif</p>
                   <div class="card-bottom">
                     <span class="price">{{ $item->starting_price ?? 'From R50' }}</span>
-                    <a class="cta text-decoration-none text-center" href="/event-details/{{ $item->slug }}" onclick="event.stopPropagation();">
+                    <span class="cta text-decoration-none text-center">
                       View gallery
-                    </a>
+                    </span>
                   </div>
                 </div>
               </a>
@@ -297,16 +332,45 @@
       </div>
     </section>
 
-    <!-- 4. BROWSE EVERY GALLERY (Live Watermarked Photos with Interactive Category / Event Filter) -->
-    <section class="content-section" id="browse-gallery" style="background: rgba(230,240,255,.75);">
+    <!-- SPONSOR BANNER (Before Featured Photos - Client Requested 100% Full Width) -->
+    @php
+      $featuredPreBanner = \App\Models\Banner::where('is_active', true)
+        ->where('placement', 'home_before_featured')
+        ->first();
+      if (!$featuredPreBanner) {
+        $featuredPreBanner = \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first()
+          ?: \App\Models\Banner::where('is_active', true)->first();
+      }
+    @endphp
+    @if($featuredPreBanner)
+      <aside class="container-xl my-2 my-md-3" aria-label="Sponsored placement" style="padding-top: 0; padding-bottom: 0;">
+        <div class="w-100 overflow-hidden shadow-sm" style="border-radius: 16px; border: 1px solid rgba(11,45,91,0.08); background: #061019;">
+          <a href="{{ $featuredPreBanner->link_url ?: '#' }}" target="_blank" class="d-block w-100 text-decoration-none position-relative" style="line-height: 0;">
+            <img src="{{ $featuredPreBanner->image_url }}" 
+                 alt="{{ $featuredPreBanner->title ?: 'Sponsored Banner' }}" 
+                 class="w-100 d-block" 
+                 style="height: auto; max-width: 100%; object-fit: contain; border-radius: 16px;" 
+                 loading="lazy">
+            @if(!empty($featuredPreBanner->badge_text))
+              <span class="position-absolute top-0 end-0 m-2 m-md-3 px-2 py-1 badge bg-dark text-warning border border-warning" style="font-size: 0.68rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.2;">
+                {{ $featuredPreBanner->badge_text }}
+              </span>
+            @endif
+          </a>
+        </div>
+      </aside>
+    @endif
+
+    <!-- 4. FEATURED PHOTOS (Curated Highlights from Recent Galleries - Client Requested) -->
+    <section class="content-section" id="browse-gallery" style="background: rgba(230,240,255,.75); padding-top: 32px !important;">
       <div class="container-xl">
         <div class="section-header">
           <div>
             <div class="section-kicker" style="background:#eaf3ff;color:#0b2d5b;border-color:rgba(11,45,91,.08);">
-              Protected Galleries
+              Curated Highlights
             </div>
-            <h2 class="section-title">Browse every gallery</h2>
-            <p class="text-muted small mb-0 mt-1">Photos rendered dynamically with protected security overlays. Click any photo to open the inspector with Next/Previous navigation.</p>
+            <h2 class="section-title">Featured photos</h2>
+            <p class="text-muted small mb-0 mt-1">Handpicked highlights selected by photographers from recent galleries. Click any photo to preview, add to cart, or view the full event gallery.</p>
           </div>
           <div class="d-flex align-items-center gap-3">
             <a class="inline-link" href="#popular-categories">View categories <i class="bi bi-arrow-down"></i></a>
@@ -426,6 +490,25 @@
               </p>
             </div>
           @endforelse
+        </div>
+
+        <!-- Loading Spinner Indicator & Load More Action -->
+        <div id="galleryLoadingIndicator" class="text-center my-4 d-none">
+          <div class="spinner-border text-primary" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.22em;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="text-muted small mt-2 mb-0 fw-medium">Loading more photos...</p>
+        </div>
+
+        <div id="loadMoreContainer" class="text-center mt-4 pt-2">
+          <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" id="loadMorePhotosBtn" onclick="loadMoreGalleryPhotos()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Load More Photos
+          </button>
+          <div id="allPhotosLoadedNotice" class="d-none">
+            <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill font-monospace" style="font-size: 0.82rem;">
+              <i class="bi bi-check-circle-fill text-success me-1"></i> You've viewed all available photos
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -828,17 +911,17 @@
               @php
                 $previewAd = $imagePreviewBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first();
               @endphp
-              <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 60px;">
+              <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; max-width: 100%;">
                 @if($previewAd)
-                  <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-flex align-items-center justify-content-center w-100 position-relative text-decoration-none p-1" style="display: flex;">
-                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="max-width: 100%; max-height: 90px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto; border-radius: 6px;">
+                  <a href="{{ $previewAd->link_url ?: '#' }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
+                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
                     @if(!empty($previewAd->badge_text))
-                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2;">
+                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
                         {{ $previewAd->badge_text }}
                       </span>
                     @endif
                     @if(!empty($previewAd->title))
-                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2;">
+                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
                         <strong>{{ $previewAd->title }}</strong>
                         @if(!empty($previewAd->subtitle))
                           <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
@@ -957,15 +1040,20 @@
                   </div>
                 </div>
 
-                <button class="btn btn-warning w-100 py-3 fw-bold rounded-pill text-dark d-flex align-items-center justify-content-center gap-2 shadow" onclick="triggerSimulatedPurchase()">
-                  <i class="bi bi-bag-check-fill fs-5"></i> 
-                  <span>Purchase Hi-Res</span>
+                <button class="btn btn-warning w-100 py-3 fw-bold rounded-pill text-dark d-flex align-items-center justify-content-center gap-2 shadow" id="btnModalAddToCart" onclick="handleModalAddToCart()">
+                  <i class="bi bi-cart-plus-fill fs-5" id="btnModalAddToCartIcon"></i> 
+                  <span id="btnModalAddToCartText">Add to Cart</span>
                 </button>
-                <button type="button" class="btn btn-outline-secondary rounded-pill w-100 py-2 mt-2 text-white" onclick="closePhotoInspectorModal()" style="border-color: rgba(255,255,255,0.25); font-size: 0.85rem;">
-                  <i class="bi bi-x-circle me-1"></i> Close / Cancel
-                </button>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                  <a href="{{ url('/cart') }}" class="btn btn-outline-warning rounded-pill flex-fill py-2 text-decoration-none text-center" style="font-size: 0.85rem; font-weight: 600;">
+                    <i class="bi bi-bag-check me-1"></i> View Cart
+                  </a>
+                  <button type="button" class="btn btn-outline-secondary rounded-pill flex-fill py-2 text-white" onclick="closePhotoInspectorModal()" style="border-color: rgba(255,255,255,0.25); font-size: 0.85rem;">
+                    <i class="bi bi-x-circle me-1"></i> Keep Browsing
+                  </button>
+                </div>
                 <small class="text-center d-block mt-2" style="font-size: 0.75rem; color: #cbd5e1;">
-                  Licensed purchase unlocks full resolution without watermarks.
+                  Licensed purchase unlocks full resolution clean master without watermarks.
                 </small>
               </div>
 
@@ -1235,6 +1323,82 @@
     let currentActivePhoto = null;
     let currentSelectedLicense = 'personal';
 
+    let currentGalleryPage = 1;
+    let isLoadingMorePhotos = false;
+    let hasMorePhotosToLoad = true;
+
+    async function loadMoreGalleryPhotos() {
+      if (isLoadingMorePhotos || !hasMorePhotosToLoad) return;
+      isLoadingMorePhotos = true;
+
+      const loader = document.getElementById('galleryLoadingIndicator');
+      const loadBtn = document.getElementById('loadMorePhotosBtn');
+      const allLoadedNotice = document.getElementById('allPhotosLoadedNotice');
+
+      if (loader) loader.classList.remove('d-none');
+      if (loadBtn) loadBtn.classList.add('d-none');
+
+      try {
+        const nextPage = currentGalleryPage + 1;
+        const currentCat = document.querySelector('.category-pill-btn.active')?.getAttribute('data-cat') || 'all';
+        const queryTerm = document.getElementById('heroSearchInput')?.value || '';
+
+        let url = `/api/load-more-photos?page=${nextPage}&per_page=12`;
+        if (currentCat && currentCat !== 'all') {
+          url += `&category=${encodeURIComponent(currentCat)}`;
+        }
+        if (queryTerm) {
+          url += `&q=${encodeURIComponent(queryTerm)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.success && data.photos && data.photos.length > 0) {
+          currentGalleryPage = nextPage;
+          
+          data.photos.forEach(photo => {
+            if (!rawPhotosData.some(p => p.id === photo.id)) {
+              rawPhotosData.push(photo);
+            }
+            if (!currentGalleryPhotos.some(p => p.id === photo.id)) {
+              currentGalleryPhotos.push(photo);
+            }
+          });
+
+          renderGalleryGrid();
+          hasMorePhotosToLoad = data.has_more;
+
+          if (!hasMorePhotosToLoad) {
+            if (loadBtn) loadBtn.classList.add('d-none');
+            if (allLoadedNotice) allLoadedNotice.classList.remove('d-none');
+          } else {
+            if (loadBtn) loadBtn.classList.remove('d-none');
+          }
+        } else {
+          hasMorePhotosToLoad = false;
+          if (loadBtn) loadBtn.classList.add('d-none');
+          if (allLoadedNotice) allLoadedNotice.classList.remove('d-none');
+        }
+      } catch (err) {
+        console.error('Failed to load more photos:', err);
+        if (loadBtn) loadBtn.classList.remove('d-none');
+      } finally {
+        isLoadingMorePhotos = false;
+        if (loader) loader.classList.add('d-none');
+      }
+    }
+
+    // Auto-load next images when scrolling near bottom of gallery
+    window.addEventListener('scroll', function() {
+      const container = document.getElementById('browse-gallery');
+      if (!container || isLoadingMorePhotos || !hasMorePhotosToLoad) return;
+      const rect = container.getBoundingClientRect();
+      if (rect.bottom <= window.innerHeight + 350) {
+        loadMoreGalleryPhotos();
+      }
+    }, { passive: true });
+
     // Anti-theft right-click defense toast
     function showProtectedToast(event) {
       if (event) event.preventDefault();
@@ -1422,30 +1586,24 @@
     }
 
     // =========================================================================
-    // MODAL AD WIDTH SYNCHRONIZATION (Matches Preview Image Width)
+    // MODAL AD WIDTH (Keep 100% Full Width in Portrait and Landscape)
     // =========================================================================
     function syncPreviewAdWidth() {
-      const photoImg = document.getElementById('modalPhotoImg');
       const adWrapper = document.getElementById('modalPreviewAdWrapper');
       const secInfo = document.getElementById('modalSecurityInfoBar');
 
-      if (!photoImg) return;
-
-      // Only synchronize ad and security info wrappers if photo is rendered with valid dimensions
-      const w = photoImg.clientWidth || photoImg.offsetWidth;
-      if (w && w >= 200) {
-        if (adWrapper) {
-          adWrapper.style.maxWidth = w + 'px';
-          adWrapper.style.width = '100%';
-          adWrapper.style.marginLeft = 'auto';
-          adWrapper.style.marginRight = 'auto';
-        }
-        if (secInfo) {
-          secInfo.style.maxWidth = Math.max(w, 520) + 'px';
-          secInfo.style.width = '100%';
-          secInfo.style.marginLeft = 'auto';
-          secInfo.style.marginRight = 'auto';
-        }
+      // Keep banner full width of modal preview container (requested by client for portrait & landscape)
+      if (adWrapper) {
+        adWrapper.style.maxWidth = '100%';
+        adWrapper.style.width = '100%';
+        adWrapper.style.marginLeft = 'auto';
+        adWrapper.style.marginRight = 'auto';
+      }
+      if (secInfo) {
+        secInfo.style.maxWidth = '100%';
+        secInfo.style.width = '100%';
+        secInfo.style.marginLeft = 'auto';
+        secInfo.style.marginRight = 'auto';
       }
     }
 
@@ -1616,15 +1774,79 @@
 
       const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);
       if (radio) radio.checked = true;
+
+      updateAddToCartButtonState();
+    }
+
+    function updateAddToCartButtonState() {
+      if (!currentActivePhoto) return;
+      const btn = document.getElementById('btnModalAddToCart');
+      const text = document.getElementById('btnModalAddToCartText');
+      const icon = document.getElementById('btnModalAddToCartIcon');
+      if (!btn || !text || !icon) return;
+
+      const license = currentSelectedLicense || 'personal';
+      const isAlreadyAdded = window.PhotoXCart && window.PhotoXCart.hasItem(currentActivePhoto.id, license);
+
+      if (isAlreadyAdded) {
+        btn.classList.remove('btn-warning');
+        btn.classList.add('btn-success');
+        icon.className = 'bi bi-check-circle-fill fs-5';
+        text.textContent = 'Already in Cart';
+      } else {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-warning');
+        icon.className = 'bi bi-cart-plus-fill fs-5';
+        text.textContent = 'Add to Cart';
+      }
+    }
+
+    function handleModalAddToCart() {
+      if (!currentActivePhoto) return;
+      const license = currentSelectedLicense || 'personal';
+
+      const licenseNames = {
+        'personal': 'Personal Digital License',
+        'commercial': 'Commercial Editorial License',
+        'selfie': 'Selfie / Athlete Bundle',
+        'full_gallery': 'Full Gallery Digital Package'
+      };
+
+      const prices = {
+        'personal': parseFloat(currentActivePhoto.personal_price || 75).toFixed(2),
+        'commercial': parseFloat(currentActivePhoto.commercial_price || 350).toFixed(2),
+        'selfie': '150.00',
+        'full_gallery': '450.00'
+      };
+
+      const item = {
+        id: currentActivePhoto.id,
+        title: currentActivePhoto.title || `Photo #${currentActivePhoto.id}`,
+        price: prices[license] || '75.00',
+        licenseType: license,
+        licenseName: licenseNames[license] || 'Personal License',
+        image: currentActivePhoto.preview_url || currentActivePhoto.image_path || `/protected-photo/${currentActivePhoto.id}`,
+        eventTitle: currentActivePhoto.event ? currentActivePhoto.event.title : (currentActivePhoto.event_title || 'PhotoX Event'),
+        eventSlug: currentActivePhoto.event ? currentActivePhoto.event.slug : '',
+        photographer: (currentActivePhoto.photographer ? (currentActivePhoto.photographer.name || currentActivePhoto.photographer.business_name) : 'PhotoX Photographer')
+      };
+
+      const res = window.PhotoXCart.addItem(item);
+      updateAddToCartButtonState();
+
+      if (res.added) {
+        if (typeof showToast === 'function') {
+          showToast(`✓ Photo #${currentActivePhoto.id} added to cart (R${item.price})`);
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(`ℹ This photo (${licenseNames[license]}) is already in your cart!`);
+        }
+      }
     }
 
     function triggerSimulatedPurchase() {
-      const inspectorModal = bootstrap.Modal.getInstance(document.getElementById('photoInspectorModal'));
-      if (inspectorModal) inspectorModal.hide();
-      setTimeout(() => {
-        const successModal = new bootstrap.Modal(document.getElementById('purchaseSuccessModal'));
-        successModal.show();
-      }, 400);
+      handleModalAddToCart();
     }
 
     // =========================================================================

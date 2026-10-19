@@ -567,7 +567,7 @@ class DemoController extends Controller
         $pattern = $setting->watermark_pattern ?? 'fotto_pro';
         $type = $setting->watermark_type ?? 'logo';
         $text = ! empty($setting->watermark_text) ? $setting->watermark_text : 'PhotoX';
-        $opacityPercent = max(10, min(100, (int) ($setting->opacity ?? 65)));
+        $opacityPercent = max(35, min(100, (int) ($setting->opacity ?? 65)));
         $rotation = (int) ($setting->rotation ?? -12);
         $fontSizeSetting = (int) ($setting->font_size ?? 25);
         $rawColor = $setting->watermark_color ?? '#ff8a00';
@@ -612,7 +612,7 @@ class DemoController extends Controller
         }
 
         $baseScale = $w / 1000;
-        $brandFontSize = max(14, (int) round($fontSizeSetting * $baseScale * 1.3));
+        $brandFontSize = max(18, (int) round($fontSizeSetting * $baseScale * 1.35));
 
         // 1. TILED PATTERN (Anti-AI High-Density Protection Grid matching Admin Studio 1:1)
         if ($pattern === 'tiled') {
@@ -632,9 +632,9 @@ class DemoController extends Controller
                 }
             }
 
-            // Balanced font size and logo size scaled to cell dimensions so they never overlap
-            $tiledFontPt = max(9, (int) round($fontSizeSetting * ($w / 1000) * 0.72));
-            $tiledLogoW = max(24, (int) round(($setting->logo_size ?? 45) * ($w / 1000) * 0.75));
+            // Balanced font size and logo size scaled to cell dimensions so they never look tiny or get lost
+            $tiledFontPt = max(15, (int) round($fontSizeSetting * ($w / 1000) * 1.1));
+            $tiledLogoW = max(52, (int) round(($setting->logo_size ?? 55) * ($w / 1000) * 1.25));
 
             for ($r = 0; $r < $rows; $r++) {
                 // Stagger alternate rows by 25% cell width for organic anti-AI protection

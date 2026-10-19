@@ -1,44 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Learn about PhotoX and how we help communities preserve the moments that matter most.">
-  <title>PhotoX | About</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="css/styles.css" rel="stylesheet">
-  <script defer src="site-ad.js"></script>
-  
-</head>
-<body class="page-about">
-  <nav aria-label="Main navigation" class="navbar navbar-expand-lg py-2">
-    <div class="container-xl">
-      <a aria-label="PhotoX home" class="navbar-brand d-flex align-items-center gap-2" href="/"><img alt="PhotoX" src="logo.png"></a>
-      <button aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler border-0 p-0" data-bs-target="#mainNav" data-bs-toggle="collapse" type="button"><i class="bi bi-list fs-2"></i></button>
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav mx-auto gap-lg-3 mt-3 mt-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/events">Explore</a></li>
-          <li class="nav-item"><a class="nav-link" href="/photographers">Photographers</a></li>
-          <li class="nav-item"><a class="nav-link" href="/membership">Membership</a></li>
-          <li class="nav-item"><a class="nav-link active" href="/about">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-          <div class="header-search d-none d-xl-flex"><i class="bi bi-search"></i><input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search"></div>
-          <a class="header-cart" href="/cart" aria-label="Open cart"><i class="bi bi-cart3"></i><span>0</span></a>
-          <a class="text-link d-none d-sm-inline" href="/login"><i class="bi bi-person me-1"></i>Login</a>
-          <a class="btn btn-lime rounded-pill px-4" href="/signup">Sign Up <i class="bi bi-arrow-up-right ms-1"></i></a>
-        </div>
-      </div>
-    </div>
-  </nav>
+@extends('web.layouts.app')
 
+@section('title', 'PhotoX | About')
+@section('body-class', 'page-about')
+
+@section('content')
   <main>
     <section class="about-hero">
       @php
@@ -53,8 +18,8 @@
           <h1>{!! $hero->title ?? 'Stories that <em>last longer.</em>' !!}</h1>
           <p>{{ $hero->description ?? 'PhotoX brings athletes, families, clubs, schools and sponsors into one elegant digital storefront for sports and event photography. Our focus is simple: make outstanding images easy to discover, easy to buy and easy to revisit.' }}</p>
           <div class="hero-actions">
-            <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? '/events' }}">{{ $hero->primary_button_text ?? 'Explore events' }}</a>
-            <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? '/photographers' }}">{{ $hero->secondary_button_text ?? 'Meet creators' }}</a>
+            <a class="btn btn-lime rounded-pill px-4" href="{{ $hero->primary_button_url ?? url('/events') }}">{{ $hero->primary_button_text ?? 'Explore events' }}</a>
+            <a class="btn btn-outline-light rounded-pill px-4" href="{{ $hero->secondary_button_url ?? url('/photographers') }}">{{ $hero->secondary_button_text ?? 'Meet creators' }}</a>
           </div>
         </div>
 
@@ -69,7 +34,6 @@
         </div>
       </div>
     </section>
-
 
     <section class="section-wrap">
       <div class="container-xl about-split">
@@ -117,8 +81,8 @@
           <h2>More room for the <em>creative work.</em></h2>
           <p>Photographers come to PhotoX to spend less time wrestling with delivery and more time making images that matter. We give creators a polished storefront, flexible event tools and a place for their work to be discovered.</p>
           <div class="hero-actions">
-            <a class="btn btn-dark rounded-pill px-4" href="/photographers">Meet our photographers</a>
-            <a class="inline-link" href="/contact">Partner with us <i class="bi bi-arrow-up-right"></i></a>
+            <a class="btn btn-dark rounded-pill px-4" href="{{ url('/photographers') }}">Meet our photographers</a>
+            <a class="inline-link" href="{{ url('/contact') }}">Partner with us <i class="bi bi-arrow-up-right"></i></a>
           </div>
         </div>
       </div>
@@ -183,35 +147,10 @@
             <h3>Start building the stories behind the action.</h3>
             <p>Photographers, clubs and sponsors use PhotoX to publish galleries with more clarity and better reach.</p>
           </div>
-          <a class="btn btn-lime rounded-pill px-4" href="/signup">Join PhotoX</a>
+          <a class="btn btn-lime rounded-pill px-4" href="{{ route('signup') }}">Join PhotoX</a>
         </div>
       </div>
     </section>
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road"><span class="site-ad-overlay"></span><span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span></a>
-    </aside>
+    @include('web.partials.site-ad-banner')
   </main>
-
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5">
-          <a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a>
-          <p class="footer-copy">The feeling of being there,<br>kept in a frame.</p>
-          <div class="footer-social d-flex gap-3">
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>
-        <div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/about">About</a><a href="/contact">Contact</a></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/login">Creator login</a><a href="/signup">Join PhotoX</a><a href="/events">Upload photos</a><a href="/about">Support</a></div>
-        <div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

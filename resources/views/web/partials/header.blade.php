@@ -155,23 +155,27 @@
             <span>Sign Up</span> <i class="bi bi-arrow-up-right ms-1"></i>
           </a>
         @else
-          <div class="dropdown">
-            <button class="btn btn-dark rounded-pill px-3 py-1 dropdown-toggle d-flex align-items-center gap-2" type="button" id="desktopUserDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid rgba(255,255,255,0.2);">
+          <div class="dropdown position-relative" id="userHeaderDropdownWrap">
+            <button class="btn btn-dark rounded-pill px-3 py-1 d-flex align-items-center gap-2 user-menu-pill" type="button" id="desktopUserDropdown" aria-expanded="false" style="border: 1px solid rgba(255,255,255,0.25); background: #1e293b; color: #fff; cursor: pointer;">
               <i class="bi bi-person-circle fs-5 text-warning"></i>
               <span class="small fw-semibold">{{ Auth::user()->name }}</span>
-              <span class="badge {{ Auth::user()->role === 'admin' ? 'bg-danger' : (Auth::user()->role === 'photographer' ? 'bg-info' : 'bg-secondary') }} text-uppercase" style="font-size: 0.65rem;">
+              <span class="badge {{ Auth::user()->role === 'admin' ? 'bg-danger' : (Auth::user()->role === 'photographer' ? 'bg-info text-dark' : 'bg-secondary') }} text-uppercase" style="font-size: 0.65rem;">
                 {{ Auth::user()->role }}
               </span>
+              <i class="bi bi-chevron-down small text-white-50 ms-1"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow mt-2" aria-labelledby="desktopUserDropdown" style="min-width: 200px;">
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg mt-2 py-2 user-header-menu" id="desktopUserDropdownMenu" style="min-width: 230px; display: none; position: absolute; right: 0; top: 100%; z-index: 999999;">
               <li>
                 <div class="px-3 py-2 border-bottom border-secondary border-opacity-25">
-                  <small class="text-muted d-block">Signed in as</small>
-                  <strong class="text-truncate d-block text-white">{{ Auth::user()->email }}</strong>
+                  <small class="text-white-50 d-block" style="font-size: 0.72rem;">Signed in as</small>
+                  <strong class="text-truncate d-block text-white" style="font-size: 0.85rem;">{{ Auth::user()->email }}</strong>
                 </div>
               </li>
+              <li><div class="dropdown-header text-uppercase text-white-50 px-3 pt-2 pb-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">Portals &amp; Dashboards</div></li>
               @if(Auth::user()->role === 'admin')
-                <li><a class="dropdown-item py-2" href="{{ url('/admin') }}"><i class="bi bi-speedometer2 me-2 text-danger"></i>Admin Panel</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/admin') }}"><i class="bi bi-speedometer2 me-2 text-danger"></i>Admin Control Panel</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/photographer-dashboard') }}"><i class="bi bi-camera me-2 text-info"></i>Creator Studio (Photographer)</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url('/customer-dashboard') }}"><i class="bi bi-grid me-2 text-primary"></i>Customer Dashboard</a></li>
               @elseif(Auth::user()->role === 'photographer')
                 <li><a class="dropdown-item py-2" href="{{ url('/photographer-dashboard') }}"><i class="bi bi-speedometer me-2 text-info"></i>Creator Studio</a></li>
                 <li><a class="dropdown-item py-2" href="{{ url('/photographer-upload-new') }}"><i class="bi bi-cloud-arrow-up me-2 text-success"></i>Upload Photos</a></li>
@@ -187,12 +191,12 @@
                 <li><hr class="dropdown-divider my-1"></li>
                 <li><a class="dropdown-item py-2 text-info" href="{{ url('/signup') }}"><i class="bi bi-camera me-2"></i>Become a Photographer</a></li>
               @endif
-              <li><hr class="dropdown-divider"></li>
+              <li><hr class="dropdown-divider my-1 border-secondary border-opacity-25"></li>
               <li>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                <form action="{{ route('logout') }}" method="POST" class="d-block m-0 p-0">
                   @csrf
-                  <button type="submit" class="dropdown-item text-danger py-2 w-100 text-start">
-                    <i class="bi bi-box-arrow-right me-2"></i>Log Out
+                  <button type="submit" class="dropdown-item text-danger py-2 w-100 text-start d-flex align-items-center fw-semibold" style="cursor: pointer;">
+                    <i class="bi bi-box-arrow-right me-2 fs-6"></i><span>Log Out</span>
                   </button>
                 </form>
               </li>
@@ -206,78 +210,61 @@
 
 <style>
   /* Header Dropdown Styling and High Z-Index */
-  .navbar .dropdown-menu {
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  .user-header-menu {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     background-color: #0f172a !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
-    z-index: 1065 !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7) !important;
+    border-radius: 12px !important;
   }
-  .navbar .dropdown-menu .dropdown-item {
-    color: #cbd5e1 !important;
+  .user-header-menu.show-menu {
+    display: block !important;
+  }
+  .user-header-menu .dropdown-item {
+    color: #e2e8f0 !important;
     font-size: 0.88rem !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.55rem 1.1rem !important;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
-  .navbar .dropdown-menu .dropdown-item:hover,
-  .navbar .dropdown-menu .dropdown-item:focus {
+  .user-header-menu .dropdown-item:hover,
+  .user-header-menu .dropdown-item:focus {
     background-color: #1e293b !important;
     color: #ffffff !important;
-  }
-  .navbar .dropdown-menu .dropdown-divider {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-  }
-  @media (max-width: 991.98px) {
-    /* Mobile top dropdown positioning */
-    .mobile-top-user-dropdown .dropdown-menu {
-      position: absolute !important;
-      right: 0 !important;
-      left: auto !important;
-      top: 100% !important;
-      transform: none !important;
-      margin-top: 0.5rem !important;
-      max-width: calc(100vw - 20px) !important;
-    }
   }
 </style>
 
 <script>
-  // Fail-safe dropdown toggle for mobile touch and desktop
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.navbar .dropdown-toggle').forEach(function (toggleBtn) {
-      toggleBtn.addEventListener('click', function (e) {
-        const dropdownParent = this.closest('.dropdown');
-        if (!dropdownParent) return;
-        const menu = dropdownParent.querySelector('.dropdown-menu');
-        if (!menu) return;
+  // Robust vanilla click toggle for user profile dropdown
+  (function() {
+    function initUserDropdown() {
+      const btn = document.getElementById('desktopUserDropdown');
+      const menu = document.getElementById('desktopUserDropdownMenu');
+      if (!btn || !menu) return;
 
-        const isShowing = menu.classList.contains('show');
-
-        // Close other navbar dropdown menus
-        document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function (m) {
-          if (m !== menu) {
-            m.classList.remove('show');
-            m.closest('.dropdown')?.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false');
-          }
-        });
-
-        if (isShowing) {
-          menu.classList.remove('show');
-          this.setAttribute('aria-expanded', 'false');
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        const isOpen = menu.classList.contains('show-menu');
+        if (isOpen) {
+          menu.classList.remove('show-menu');
+          btn.setAttribute('aria-expanded', 'false');
         } else {
-          menu.classList.add('show');
-          this.setAttribute('aria-expanded', 'true');
+          menu.classList.add('show-menu');
+          btn.setAttribute('aria-expanded', 'true');
         }
       });
-    });
 
-    // Close when tapping outside dropdown
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.navbar .dropdown')) {
-        document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function (m) {
-          m.classList.remove('show');
-          m.closest('.dropdown')?.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false');
-        });
-      }
-    });
-  });
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#userHeaderDropdownWrap')) {
+          menu.classList.remove('show-menu');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initUserDropdown);
+    } else {
+      initUserDropdown();
+    }
+  })();
 </script>

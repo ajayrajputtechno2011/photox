@@ -54,9 +54,10 @@
       </div>
       <nav class="workspace-nav">
         <a class="workspace-nav-link" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Bookings</span><b>12</b></a>
+        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
         <a class="workspace-nav-link active" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
         <a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
+        <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
         <a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
         <a class="workspace-nav-link" href="/photographer-profile"><i class="bi bi-person-circle"></i><span>Profile</span></a>
       </nav>
@@ -73,53 +74,96 @@
         <a class="btn btn-outline-primary rounded-pill px-4" href="/photographer-gallery"><i class="bi bi-arrow-left me-2"></i>Back</a>
       </div>
 
-      <form class="upload-card" action="/photographer-gallery">
-        <div class="upload-area">
+      @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+          <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      @endif
+
+      @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ $errors->first() }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      @endif
+
+      <form class="upload-card" action="{{ route('photographer.upload.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="upload-area" onclick="document.getElementById('galleryPhotosInput').click();" style="cursor: pointer;">
           <div>
-            <i class="bi bi-cloud-arrow-up"></i>
-            <h4 class="mt-3 mb-2">Drop files here</h4>
-            <p class="mb-0 text-muted">PNG, JPG, RAW or MP4 files up to 200MB</p>
+            <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+            <h4 class="mt-3 mb-2">Drop files here or click to browse</h4>
+            <p class="mb-0 text-muted">PNG, JPG, WebP photos (drag multiple photos at once)</p>
+            <div id="fileSelectedBadge" class="mt-2 badge bg-success fs-6 py-2 px-3 d-none">
+              <i class="bi bi-check2-circle me-1"></i> <span id="fileCountText">0</span> files selected
+            </div>
           </div>
+          <input type="file" id="galleryPhotosInput" name="photos[]" multiple accept="image/*" class="d-none" onchange="handleFilesSelected(this)">
         </div>
 
         <div class="form-grid">
           <div>
-            <label class="form-label" for="album-name">Album name</label>
-            <input class="form-control" id="album-name" name="album-name" type="text" placeholder="Spring Run Highlights">
+            <label class="form-label" for="album_name">Album / Event name <span class="text-danger">*</span></label>
+            <input class="form-control" id="album_name" name="album_name" type="text" placeholder="e.g. Cape Town Marathon 2026" required value="{{ old('album_name') }}">
           </div>
           <div>
-            <label class="form-label" for="category">Category</label>
+            <label class="form-label" for="category">Category / Sport</label>
+            @php
+              $uploadCategories = \App\Models\Category::where('is_active', true)->orderBy('name')->get();
+            @endphp
             <select class="form-select" id="category" name="category">
-              <option selected>Sports</option>
-              <option>Events</option>
-              <option>Portraits</option>
-              <option>Travel</option>
+              @forelse($uploadCategories as $cat)
+                <option value="{{ $cat->slug ?: $cat->name }}" {{ old('category') == ($cat->slug ?: $cat->name) ? 'selected' : '' }}>{{ $cat->name }}</option>
+              @empty
+                <option value="sports" selected>Sports</option>
+                <option value="events">Events</option>
+                <option value="schools">Schools</option>
+              @endforelse
             </select>
           </div>
+          <div>
+            <label class="form-label" for="event_date">Event Date</label>
+            <input class="form-control" id="event_date" name="event_date" type="date" value="{{ old('event_date', date('Y-m-d')) }}">
+          </div>
+          <div>
+            <label class="form-label" for="location">Location / Venue</label>
+            <input class="form-control" id="location" name="location" type="text" placeholder="e.g. Green Point Stadium, Cape Town" value="{{ old('location', $photographer->location ?? '') }}">
+          </div>
+          <div>
+            <label class="form-label" for="starting_price">Single Photo Price (ZAR)</label>
+            <div class="input-group">
+              <span class="input-group-text">R</span>
+              <input class="form-control" id="starting_price" name="starting_price" type="number" step="0.50" min="10" placeholder="75.00" value="{{ old('starting_price', '75.00') }}">
+            </div>
+          </div>
           <div class="full-span">
-            <label class="form-label" for="caption">Caption</label>
-            <input class="form-control" id="caption" name="caption" type="text" placeholder="Morning session, final stretch, crowd energy">
+            <label class="form-label" for="caption">Description / Caption</label>
+            <textarea class="form-control" id="caption" name="caption" rows="2" placeholder="Brief event description, highlights, crowd energy...">{{ old('caption') }}</textarea>
           </div>
         </div>
 
         <div class="actions">
-          <a class="btn btn-outline-secondary rounded-pill px-4" href="/photographer-gallery">Cancel</a>
-          <button class="btn btn-lime rounded-pill px-4" type="submit">Publish gallery</button>
+          <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ route('photographer.gallery') }}">Cancel</a>
+          <button class="btn btn-lime rounded-pill px-4" type="submit"><i class="bi bi-cloud-arrow-up me-2"></i>Publish gallery</button>
         </div>
       </form>
+
+      <script>
+        function handleFilesSelected(input) {
+          const badge = document.getElementById('fileSelectedBadge');
+          const text = document.getElementById('fileCountText');
+          if (input.files && input.files.length > 0) {
+            text.textContent = input.files.length;
+            badge.classList.remove('d-none');
+          } else {
+            badge.classList.add('d-none');
+          }
+        }
+      </script>
     </section>
   </main>
 
-  <footer class="footer footer-premium">
-    <div class="container-xl">
-      <div class="row g-5 footer-main">
-        <div class="col-lg-5"><a class="footer-logo" href="/"><img src="logo.png" alt="PhotoX" style="width:150px"></a><p class="footer-copy">The feeling of being there,<br>kept in a frame.</p><div class="footer-social d-flex gap-3"><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a></div></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">Explore</p><a href="/events">Events</a><a href="/photographers">Photographers</a><a href="/blog">Journal</a><a href="/contact">Contact</a></div>
-        <div class="col-6 col-lg-2"><p class="footer-label">For creators</p><a href="/photographer-dashboard">Creator login</a><a href="/photographer-upload-new">Upload photos</a><a href="/photographers">Join PhotoX</a><a href="#">Support</a></div>
-        <div class="col-12 col-lg-3"><p class="footer-label">Stay in the frame</p><p class="footer-small">New events, fresh galleries and stories from the field.</p><div class="newsletter"><input aria-label="Email address" placeholder="Your email address" type="email"><button aria-label="Subscribe"><i class="bi bi-arrow-up-right"></i></button></div></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span>Made for the moments <i class="bi bi-stars"></i></span></div>
-    </div>
-  </footer>
+  @include('web.partials.footer')
 </body>
 </html>

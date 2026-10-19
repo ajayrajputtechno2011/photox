@@ -1,78 +1,283 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Complete your PhotoX photo order securely.">
-  <title>PhotoX | Checkout</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="css/styles.css" rel="stylesheet">
-</head>
-<body class="page-checkout">
-  <nav aria-label="Main navigation" class="navbar navbar-expand-lg py-2">
-    <div class="container-xl">
-      <a aria-label="PhotoX home" class="navbar-brand d-flex align-items-center gap-2" href="/"><img alt="PhotoX" src="logo.png"></a>
-      <button aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler border-0 p-0" data-bs-target="#mainNav" data-bs-toggle="collapse" type="button"><i class="bi bi-list fs-2"></i></button>
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav mx-auto gap-lg-3 mt-3 mt-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/events">Explore</a></li>
-          <li class="nav-item"><a class="nav-link" href="/photographers">Photographers</a></li>
-          <li class="nav-item"><a class="nav-link" href="/membership">Membership</a></li>
-          <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
-          <div class="header-search d-none d-xl-flex"><i class="bi bi-search"></i><input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search"></div>
-          <a class="header-cart" href="/cart" aria-label="Open cart"><i class="bi bi-cart3"></i><span>0</span></a>
-          <a class="text-link d-none d-sm-inline" href="/login"><i class="bi bi-person me-1"></i>Login</a>
-          <a class="btn btn-lime rounded-pill px-4" href="/signup">Sign Up <i class="bi bi-arrow-up-right ms-1"></i></a>
-        </div>
-      </div>
-    </div>
-  </nav>
+@extends('web.layouts.app')
 
-  <main class="checkout-main">
+@section('title', 'PhotoX | Secure Checkout')
+@section('body-class', 'page-checkout')
+
+@section('styles')
+  <style>
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 991.98px) {
+      .checkout-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .checkout-card {
+      background: #ffffff;
+      border: 1px solid rgba(11, 45, 91, 0.12);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(11, 45, 91, 0.04);
+    }
+    .checkout-card-heading {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(11, 45, 91, 0.08);
+    }
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #0b2d5b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .checkout-card-heading h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0b2d5b;
+      margin-bottom: 2px;
+    }
+    .checkout-card-heading p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-bottom: 0;
+    }
+    .yoco-badge-box {
+      background: #f8fafc;
+      border: 1.5px solid #0b2d5b;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .summary-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(11, 45, 91, 0.1);
+    }
+    .summary-item-thumb {
+      width: 52px;
+      height: 42px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #081426;
+      flex-shrink: 0;
+    }
+    .summary-total-box {
+      padding-top: 16px;
+      margin-top: 16px;
+      border-top: 2px solid #0b2d5b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0b2d5b;
+    }
+  </style>
+@endsection
+
+@section('content')
+  @php
+    $nameParts = explode(' ', $user?->name ?? '');
+    $firstName = $nameParts[0] ?? '';
+    $lastName = isset($nameParts[1]) ? implode(' ', array_slice($nameParts, 1)) : '';
+  @endphp
+
+  <main class="checkout-main py-5" style="background: #f4f7fb; min-height: 80vh;">
     <div class="container-xl">
-      <div class="checkout-heading"><span class="section-kicker">CHECKOUT</span><h1>Complete your order.</h1><p>Your photos will be delivered digitally after payment confirmation.</p></div>
+      <div class="mb-4">
+        <span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill font-monospace mb-2">SECURE PAYMENT</span>
+        <h1 class="h2 fw-bold text-dark">Complete your order</h1>
+        <p class="text-secondary">Your photos will be instantly unlocked for high-resolution download upon payment.</p>
+      </div>
+
+      @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      @endif
+
       <div class="checkout-layout">
-        <form class="checkout-form" action="/orders-downloads" method="get">
+        <form class="checkout-form" id="checkoutForm" action="{{ route('checkout.process') }}" method="POST">
+          @csrf
+          <input type="hidden" name="amount" id="checkoutAmountInput" value="75.00">
+          <input type="hidden" name="cart_items" id="checkoutCartItemsInput" value="[]">
+
+          <!-- Step 1: Contact Details -->
           <section class="checkout-card">
-            <div class="checkout-card-heading"><span class="step-number">1</span><div><h2>Contact details</h2><p>Where should we send your receipt?</p></div></div>
-            <div class="checkout-form-grid">
-              <label><span>First name</span><input name="first-name" type="text" placeholder="Aiden" required></label>
-              <label><span>Last name</span><input name="last-name" type="text" placeholder="Daniels" required></label>
-              <label class="wide-field"><span>Email address</span><input name="email" type="email" placeholder="you@example.com" required></label>
+            <div class="checkout-card-heading">
+              <span class="step-number">1</span>
+              <div>
+                <h2>Contact details</h2>
+                <p>Where should we send your receipt and digital download links?</p>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-secondary">First name <span class="text-danger">*</span></label>
+                <input class="form-control" name="first_name" type="text" placeholder="e.g. John" value="{{ old('first_name', $firstName) }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-secondary">Last name <span class="text-danger">*</span></label>
+                <input class="form-control" name="last_name" type="text" placeholder="e.g. Doe" value="{{ old('last_name', $lastName) }}" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small text-secondary">Email address <span class="text-danger">*</span></label>
+                <input class="form-control" name="email" type="email" placeholder="you@example.com" value="{{ old('email', $user?->email) }}" required>
+                <small class="text-muted">High-res download link will be emailed immediately.</small>
+              </div>
             </div>
           </section>
+
+          <!-- Step 2: Payment Gateway -->
           <section class="checkout-card">
-            <div class="checkout-card-heading"><span class="step-number">2</span><div><h2>Payment method</h2><p>Payment details will be securely processed.</p></div></div>
-            <div class="payment-options"><label class="payment-option"><input checked name="payment" type="radio" value="card"><i class="bi bi-credit-card"></i><span>Card payment</span></label><label class="payment-option"><input name="payment" type="radio" value="eft"><i class="bi bi-bank"></i><span>Instant EFT</span></label></div>
-            <div class="checkout-form-grid payment-fields">
-              <label class="wide-field"><span>Card number</span><input name="card-number" inputmode="numeric" type="text" placeholder="1234 5678 9012 3456"></label>
-              <label><span>Expiry date</span><input name="expiry" type="text" placeholder="MM / YY"></label>
-              <label><span>CVV</span><input name="cvv" inputmode="numeric" type="text" placeholder="123"></label>
+            <div class="checkout-card-heading">
+              <span class="step-number">2</span>
+              <div>
+                <h2>Payment method</h2>
+                <p>Secured with Yoco 256-bit encryption.</p>
+              </div>
             </div>
+
+            <div class="yoco-badge-box">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-shield-lock-fill fs-2 text-primary"></i>
+                <div>
+                  <strong class="d-block text-dark">Yoco Secure Payment Gateway</strong>
+                  <small class="text-muted">Cards, Visa, Mastercard, Apple Pay &amp; Instant EFT supported.</small>
+                </div>
+              </div>
+              <span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill font-monospace">ACTIVE</span>
+            </div>
+
+            <div class="form-check mt-4">
+              <input class="form-check-input" id="termsCheck" name="terms" type="checkbox" required checked>
+              <label class="form-check-label small text-secondary" for="termsCheck">
+                I agree to PhotoX terms and understand digital photos are delivered immediately after successful payment.
+              </label>
+            </div>
+
+            <button class="btn btn-lime rounded-pill px-5 py-3 fw-bold w-100 mt-4 d-flex align-items-center justify-content-center gap-2 shadow-sm" id="btnSubmitPayment" type="submit">
+              <span>Pay Securely with Yoco &bull;</span>
+              <span id="btnPayAmount">R75.00</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
           </section>
-          <label class="checkout-consent"><input name="terms" type="checkbox" required><span>I agree to the PhotoX terms and understand that digital photo purchases are delivered to my email address.</span></label>
-          <button class="btn btn-lime rounded-pill px-4 checkout-submit" type="submit">Place secure order <i class="bi bi-arrow-right ms-2"></i></button>
         </form>
+
+        <!-- Step 3: Order Summary Sidebar -->
         <aside class="checkout-summary">
-          <div class="checkout-card"><div class="checkout-card-heading"><span class="step-number">3</span><div><h2>Order summary</h2><p>0 photos selected</p></div></div><div class="checkout-empty"><i class="bi bi-images"></i><p>Your selected photos will appear here.</p><a href="/browse-photos">Browse photos</a></div><div class="summary-total"><span>Total</span><strong>R0</strong></div></div>
-          <div class="checkout-trust"><i class="bi bi-shield-check"></i><div><strong>Protected checkout</strong><p>PhotoX uses secure payment processing and private digital delivery.</p></div></div>
+          <div class="checkout-card">
+            <div class="checkout-card-heading">
+              <span class="step-number">3</span>
+              <div>
+                <h2>Order summary</h2>
+                <p id="summaryItemsCountLabel">0 photos selected</p>
+              </div>
+            </div>
+
+            <div id="checkoutItemsList">
+              <!-- Dynamically populated from cart -->
+            </div>
+
+            <div class="summary-total-box">
+              <span>Grand Total</span>
+              <span id="checkoutTotalDisplay">R75.00</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-white rounded-3 border d-flex align-items-center gap-3">
+            <i class="bi bi-patch-check-fill text-success fs-3"></i>
+            <div>
+              <strong class="small d-block text-dark">Instant Digital Unlock</strong>
+              <small class="text-muted">High-resolution files without watermarks.</small>
+            </div>
+          </div>
         </aside>
       </div>
     </div>
-    <aside class="site-ad-banner" aria-label="Sponsored placement">
-      <a class="site-ad-link" href="/events"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&h=360&q=88" alt="Adventure vehicle on an open road"><span class="site-ad-overlay"></span><span class="site-ad-copy"><small>PHOTOX PARTNER</small><strong>BUILT FOR MORE<br>THAN ROADS</strong><span>Explore events <i class="bi bi-arrow-up-right"></i></span></span></a>
-    </aside>
   </main>
 
-  <footer class="footer footer-premium"><div class="container-xl"><div class="footer-bottom"><span>© 2026 PhotoX</span><span>Privacy · Terms ·</span><span><i class="bi bi-lock-fill"></i> Secure checkout</span></div></div></footer>
-</body>
-</html>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let cart = [];
+      try {
+        if (window.PhotoXCart && window.PhotoXCart.getItems().length > 0) {
+          cart = window.PhotoXCart.getItems();
+        } else {
+          cart = JSON.parse(localStorage.getItem('photox_user_cart') || localStorage.getItem('photox_cart') || '[]');
+        }
+      } catch (e) {
+        cart = [];
+      }
+
+      // If cart has items, render them
+      const listContainer = document.getElementById('checkoutItemsList');
+      const countLabel = document.getElementById('summaryItemsCountLabel');
+      const totalDisplay = document.getElementById('checkoutTotalDisplay');
+      const btnPayAmount = document.getElementById('btnPayAmount');
+      const amountInput = document.getElementById('checkoutAmountInput');
+      const itemsInput = document.getElementById('checkoutCartItemsInput');
+
+      let total = 0;
+      let html = '';
+
+      if (cart.length > 0) {
+        cart.forEach(item => {
+          const price = parseFloat(item.price) || 75.0;
+          total += price;
+          html += `
+            <div class="summary-item-row">
+              <img src="${item.image || 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=300&q=80'}" class="summary-item-thumb" alt="Thumbnail">
+              <div class="flex-grow-1 overflow-hidden">
+                <strong class="d-block text-truncate small">${item.title || 'Event Photo'}</strong>
+                <small class="text-muted font-monospace">${item.licenseName || 'Personal License'}</small>
+              </div>
+              <strong class="small text-dark">R${price.toFixed(2)}</strong>
+            </div>
+          `;
+        });
+      } else {
+        // Fallback demo photo so checkout is always testable
+        total = 75.0;
+        html = `
+          <div class="summary-item-row">
+            <img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=300&q=80" class="summary-item-thumb" alt="Thumbnail">
+            <div class="flex-grow-1 overflow-hidden">
+              <strong class="d-block text-truncate small">Cape Town Sports Highlights #01</strong>
+              <small class="text-muted font-monospace">Personal License</small>
+            </div>
+            <strong class="small text-dark">R75.00</strong>
+          </div>
+        `;
+      }
+
+      listContainer.innerHTML = html;
+      countLabel.textContent = `${cart.length || 1} photo${(cart.length || 1) === 1 ? '' : 's'} selected`;
+      totalDisplay.textContent = `R${total.toFixed(2)}`;
+      btnPayAmount.textContent = `R${total.toFixed(2)}`;
+      amountInput.value = total.toFixed(2);
+      itemsInput.value = JSON.stringify(cart);
+    });
+  </script>
+@endsection

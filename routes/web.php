@@ -29,10 +29,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Home page (Live full Explore & Showcase Homepage)
-Route::get('/', [DemoController::class, 'dummyHome'])->name('home');
-
-Route::get('/home', [DemoController::class, 'dummyHome'])->name('home.preview');
+// Home page (Direct clean Events & Galleries Marketplace as requested by client)
+Route::get('/', [WebEventController::class, 'index'])->name('home');
+Route::get('/home', [WebEventController::class, 'index'])->name('home.preview');
+Route::get('/home-showcase', [DemoController::class, 'dummyHome'])->name('home.showcase');
 Route::get('/api/load-more-photos', [DemoController::class, 'apiLoadMorePhotos'])->name('api.photos.loadMore');
 
 // Dynamic Explore & Events routes
@@ -331,8 +331,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/sponsors', fn () => view('admin.sponsors'))->name('admin.sponsors.index');
         Route::get('/add-sponsor', fn () => view('admin.add-sponsor'))->name('admin.sponsors.create');
 
-        // Sports Directory
-        Route::get('/sports', fn () => view('admin.sports'))->name('admin.sports.index');
+        // Sports Directory -> Aliased to Categories
+        Route::get('/sports', fn () => redirect()->route('admin.categories.index'))->name('admin.sports.index');
 
         // Commissions & Payments
         Route::get('/commissions', fn () => view('admin.commissions'))->name('admin.commissions.index');

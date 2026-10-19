@@ -63,6 +63,26 @@ class Event extends Model
         return $this->belongsTo(EventPhoto::class, 'cover_photo_id');
     }
 
+    public function getCoverImageAttribute($value): string
+    {
+        if (! empty($value)) {
+            return $value;
+        }
+
+        // Automatic Fallback requested by client: Use first photo of the gallery
+        $firstPhoto = $this->photos()->first();
+        if ($firstPhoto) {
+            return $firstPhoto->watermarked_url ?: $firstPhoto->preview_url ?: $firstPhoto->file_path;
+        }
+
+        return 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=80';
+    }
+
+    public function getCoverImageUrlAttribute(): string
+    {
+        return $this->getCoverImageAttribute($this->attributes['cover_image'] ?? null);
+    }
+
     public function getStartingPriceAttribute($value): string
     {
         $val = trim((string) $value);
@@ -72,6 +92,7 @@ class Event extends Model
         if (str_starts_with($val, 'From R') || str_starts_with($val, 'From R ') || str_starts_with($val, 'R')) {
             return $val;
         }
-        return 'From R' . $val;
+
+        return 'From R'.$val;
     }
 }

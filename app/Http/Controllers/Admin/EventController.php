@@ -81,6 +81,10 @@ class EventController extends Controller
         $coverImage = $validated['cover_image'] ?? 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=80';
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('events', 'public');
+            $fullDiskPath = storage_path('app/public/'.$path);
+            if (file_exists($fullDiskPath)) {
+                $this->optimizeCoverImage($fullDiskPath);
+            }
             $coverImage = '/storage/'.$path;
         }
 
@@ -156,6 +160,10 @@ class EventController extends Controller
         $coverImage = $event->cover_image;
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('events', 'public');
+            $fullDiskPath = storage_path('app/public/'.$path);
+            if (file_exists($fullDiskPath)) {
+                $this->optimizeCoverImage($fullDiskPath);
+            }
             $coverImage = '/storage/'.$path;
         } elseif (! empty($validated['cover_image'])) {
             $coverImage = $validated['cover_image'];
@@ -212,5 +220,47 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('admin.events.index')->with('success', 'Event deleted successfully.');
+    }
+
+    protected function optimizeCoverImage(string $fullPath): void
+    {
+        if (! file_exists($fullPath)) {
+            return;
+        }
+
+        $info = @getimagesize($fullPath);
+        if (! $info) {
+            return;
+        }
+
+        $w = $info[0];
+        $h = $info[1];
+        $maxWidth = 1200;
+
+        $im = null;
+        if ($info['mime'] === 'image/jpeg' || $info['mime'] === 'image/jpg') {
+            $im = @imagecreatefromjpeg($fullPath);
+        } elseif ($info['mime'] === 'image/png') {
+            $im = @imagecreatefrompng($fullPath);
+        } elseif ($info['mime'] === 'image/webp') {
+            $im = @imagecreatefromwebp($fullPath);
+        }
+
+        if (! $im) {
+            return;
+        }
+
+        if ($w > $maxWidth) {
+            $newW = $maxWidth;
+            $newH = (int) round(($h / $w) * $maxWidth);
+            $resized = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($resized, $im, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            imagedestroy($im);
+            imagejpeg($resized, $fullPath, 84);
+            imagedestroy($resized);
+        } else {
+            imagejpeg($im, $fullPath, 84);
+            imagedestroy($im);
+        }
     }
 }

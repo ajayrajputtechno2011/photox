@@ -16037,6 +16037,15 @@ body > main.container-xl > .subscriptions-layout {
 	inset: 0;
 	width: 100%;
 	height: 100%;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.5s ease-in-out;
+	z-index: 1;
+}
+.hero-banner-frame .hero-ad-slide.active {
+	opacity: 1 !important;
+	visibility: visible !important;
+	z-index: 2 !important;
 }
 .hero-banner-frame .hero-ad-slide .hero-ad-img {
 	width: 100%;

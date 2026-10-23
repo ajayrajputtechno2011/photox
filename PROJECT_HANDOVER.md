@@ -29,7 +29,7 @@ ssh root@168.231.79.67 "cp /etc/nginx/conf.d/photox.conf.live /etc/nginx/conf.d/
 - **Root SSH User:** `root`
 - **Root SSH Password:** `PhotoX@VpsSecure2026!`
 - **Web Server:** Nginx 1.20 (`/etc/nginx/`)
-- **PHP:** PHP 8.4.26 (`php-fpm`, Remi repo) with `gd`, `imagick`, `pdo_mysql`, `opcache`, `intl`, `mbstring`, `zip`, `xml`, `curl`
+- **PHP:** PHP 8.4.27 (`php-fpm`, Remi repo - updated Oct 23, 2026 for upstream security advisory) with `gd`, `imagick`, `pdo_mysql`, `opcache`, `intl`, `mbstring`, `zip`, `xml`, `curl`
 - **Database:** MariaDB 10.5
   - **Database Name:** `photox_db`
   - **User:** `photox_user`

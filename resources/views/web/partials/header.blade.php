@@ -64,6 +64,14 @@
     </button>
 
     <div class="collapse navbar-collapse" id="mainNav">
+      <!-- Mobile Live Search Form -->
+      <form action="{{ url('/events') }}" method="GET" class="d-xl-none my-3 px-1" role="search">
+        <div class="position-relative d-flex align-items-center bg-white rounded-pill px-3 py-1 shadow-sm" style="height: 38px;">
+          <i class="bi bi-search me-2 text-primary" style="font-size: 0.9rem;"></i>
+          <input type="search" name="q" value="{{ request('q') }}" class="form-control border-0 bg-transparent p-0 shadow-none text-dark" placeholder="Search photos, people, teams or events..." style="font-size: 0.82rem;" autocomplete="off" aria-label="Search">
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 py-1 ms-1 fw-semibold" style="font-size: 0.75rem;">Search</button>
+        </div>
+      </form>
       <ul class="navbar-nav mx-auto gap-lg-3 mt-3 mt-lg-0">
         <li class="nav-item">
           <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Home</a>
@@ -138,10 +146,18 @@
 
       <!-- Desktop Header Actions (Search, Cart & User Dropdown) -->
       <div class="d-none d-lg-flex align-items-center flex-wrap gap-2 gap-sm-3 mt-3 mt-lg-0">
-        <div class="header-search d-none d-xl-flex">
-          <i class="bi bi-search"></i>
-          <input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search">
-        </div>
+        <form action="{{ url('/events') }}" method="GET" class="header-search d-none d-xl-flex position-relative m-0" id="topNavSearchForm" role="search" autocomplete="off">
+          <button type="submit" class="border-0 bg-transparent p-0 d-flex align-items-center" style="cursor: pointer;" aria-label="Search">
+            <i class="bi bi-search" style="font-size: 0.85rem; color: #0b2d5b;"></i>
+          </button>
+          <input aria-label="Search photos, people, teams or events" placeholder="Search photos, people, teams or events..." type="search" name="q" id="topNavSearchInput" value="{{ request('q') }}" autocomplete="off">
+          <span id="topSearchSpinner" class="spinner-border spinner-border-sm text-primary d-none ms-auto" role="status" style="width: 13px; height: 13px; border-width: 2px;"></span>
+
+          <!-- Dropdown Autocomplete Menu -->
+          <div id="topSearchDropdown" class="top-search-dropdown shadow-lg d-none">
+            <div id="topSearchResults"></div>
+          </div>
+        </form>
         <a class="header-cart" href="{{ url('/cart') }}" aria-label="Open cart">
           <i class="bi bi-cart3"></i><span>0</span>
         </a>
@@ -230,6 +246,94 @@
     background-color: #1e293b !important;
     color: #ffffff !important;
   }
+
+  /* Top Navigation Autocomplete Dropdown */
+  .top-search-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 380px;
+    max-width: 92vw;
+    max-height: 480px;
+    overflow-y: auto;
+    background: #0b1a29;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+    z-index: 999999;
+    padding: 0;
+    font-size: 0.85rem;
+    color: #fff;
+  }
+  .top-search-dropdown::-webkit-scrollbar {
+    width: 6px;
+  }
+  .top-search-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  .top-search-header {
+    padding: 7px 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8fa6c4;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .top-search-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    color: #e2e8f0;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  .top-search-item:hover,
+  .top-search-item:focus {
+    background: #172d47;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .top-search-thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #1e3a5f;
+    flex-shrink: 0;
+  }
+  .top-search-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #1e3a5f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .top-search-footer-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: center;
+    background: rgba(13, 110, 253, 0.15);
+    color: #60a5fa;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  .top-search-footer-btn:hover {
+    background: #0d6efd;
+    color: #fff;
+    text-decoration: none;
+  }
 </style>
 
 <script>
@@ -261,10 +365,181 @@
       });
     }
 
+    // Top Navigation Autocomplete Dropdown Logic
+    function initTopSearch() {
+      const input = document.getElementById('topNavSearchInput');
+      const dropdown = document.getElementById('topSearchDropdown');
+      const resultsContainer = document.getElementById('topSearchResults');
+      const spinner = document.getElementById('topSearchSpinner');
+      if (!input || !dropdown || !resultsContainer) return;
+
+      let debounceTimer = null;
+      let abortController = null;
+
+      function renderResults(data, query) {
+        if (!data || data.total === 0) {
+          resultsContainer.innerHTML = `
+            <div class="p-3 text-center text-white-50">
+              <i class="bi bi-search text-white-50 d-block fs-4 mb-2"></i>
+              <div class="small">No matches found for <strong class="text-white">"${escapeHtml(query)}"</strong></div>
+              <div style="font-size: 0.75rem;" class="mt-1">Press <strong>Enter</strong> to search all events.</div>
+            </div>
+            <a href="{{ url('/events') }}?q=${encodeURIComponent(query)}" class="top-search-footer-btn">
+              Search all events for "${escapeHtml(query)}" &rarr;
+            </a>
+          `;
+          dropdown.classList.remove('d-none');
+          return;
+        }
+
+        let html = '';
+
+        // Events
+        if (data.events && data.events.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-calendar-event me-1"></i> Events</div>';
+          data.events.forEach(item => {
+            const imgHtml = item.image 
+              ? `<img src="${item.image}" alt="" class="top-search-thumb">` 
+              : `<div class="top-search-thumb d-flex align-items-center justify-content-center text-white-50"><i class="bi bi-image"></i></div>`;
+            const dateLoc = [item.date, item.location]
+              .filter(Boolean)
+              .map(val => escapeHtml(val))
+              .join(' <span class="opacity-50">&bull;</span> ');
+            html += `
+              <a href="${item.url}" class="top-search-item">
+                ${imgHtml}
+                <div class="overflow-hidden flex-grow-1">
+                  <div class="fw-semibold text-truncate text-white" style="font-size: 0.85rem;">${escapeHtml(item.title)}</div>
+                  <div class="text-white-50 text-truncate" style="font-size: 0.72rem;">${dateLoc}</div>
+                </div>
+                ${item.category ? `<span class="badge bg-secondary bg-opacity-50 text-white-50 small ms-auto" style="font-size: 0.65rem;">${escapeHtml(item.category)}</span>` : ''}
+              </a>
+            `;
+          });
+        }
+
+        // Photographers
+        if (data.photographers && data.photographers.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-camera me-1"></i> Photographers</div>';
+          data.photographers.forEach(p => {
+            const avatarHtml = p.avatar 
+              ? `<img src="${p.avatar}" alt="" class="top-search-avatar">` 
+              : `<div class="top-search-avatar text-warning"><i class="bi bi-camera-fill" style="font-size: 0.85rem;"></i></div>`;
+            html += `
+              <a href="${p.url}" class="top-search-item">
+                ${avatarHtml}
+                <div class="overflow-hidden flex-grow-1">
+                  <div class="fw-semibold text-truncate text-white" style="font-size: 0.85rem;">${escapeHtml(p.name)}</div>
+                  <div class="text-white-50 text-truncate" style="font-size: 0.72rem;">${escapeHtml(p.specialty || 'Creator')}</div>
+                </div>
+                <span class="badge bg-info bg-opacity-25 text-info small ms-auto" style="font-size: 0.65rem;">Creator</span>
+              </a>
+            `;
+          });
+        }
+
+        // Categories / Sports
+        if (data.categories && data.categories.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-tag me-1"></i> Sports &amp; Categories</div>';
+          data.categories.forEach(c => {
+            html += `
+              <a href="${c.url}" class="top-search-item">
+                <div class="top-search-avatar text-info"><i class="bi bi-trophy"></i></div>
+                <div class="fw-semibold text-truncate text-white flex-grow-1" style="font-size: 0.85rem;">${escapeHtml(c.name)}</div>
+                <i class="bi bi-arrow-right text-white-50 small ms-auto"></i>
+              </a>
+            `;
+          });
+        }
+
+        // View All Link
+        html += `
+          <a href="${data.view_all_url || ('{{ url('/events') }}?q=' + encodeURIComponent(query))}" class="top-search-footer-btn">
+            View all results for "${escapeHtml(query)}" &rarr;
+          </a>
+        `;
+
+        resultsContainer.innerHTML = html;
+        dropdown.classList.remove('d-none');
+      }
+
+      function doSearch(query) {
+        if (abortController) {
+          abortController.abort();
+        }
+        abortController = new AbortController();
+
+        if (spinner) spinner.classList.remove('d-none');
+
+        fetch('{{ url('/api/quick-search') }}?q=' + encodeURIComponent(query), {
+          signal: abortController.signal,
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (spinner) spinner.classList.add('d-none');
+          renderResults(data, query);
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') return;
+          if (spinner) spinner.classList.add('d-none');
+        });
+      }
+
+      input.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (query.length < 2) {
+          dropdown.classList.add('d-none');
+          if (spinner) spinner.classList.add('d-none');
+          return;
+        }
+        debounceTimer = setTimeout(() => doSearch(query), 250);
+      });
+
+      input.addEventListener('focus', function() {
+        const query = this.value.trim();
+        if (query.length >= 2 && resultsContainer.innerHTML.trim() !== '') {
+          dropdown.classList.remove('d-none');
+        }
+      });
+
+      // Close dropdown on outside click
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#topNavSearchForm')) {
+          dropdown.classList.add('d-none');
+        }
+      });
+
+      // Close on Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          dropdown.classList.add('d-none');
+        }
+      });
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    }
+
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initUserDropdown);
+      document.addEventListener('DOMContentLoaded', function() {
+        initUserDropdown();
+        initTopSearch();
+      });
     } else {
       initUserDropdown();
+      initTopSearch();
     }
   })();
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Web\EventController;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Event;
@@ -141,11 +142,13 @@ class DemoController extends Controller
             'event_id' => 'required|exists:events,id',
             'personal_price' => 'nullable|numeric|min:0',
             'commercial_price' => 'nullable|numeric|min:0',
+            'sub_album' => 'nullable|string|max:100',
         ]);
 
         $event = Event::findOrFail($request->input('event_id'));
         $personalPrice = (float) $request->input('personal_price', 50.00);
         $commercialPrice = (float) $request->input('commercial_price', 250.00);
+        $subAlbum = trim($request->input('sub_album', '')) ?: null;
 
         // Ensure storage upload directories exist with full permissions
         $photosDir = storage_path('app/public/uploads/demo/photos');
@@ -223,6 +226,7 @@ class DemoController extends Controller
                     'copyright' => $meta['copyright'] ?? '© 2026 PhotoX All Rights Reserved',
                     'personal_price' => $personalPrice,
                     'commercial_price' => $commercialPrice,
+                    'sub_album' => $subAlbum,
                     'is_demo' => false,
                 ]);
 
@@ -237,6 +241,10 @@ class DemoController extends Controller
         $event->update([
             'total_photos' => $event->photos()->count(),
         ]);
+
+        if ($uploadedCount > 0) {
+            EventController::dispatchPendingEventNotifications($event);
+        }
 
         if ($uploadedCount === 0) {
             if ($request->expectsJson() || $request->ajax()) {
@@ -396,7 +404,7 @@ class DemoController extends Controller
         // Set event cover photo
         $event->update([
             'cover_photo_id' => $photo->id,
-            'cover_image' => $photo->file_path,
+            'cover_image' => url('/protected-photo/'.$photo->id),
         ]);
 
         if ($request->expectsJson() || $request->ajax()) {
@@ -404,12 +412,53 @@ class DemoController extends Controller
                 'success' => true,
                 'message' => "Photo #{$photo->id} is now set as the Best Featured Cover Photo for the Homepage!",
                 'photo_id' => $photo->id,
-                'cover_image' => $photo->file_path,
+                'cover_image' => url('/protected-photo/'.$photo->id),
             ]);
         }
 
         return redirect()->route('admin.dummy.event', ['event_id' => $event->id])
             ->with('success', "Photo '{$photo->title}' is now selected as the Best / Featured Cover Image for the Homepage!");
+    }
+
+    /**
+     * Manually override individual photo pricing (Personal & Commercial) for an uploaded photo.
+     */
+    public function adminUpdatePhotoPrice(Request $request, int $id): RedirectResponse|JsonResponse
+    {
+        $photo = EventPhoto::findOrFail($id);
+
+        if ($request->isMethod('GET')) {
+            $eventId = $photo->event_id;
+
+            return redirect('/admin/ops-internal-vault-99?event_id='.$eventId)
+                ->with('info', "Photo #{$photo->id} ('{$photo->title}') selected. Click 'Edit Price' on the photo card to override its pricing.");
+        }
+
+        $validated = $request->validate([
+            'personal_price' => 'required|numeric|min:0',
+            'commercial_price' => 'nullable|numeric|min:0',
+            'title' => 'nullable|string|max:255',
+            'sub_album' => 'nullable|string|max:100',
+        ]);
+        $photo->update([
+            'personal_price' => $validated['personal_price'],
+            'commercial_price' => $validated['commercial_price'] ?? 0,
+            'title' => ! empty($validated['title']) ? $validated['title'] : $photo->title,
+            'sub_album' => array_key_exists('sub_album', $validated) ? $validated['sub_album'] : $photo->sub_album,
+        ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Photo #{$photo->id} pricing updated successfully!",
+                'personal_price' => number_format((float) $photo->personal_price, 2),
+                'commercial_price' => number_format((float) $photo->commercial_price, 2),
+                'title' => $photo->title,
+                'sub_album' => $photo->sub_album,
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Pricing for '{$photo->title}' updated to Personal R{$photo->personal_price} / Commercial R{$photo->commercial_price}!");
     }
 
     /**
@@ -470,14 +519,14 @@ class DemoController extends Controller
 
         if ($request->header('If-None-Match') === $etag || $request->header('If-Modified-Since') === gmdate('D, d M Y H:i:s T', $lastModified)) {
             return response('', 304, [
-                'Cache-Control' => 'public, max-age=604800, stale-while-revalidate=86400',
+                'Cache-Control' => 'public, max-age=300, must-revalidate',
                 'ETag' => $etag,
             ]);
         }
 
         return response()->file($watermarkedPath, [
             'Content-Type' => 'image/jpeg',
-            'Cache-Control' => 'public, max-age=604800, stale-while-revalidate=86400',
+            'Cache-Control' => 'public, max-age=300, must-revalidate',
             'ETag' => $etag,
             'Last-Modified' => gmdate('D, d M Y H:i:s T', $lastModified),
         ]);
@@ -596,11 +645,25 @@ class DemoController extends Controller
         $textColor = imagecolorallocatealpha($im, $r, $g, $b, $gdAlpha);
         $shadowAlpha = min(120, $gdAlpha + 25);
         $shadowColor = imagecolorallocatealpha($im, 0, 0, 0, $shadowAlpha);
-        $lineColor = imagecolorallocatealpha($im, $r, $g, $b, min(120, $gdAlpha + 35));
+        $lineAlpha = min(112, $gdAlpha + 14);
+        $lineColor = imagecolorallocatealpha($im, $r, $g, $b, $lineAlpha);
+        $lineShadowAlpha = min(118, $gdAlpha + 22);
+        $lineShadowColor = imagecolorallocatealpha($im, 0, 0, 0, $lineShadowAlpha);
 
-        $fontFile = '/usr/share/fonts/liberation-sans/LiberationSans-Bold.ttf';
-        if (! file_exists($fontFile)) {
-            $fontFile = '/usr/share/fonts/dejavu/DejaVuSansMono-Bold.ttf';
+        $fontCandidates = [
+            public_path('fonts/watermark-font.ttf'),
+            '/usr/share/fonts/open-sans/OpenSans-Bold.ttf',
+            '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/liberation-sans/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/dejavu/DejaVuSansMono-Bold.ttf',
+            '/usr/share/fonts/google-droid-sans-fonts/DroidSans-Bold.ttf',
+        ];
+        $fontFile = null;
+        foreach ($fontCandidates as $candFont) {
+            if (file_exists($candFont)) {
+                $fontFile = $candFont;
+                break;
+            }
         }
 
         // Resolve logo path
@@ -618,30 +681,91 @@ class DemoController extends Controller
             }
         }
 
-        $baseScale = $w / 1000;
-        $brandFontSize = max(18, (int) round($fontSizeSetting * $baseScale * 1.35));
+        $baseScale = min(1.2, $w / 900);
+        $brandFontSize = max(9, min((int) ($w * 0.045), (int) round($fontSizeSetting * $baseScale * 1.35)));
 
-        // 1. TILED PATTERN (Anti-AI High-Density Protection Grid matching Admin Studio 1:1)
+        // Strictly measure text width with imagettfbbox so text never touches or overlaps
+        if ($fontFile && file_exists($fontFile) && ! empty($text)) {
+            $bbox = imagettfbbox($brandFontSize, 0, $fontFile, $text);
+            $tw = abs($bbox[2] - $bbox[0]);
+            $maxCornerW = (int) ($w * 0.38);
+            if ($tw > $maxCornerW && $tw > 0) {
+                $brandFontSize = max(8, (int) floor($brandFontSize * ($maxCornerW / $tw)));
+            }
+        }
+
+        // Anti-AI Multi-Directional Security Mesh (Continuous Diagonal Cross-Hatch Grid that breaks AI Inpainting)
+        $hasAntiAiLines = ! empty($setting->has_anti_ai_lines);
+        if ($hasAntiAiLines) {
+            imagesetthickness($im, 1);
+            $wireGap = max(38, (int) round(min($w, $h) * 0.12));
+            for ($d = -$h; $d <= $w + $h; $d += $wireGap) {
+                imageline($im, $d + 1, 1, $d + $h + 1, $h + 1, $lineShadowColor);
+                imageline($im, $d, 0, $d + $h, $h, $lineColor);
+                imageline($im, $d + 1, $h + 1, $d + $h + 1, 1, $lineShadowColor);
+                imageline($im, $d, $h, $d + $h, 0, $lineColor);
+            }
+        }
+
+        // 1. TILED PATTERN (Anti-AI High-Density Protection Grid with Smart Responsive Scaling)
         if ($pattern === 'tiled') {
             $density = $setting->watermark_density ?? 'high';
-            $cols = ($density === 'ultra') ? 12 : (($density === 'medium') ? 7 : 9);
-            $rows = ($density === 'ultra') ? 8 : (($density === 'medium') ? 5 : 6);
+
+            // Target cell dimensions in pixels based on user-chosen density
+            // Ultra: tight grid; High: standard balanced anti-theft; Medium: relaxed spacing
+            $targetCellW = ($density === 'ultra') ? 140 : (($density === 'medium') ? 250 : 180);
+            $targetCellH = ($density === 'ultra') ? 95 : (($density === 'medium') ? 175 : 125);
+
+            // Compute columns and rows dynamically from the image's actual resolution
+            $cols = (int) round($w / $targetCellW);
+            $rows = (int) round($h / $targetCellH);
+
+            // Bounded clamps: ensure at least 2 columns and 2 rows, max 14 cols and 10 rows
+            $cols = max(2, min(14, $cols));
+            $rows = max(2, min(10, $rows));
+
+            // For very small images (width < 340px or height < 360px), cap to 2 cols / 3 rows to guarantee legibility
+            if ($w < 340) {
+                $cols = min(2, $cols);
+            }
+            if ($h < 360) {
+                $rows = min(3, $rows);
+            }
+
             $cellW = $w / $cols;
             $cellH = $h / $rows;
 
-            // Anti-AI Continuous Diagonal Security Lines (Subtle & Elegant)
+            // Anti-AI Continuous Diagonal Security Lines (Auto-scaled wire gap)
             if ($setting->has_anti_ai_lines ?? true) {
                 imagesetthickness($im, 1);
-                $wireGap = max(90, (int) ($w * 0.12));
+                $wireGap = max(45, (int) round(min($w, $h) * 0.18));
                 for ($d = -$h; $d <= $w + $h; $d += $wireGap) {
                     imageline($im, $d, 0, $d + $h, $h, $lineColor);
                     imageline($im, $d, $h, $d + $h, 0, $lineColor);
                 }
             }
 
-            // Balanced font size and logo size scaled to cell dimensions so they never look tiny or get lost
-            $tiledFontPt = max(15, (int) round($fontSizeSetting * ($w / 1000) * 1.1));
-            $tiledLogoW = max(52, (int) round(($setting->logo_size ?? 55) * ($w / 1000) * 1.25));
+            // DYNAMIC FONT SIZING:
+            // Calculate base font size from slider setting & image scale, but strictly bounded by cell width & height!
+            $rawFontPt = (int) round($fontSizeSetting * $baseScale * 1.1);
+            $tiledFontPt = max(8, min($rawFontPt, (int) round($cellW * 0.12), (int) round($cellH * 0.30)));
+
+            // Strictly measure text width with imagettfbbox so text never touches or overlaps adjacent columns!
+            if ($fontFile && file_exists($fontFile) && ! empty($text)) {
+                $bbox = imagettfbbox($tiledFontPt, 0, $fontFile, $text);
+                $textW = abs($bbox[2] - $bbox[0]);
+                $maxAllowedTextW = (int) ($cellW * 0.70); // leaves 30% breathing space between neighboring watermarks
+                if ($textW > $maxAllowedTextW && $textW > 0) {
+                    $tiledFontPt = max(7, (int) floor($tiledFontPt * ($maxAllowedTextW / $textW)));
+                }
+            }
+
+            // DYNAMIC LOGO SIZING:
+            $configuredLogoSize = (int) ($setting->logo_size ?? 55);
+            $logoScale = min(1.3, $w / 900);
+            $rawLogoW = (int) round($configuredLogoSize * $logoScale * 1.4);
+            $tiledLogoW = max(18, min($rawLogoW, (int) round($cellW * 0.55), (int) round($cellH * 0.50)));
+            $bothLayout = $setting->both_layout ?? 'stacked';
 
             for ($r = 0; $r < $rows; $r++) {
                 // Stagger alternate rows by 25% cell width for organic anti-AI protection
@@ -655,11 +779,20 @@ class DemoController extends Controller
                         $this->renderWatermarkLogo($im, $logoPath, $tiledLogoW, $cx, $cy, $rotation, $opacityPercent);
                     } elseif ($type === 'text') {
                         $this->renderWatermarkText($im, $text, $fontFile, $tiledFontPt, $cx, $cy, $rotation, $textColor, $shadowColor);
-                    } else { // both (stacked)
-                        $halfLogoW = (int) round($tiledLogoW * 0.7);
-                        $halfFontPt = max(8, (int) round($tiledFontPt * 0.75));
-                        $this->renderWatermarkLogo($im, $logoPath, $halfLogoW, $cx, $cy - 8, $rotation, $opacityPercent);
-                        $this->renderWatermarkText($im, $text, $fontFile, $halfFontPt, $cx, $cy + 10, $rotation, $textColor, $shadowColor);
+                    } else { // both
+                        if ($bothLayout === 'inline') {
+                            $inlineLogoW = max(14, min((int) round($tiledLogoW * 0.65), (int) round($cellW * 0.28)));
+                            $inlineFontPt = max(7, (int) round($tiledFontPt * 0.8));
+                            $offset = (int) round($inlineLogoW * 0.55 + 4);
+                            $this->renderWatermarkLogo($im, $logoPath, $inlineLogoW, $cx - $offset, $cy, $rotation, $opacityPercent);
+                            $this->renderWatermarkText($im, $text, $fontFile, $inlineFontPt, $cx + $offset, $cy, $rotation, $textColor, $shadowColor);
+                        } else {
+                            $stackedLogoW = max(16, min((int) round($tiledLogoW * 0.80), (int) round($cellW * 0.45), (int) round($cellH * 0.30)));
+                            $stackedFontPt = max(7, (int) round($tiledFontPt * 0.82));
+                            $vOffset = max(6, (int) round($cellH * 0.16));
+                            $this->renderWatermarkLogo($im, $logoPath, $stackedLogoW, $cx, $cy - $vOffset, $rotation, $opacityPercent);
+                            $this->renderWatermarkText($im, $text, $fontFile, $stackedFontPt, $cx, $cy + $vOffset, $rotation, $textColor, $shadowColor);
+                        }
                     }
                 }
             }
@@ -685,24 +818,29 @@ class DemoController extends Controller
                     $this->renderWatermarkText($im, $text, $fontFile, $targetFontPt, (int) ($w / 2), (int) ($h / 2), $rotation, $textColor, $shadowColor);
                 }
             } else { // both
-                $logoTargetW = (int) round($singleSize * 0.65 * $scale);
-                $logoTargetW = max(45, min((int) ($w * 0.75), $logoTargetW));
-                $targetFontPt = max(14, (int) round($singleSize * 0.25 * $scale));
+                $logoTargetW = (int) round($singleSize * 0.85 * $scale);
+                $logoTargetW = max(55, min((int) ($w * 0.80), $logoTargetW));
+                $targetFontPt = max(14, (int) round($singleSize * 0.28 * $scale));
 
                 if (file_exists($fontFile)) {
                     $bbox = imagettfbbox($targetFontPt, 0, $fontFile, $text);
                     $tw = abs($bbox[2] - $bbox[0]);
-                    $maxAllowedW = (int) ($w * 0.75);
+                    $maxAllowedW = (int) ($w * 0.80);
                     if ($tw > $maxAllowedW && $tw > 0) {
                         $targetFontPt = max(11, (int) round($targetFontPt * ($maxAllowedW / $tw)));
                     }
                 }
 
-                $gap = (int) round(10 * $scale);
-                $halfOffset = (int) round($singleSize * 0.16 * $scale);
-
-                $this->renderWatermarkLogo($im, $logoPath, $logoTargetW, (int) ($w / 2), (int) ($h / 2 - $halfOffset - $gap / 2), $rotation, $opacityPercent);
-                $this->renderWatermarkText($im, $text, $fontFile, $targetFontPt, (int) ($w / 2), (int) ($h / 2 + $halfOffset + $gap / 2), $rotation, $textColor, $shadowColor);
+                $bothLayout = $setting->both_layout ?? 'stacked';
+                if ($bothLayout === 'inline') {
+                    $halfOffset = (int) round($logoTargetW * 0.55);
+                    $this->renderWatermarkLogo($im, $logoPath, (int) round($logoTargetW * 0.8), (int) ($w / 2 - $halfOffset), (int) ($h / 2), $rotation, $opacityPercent);
+                    $this->renderWatermarkText($im, $text, $fontFile, $targetFontPt, (int) ($w / 2 + $halfOffset), (int) ($h / 2), $rotation, $textColor, $shadowColor);
+                } else {
+                    $vOffset = (int) round($singleSize * 0.22 * $scale);
+                    $this->renderWatermarkLogo($im, $logoPath, $logoTargetW, (int) ($w / 2), (int) ($h / 2 - $vOffset), $rotation, $opacityPercent);
+                    $this->renderWatermarkText($im, $text, $fontFile, $targetFontPt, (int) ($w / 2), (int) ($h / 2 + $vOffset + 14), $rotation, $textColor, $shadowColor);
+                }
             }
         }
         // 3. DOUBLE X-CROSS SHIELD PATTERN
@@ -776,41 +914,63 @@ class DemoController extends Controller
         }
         // 6. PHOTOX PRO GRID (Default)
         else {
-            if ($setting->has_cross_lines) {
+            if ($setting->has_cross_lines ?? true) {
                 imagesetthickness($im, 2);
+                imageline($im, 1, 1, $w + 1, $h + 1, $lineShadowColor);
                 imageline($im, 0, 0, $w, $h, $lineColor);
+                imageline($im, 1, $h + 1, $w + 1, 1, $lineShadowColor);
                 imageline($im, 0, $h, $w, 0, $lineColor);
             }
 
-            $gridPositions = [
-                [(int) ($w * 0.50), (int) ($h * 0.50)], // Center
-                [(int) ($w * 0.24), (int) ($h * 0.20)], // Top Left
-                [(int) ($w * 0.76), (int) ($h * 0.20)], // Top Right
-                [(int) ($w * 0.24), (int) ($h * 0.85)], // Bottom Left
-                [(int) ($w * 0.76), (int) ($h * 0.85)], // Bottom Right
-            ];
+            // Center Element (Matches Live Canvas: Hero Center Logo / Text / Both)
+            $centerPos = [(int) ($w * 0.50), (int) ($h * 0.50)];
+            $bothLayout = $setting->both_layout ?? 'stacked';
 
-            $gridLogoW = max(36, (int) round(($setting->logo_size ?? 45) * ($w / 800) * 2.2));
+            if ($type === 'logo') {
+                $centerLogoW = max(70, min((int) ($w * 0.50), (int) round(($setting->single_logo_size ?? 160) * ($w / 800) * 1.6)));
+                if ($centerLogoW < 120) {
+                    $centerLogoW = (int) ($w * 0.38);
+                }
+                $this->renderWatermarkLogo($im, $logoPath, $centerLogoW, $centerPos[0], $centerPos[1], $rotation, $opacityPercent);
+            } elseif ($type === 'text') {
+                $centerFontPt = max(16, (int) round($brandFontSize * 1.8));
+                $this->renderWatermarkText($im, $text, $fontFile, $centerFontPt, $centerPos[0], $centerPos[1], $rotation, $textColor, $shadowColor);
+            } else { // both
+                $centerLogoW = max(55, min((int) ($w * 0.42), (int) round(($setting->single_logo_size ?? 160) * ($w / 800) * 1.3)));
+                $centerFontPt = max(12, (int) round($brandFontSize * 1.35));
 
-            foreach ($gridPositions as $pos) {
-                if ($type === 'logo') {
-                    $this->renderWatermarkLogo($im, $logoPath, $gridLogoW, $pos[0], $pos[1], $rotation, $opacityPercent);
-                } elseif ($type === 'text') {
-                    $this->renderWatermarkText($im, $text, $fontFile, $brandFontSize, $pos[0], $pos[1], $rotation, $textColor, $shadowColor);
-                } else { // both
-                    $halfLogoW = (int) round($gridLogoW * 0.75);
-                    $halfFontPt = max(11, (int) round($brandFontSize * 0.75));
-                    $this->renderWatermarkLogo($im, $logoPath, $halfLogoW, $pos[0], $pos[1] - 12, $rotation, $opacityPercent);
-                    $this->renderWatermarkText($im, $text, $fontFile, $halfFontPt, $pos[0], $pos[1] + 16, $rotation, $textColor, $shadowColor);
+                if ($bothLayout === 'inline') {
+                    $inlineLogoW = (int) round($centerLogoW * 0.7);
+                    $offset = (int) round($inlineLogoW * 0.55 + 8);
+                    $this->renderWatermarkLogo($im, $logoPath, $inlineLogoW, $centerPos[0] - $offset, $centerPos[1], $rotation, $opacityPercent);
+                    $this->renderWatermarkText($im, $text, $fontFile, $centerFontPt, $centerPos[0] + $offset, $centerPos[1], $rotation, $textColor, $shadowColor);
+                } else {
+                    $vOffset = max(10, (int) round($centerLogoW * 0.28));
+                    $this->renderWatermarkLogo($im, $logoPath, $centerLogoW, $centerPos[0], $centerPos[1] - $vOffset, $rotation, $opacityPercent);
+                    $this->renderWatermarkText($im, $text, $fontFile, $centerFontPt, $centerPos[0], $centerPos[1] + $vOffset + 10, $rotation, $textColor, $shadowColor);
                 }
             }
 
+            // 4 Corner Text Marks (Matches Live Canvas fottoCornerTL, fottoCornerTR, fottoCornerBL, fottoCornerBR)
+            $cornerPositions = [
+                [(int) ($w * 0.12), (int) ($h * 0.08)], // Top Left
+                [(int) ($w * 0.88), (int) ($h * 0.08)], // Top Right
+                [(int) ($w * 0.12), (int) ($h * 0.92)], // Bottom Left
+                [(int) ($w * 0.88), (int) ($h * 0.92)], // Bottom Right
+            ];
+            $cornerFontPt = max(8, (int) round($brandFontSize * 0.65));
+            $cornerText = ! empty($text) ? $text : 'PHOTOX';
+            foreach ($cornerPositions as $cPos) {
+                $this->renderWatermarkText($im, $cornerText, $fontFile, $cornerFontPt, $cPos[0], $cPos[1], 0, $textColor, $shadowColor);
+            }
+
+            // Bottom Center Anti-Screenshot Security Pill Badge (Matches Live Canvas)
             if ($setting->has_security_badge) {
-                $badgeText = $setting->security_badge_text ?: 'Do not screenshot';
-                $badgeFontSize = max(12, (int) ($w * 0.015));
+                $badgeText = ! empty($setting->security_badge_text) ? $setting->security_badge_text : 'Do not screenshot';
+                $badgeFontSize = max(11, (int) ($w * 0.015));
                 if (file_exists($fontFile)) {
                     $bbox = imagettfbbox($badgeFontSize, 0, $fontFile, $badgeText);
-                    $bw = abs($bbox[4] - $bbox[0]) + 32;
+                    $bw = abs($bbox[4] - $bbox[0]) + 36;
                     $bh = abs($bbox[5] - $bbox[1]) + 16;
                     $bx = (int) (($w - $bw) / 2);
                     $by = (int) ($h * 0.88 - $bh / 2);
@@ -821,7 +981,7 @@ class DemoController extends Controller
                     imagesetthickness($im, 2);
                     imagerectangle($im, $bx, $by, $bx + $bw, $by + $bh, $pillBorder);
 
-                    $btx = $bx + 16;
+                    $btx = $bx + 18;
                     $bty = $by + $bh - 8;
                     imagettftext($im, $badgeFontSize, 0, $btx + 1, $bty + 1, $shadowColor, $fontFile, $badgeText);
                     imagettftext($im, $badgeFontSize, 0, $btx, $bty, $textColor, $fontFile, $badgeText);
@@ -911,24 +1071,27 @@ class DemoController extends Controller
         imagecopyresampled($scaled, $logo, 0, 0, 0, 0, $targetW, $targetH, $lw, $lh);
         imagedestroy($logo);
 
-        $opacityFactor = max(0.05, min(1.0, $opacityPercent / 100));
-        for ($x = 0; $x < $targetW; $x++) {
-            for ($y = 0; $y < $targetH; $y++) {
-                $color = imagecolorat($scaled, $x, $y);
-                $a = ($color >> 24) & 0x7F;
-                if ($a < 127) {
-                    $r = ($color >> 16) & 0xFF;
-                    $g = ($color >> 8) & 0xFF;
-                    $b = $color & 0xFF;
-                    $newA = 127 - (int) round((127 - $a) * $opacityFactor);
-                    $newA = max(0, min(127, $newA));
-                    imagesetpixel($scaled, $x, $y, imagecolorallocatealpha($scaled, $r, $g, $b, $newA));
+        if ($opacityPercent < 100) {
+            $opacityFactor = max(0.05, min(1.0, $opacityPercent / 100));
+            for ($x = 0; $x < $targetW; $x++) {
+                for ($y = 0; $y < $targetH; $y++) {
+                    $color = imagecolorat($scaled, $x, $y);
+                    $a = ($color >> 24) & 0x7F;
+                    if ($a < 127) {
+                        $r = ($color >> 16) & 0xFF;
+                        $g = ($color >> 8) & 0xFF;
+                        $b = $color & 0xFF;
+                        $newA = 127 - (int) round((127 - $a) * $opacityFactor);
+                        $newA = max(0, min(127, $newA));
+                        imagesetpixel($scaled, $x, $y, imagecolorallocatealpha($scaled, $r, $g, $b, $newA));
+                    }
                 }
             }
         }
 
         if ($angleDeg != 0) {
-            $stamp = imagerotate($scaled, -$angleDeg, $trans);
+            $rotTrans = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
+            $stamp = imagerotate($scaled, -$angleDeg, $rotTrans);
             imagealphablending($stamp, false);
             imagesavealpha($stamp, true);
             imagedestroy($scaled);
@@ -949,9 +1112,9 @@ class DemoController extends Controller
     /**
      * Render clean, sharp, rotated text with drop shadow centered precisely at ($cx, $cy).
      */
-    private function renderWatermarkText($im, string $text, string $fontFile, int $fontPt, int $cx, int $cy, int $angleDeg, int $textColor, int $shadowColor): void
+    private function renderWatermarkText($im, string $text, ?string $fontFile, int $fontPt, int $cx, int $cy, int $angleDeg, int $textColor, int $shadowColor): void
     {
-        if (! file_exists($fontFile) || empty($text) || $fontPt <= 0) {
+        if (! $fontFile || ! file_exists($fontFile) || empty($text) || $fontPt <= 0) {
             return;
         }
 

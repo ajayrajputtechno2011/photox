@@ -81,10 +81,10 @@ class WatermarkController extends Controller
         $data = [
             'is_watermark_enabled' => $request->boolean('is_watermark_enabled', true),
             'watermark_type' => $validated['watermark_type'],
-            'watermark_text' => $validated['watermark_text'] ?? '@pawan_123',
-            'font_size' => (int) ($validated['font_size'] ?? 25),
-            'opacity' => (int) ($validated['opacity'] ?? 65),
-            'rotation' => (int) ($validated['rotation'] ?? -12),
+            'watermark_text' => $request->filled('watermark_text') ? $request->input('watermark_text') : ($setting->watermark_text ?? 'PhotoX'),
+            'font_size' => (int) ($validated['font_size'] ?? $setting->font_size ?? 25),
+            'opacity' => (int) ($validated['opacity'] ?? $setting->opacity ?? 65),
+            'rotation' => (int) ($validated['rotation'] ?? $setting->rotation ?? -12),
             'is_tiled' => $request->boolean('is_tiled', true),
             'watermark_pattern' => $validated['watermark_pattern'] ?? 'fotto_pro',
             'watermark_density' => $validated['watermark_density'] ?? 'high',
@@ -94,7 +94,7 @@ class WatermarkController extends Controller
             'both_layout' => $validated['both_layout'] ?? 'stacked',
             'both_gap' => (int) ($validated['both_gap'] ?? 8),
             'watermark_color' => $validated['watermark_color'] ?? 'orange',
-            'security_badge_text' => $validated['security_badge_text'] ?? 'Do not screenshot',
+            'security_badge_text' => $request->has('security_badge_text') ? $request->input('security_badge_text') : ($setting->security_badge_text ?? 'Do not screenshot'),
             'has_cross_lines' => $request->boolean('has_cross_lines', true),
             'has_security_badge' => $request->boolean('has_security_badge', true),
             'is_download_protection_enabled' => $request->boolean('is_download_protection_enabled', true),
@@ -125,6 +125,16 @@ class WatermarkController extends Controller
         }
 
         $setting->update($data);
+
+        // When saving global settings from SuperAdmin, propagate security fields to all creator records
+        if ($userId === null) {
+            WatermarkSetting::whereNotNull('user_id')->update([
+                'has_anti_ai_lines' => $data['has_anti_ai_lines'],
+                'security_badge_text' => $data['security_badge_text'],
+                'has_security_badge' => $data['has_security_badge'],
+                'has_cross_lines' => $data['has_cross_lines'],
+            ]);
+        }
 
         // Invalidate existing cached watermarked images so web immediately reflects changes
         $wmDir = storage_path('app/public/uploads/demo/watermarked');

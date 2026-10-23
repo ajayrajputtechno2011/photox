@@ -256,6 +256,53 @@
 			transition: opacity 0.2s ease;
 		}
 
+		/* Anti-AI Opposing Triangle Frosted Shield */
+		.anti-ai-triangle-blur-wrap {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			z-index: 15;
+			overflow: hidden;
+			clip-path: polygon(100% 0, 100% 100%, 0 100%);
+			transition: clip-path 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+			display: block;
+			border-radius: 8px;
+		}
+		.anti-ai-blurred-img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			filter: blur(3.5px) contrast(1.05) brightness(0.98);
+			pointer-events: none;
+			user-select: none;
+		}
+		.anti-ai-diagonal-svg {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			z-index: 16;
+		}
+		.anti-ai-shield-tag {
+			position: absolute;
+			font-size: 0.68rem;
+			font-weight: 600;
+			letter-spacing: 0.03em;
+			padding: 4px 12px;
+			border-radius: 20px;
+			background: rgba(7, 19, 31, 0.82);
+			color: #e2e8f0;
+			border: 1px solid rgba(255, 138, 0, 0.45);
+			backdrop-filter: blur(6px);
+			box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+			pointer-events: none;
+			transition: all 0.25s ease;
+			white-space: nowrap;
+			z-index: 17;
+		}
+
 		/* Density Segmented Control */
 		.wm-density-btn-group {
 			display: flex;
@@ -913,15 +960,15 @@
 										<span class="badge bg-white text-secondary border font-monospace small px-2 py-1">Mode Selection</span>
 									</div>
 									<div class="wm-type-btn-group">
-										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'logo') === 'text' ? 'active' : '' }}" id="typeTextBtn" type="button" onclick="setWatermarkType('text')">
+										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'both') === 'text' ? 'active' : '' }}" id="typeTextBtn" type="button" onclick="setWatermarkType('text')">
 											<i class="bi bi-fonts"></i>
 											<span>Text</span>
 										</button>
-										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'logo') === 'logo' ? 'active' : '' }}" id="typeLogoBtn" type="button" onclick="setWatermarkType('logo')">
+										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'both') === 'logo' ? 'active' : '' }}" id="typeLogoBtn" type="button" onclick="setWatermarkType('logo')">
 											<i class="bi bi-image"></i>
 											<span>Logo</span>
 										</button>
-										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'logo') === 'both' ? 'active' : '' }}" id="typeBothBtn" type="button" onclick="setWatermarkType('both')">
+										<button class="wm-type-btn {{ ($setting->watermark_type ?? 'both') === 'both' ? 'active' : '' }}" id="typeBothBtn" type="button" onclick="setWatermarkType('both')">
 											<i class="bi bi-layers-fill"></i>
 											<span>Both (Logo + Text)</span>
 										</button>
@@ -958,13 +1005,13 @@
 										</button>
 									</div>
 
-									<!-- Anti-AI Continuous Security Wires Toggle -->
+									<!-- Anti-AI Half-Frost Shield (Hover to Reveal) Toggle -->
 									<div class="form-check form-switch mb-2 d-flex align-items-center justify-content-between ps-0 pe-1">
 										<label class="form-check-label small fw-semibold text-dark mb-0" for="antiAiLinesToggle">
-											<i class="bi bi-slash-circle me-1 text-danger"></i> Anti-AI Diagonal Security Wires
-											<small class="d-block text-muted" style="font-size: 0.73rem;">Continuous cross-hatch lines breaking AI inpainting</small>
+											<i class="bi bi-shield-shaded me-1 text-danger"></i> Anti-AI Half-Frost Shield (Hover to Reveal)
+											<small class="d-block text-muted" style="font-size: 0.73rem;">Enables or disables the diagonal frosted blur half on event photo previews</small>
 										</label>
-										<input class="form-check-input ms-0" type="checkbox" role="switch" id="antiAiLinesToggle" checked onchange="updateLivePreview()" style="width: 2.4em; height: 1.25em;">
+										<input class="form-check-input ms-0" type="checkbox" role="switch" id="antiAiLinesToggle" {{ ($setting->has_anti_ai_lines ?? true) ? 'checked' : '' }} onchange="updateLivePreview()" style="width: 2.4em; height: 1.25em;">
 									</div>
 
 									<!-- Anti-AI Micro-Copyright Pattern Toggle -->
@@ -1096,18 +1143,28 @@
 								<div id="subPanelBoth" style="display: {{ ($setting->watermark_type ?? 'both') === 'both' ? 'block' : 'none' }};">
 									<div class="mb-3">
 										<label class="fw-bold small text-muted d-block mb-1">Brand Signature Text</label>
-										<input type="text" class="form-control" id="bothTextInputVal" value="{{ $setting->watermark_text ?? 'PhotoX' }}" maxlength="40" oninput="updateLivePreview()">
+										<input type="text" class="form-control" id="bothTextInputVal" value="{{ $setting->watermark_text ?? ($activePhotographer ? $activePhotographer->name : '@pawan_123') }}" maxlength="40" oninput="updateLivePreview()">
 									</div>
 									<div class="mb-3">
 										<label class="fw-bold small text-muted d-block mb-2">Brand Mark Logo</label>
 										<div class="d-flex align-items-center gap-3">
-											<div class="wm-logo-box" style="width: 50px; height: 50px;">
-												<img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" alt="Watermark Logo">
+											<div class="wm-logo-box" style="width: 85px; height: 55px; background: rgba(0,0,0,0.06); border-radius: 8px;">
+												<img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Watermark Logo">
 											</div>
-											<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
-												<i class="bi bi-arrow-repeat me-1"></i> Replace Logo
-											</button>
+											<div>
+												<button type="button" class="btn btn-sm btn-outline-warning fw-bold rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
+													<i class="bi bi-cloud-arrow-up me-1"></i> Change / Upload Logo
+												</button>
+												<small class="text-muted d-block mt-1">PNG, SVG or WebP with transparency.</small>
+											</div>
 										</div>
+									</div>
+
+									<div class="mb-3">
+										<div class="d-flex justify-content-between small fw-bold mb-1">
+											<span>Logo Size: <span id="bothLogoSizeLabel" class="text-warning">{{ $setting->logo_size ?? 55 }}px</span></span>
+										</div>
+										<input type="range" class="wm-range-slider" id="bothLogoSizeRange" min="20" max="150" value="{{ $setting->logo_size ?? 55 }}" oninput="updateLivePreview()">
 									</div>
 
 									<div class="mb-3">
@@ -1115,6 +1172,18 @@
 											<span>Text Font Size: <span id="bothFontSizeLabel" class="text-warning">{{ $setting->font_size ?? 25 }}px</span></span>
 										</div>
 										<input type="range" class="wm-range-slider" id="bothFontSizeRange" min="14" max="60" value="{{ $setting->font_size ?? 25 }}" oninput="updateLivePreview()">
+									</div>
+
+									<div class="mb-3">
+										<label class="fw-bold small text-muted d-block mb-1">Logo &amp; Text Layout</label>
+										<div class="btn-group w-100" role="group">
+											<button type="button" class="btn btn-sm {{ ($setting->both_layout ?? 'stacked') === 'stacked' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary' }}" id="btnLayoutStacked" onclick="setBothLayout('stacked')">
+												<i class="bi bi-distribute-vertical me-1"></i> Stacked (Logo Above Text)
+											</button>
+											<button type="button" class="btn btn-sm {{ ($setting->both_layout ?? 'stacked') === 'inline' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary' }}" id="btnLayoutInline" onclick="setBothLayout('inline')">
+												<i class="bi bi-distribute-horizontal me-1"></i> Inline (Side-by-Side)
+											</button>
+										</div>
 									</div>
 
 									<div class="mb-3">
@@ -1421,6 +1490,21 @@
 								<!-- Base Photo -->
 								<img id="previewBasePhoto" class="base-photo" src="{{ asset('uploads/watermarks/photox_dummy_marathon.jpg') }}" alt="PhotoX Sports Photo">
 
+								<!-- Anti-AI Opposing Triangle Blur Mask (Frosted Shield Preview) -->
+								<div id="studioAntiAiBlurLayer" class="anti-ai-triangle-blur-wrap {{ ($setting->has_anti_ai_lines ?? true) ? 'active' : 'd-none' }}">
+									<img id="studioPhotoImgBlur" 
+										 src="{{ asset('uploads/watermarks/photox_dummy_marathon.jpg') }}" 
+										 alt="Anti-AI Blurred Layer" 
+										 class="anti-ai-blurred-img" 
+										 draggable="false">
+									<svg class="anti-ai-diagonal-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+										<line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255, 138, 0, 0.45)" stroke-width="0.8" stroke-dasharray="4, 4" />
+									</svg>
+									<div class="anti-ai-shield-tag" style="bottom: 16px; right: 16px;">
+										<i class="bi bi-shield-check text-warning me-1"></i> <span>Anti-AI Frosted Shield · Hover to Reveal</span>
+									</div>
+								</div>
+
 								<!-- Anti-AI Diagonal Cross-Hatch Security Grid Wires (Continuous Lines across entire canvas) -->
 								<svg class="wm-anti-ai-lines-svg" id="antiAiLinesSvg" xmlns="http://www.w3.org/2000/svg">
 									<defs>
@@ -1590,8 +1674,18 @@
 		let watermarkType = "{{ $setting->watermark_type ?? 'both' }}";
 		let watermarkPattern = "{{ $setting->watermark_pattern ?? 'fotto_pro' }}";
 		let watermarkDensity = "{{ $setting->watermark_density ?? 'high' }}";
+		let bothLayout = "{{ $setting->both_layout ?? 'stacked' }}";
 		let postPurchaseMode = "{{ $setting->post_purchase_mode ?? 'sponsor_branded' }}";
 		let sponsorPlacement = "{{ $setting->sponsor_placement ?? 'bottom_right' }}";
+
+		function setBothLayout(layout) {
+			bothLayout = layout;
+			const btnStacked = document.getElementById('btnLayoutStacked');
+			const btnInline = document.getElementById('btnLayoutInline');
+			if (btnStacked) btnStacked.className = (layout === 'stacked') ? 'btn btn-sm btn-warning text-dark fw-bold' : 'btn btn-sm btn-outline-secondary';
+			if (btnInline) btnInline.className = (layout === 'inline') ? 'btn btn-sm btn-warning text-dark fw-bold' : 'btn btn-sm btn-outline-secondary';
+			updateLivePreview();
+		}
 
 		function setWatermarkDensity(density) {
 			watermarkDensity = density;
@@ -2081,11 +2175,13 @@
 			if (watermarkType === 'both') {
 				activeText = document.getElementById('bothTextInputVal').value || 'PhotoX';
 				activeFontSize = Number(document.getElementById('bothFontSizeRange').value);
+				activeLogoSize = Number(document.getElementById('bothLogoSizeRange') ? document.getElementById('bothLogoSizeRange').value : 55);
 				activeOpacity = Number(document.getElementById('bothOpacityRange').value) / 100;
 				activeRotation = Number(document.getElementById('bothRotRange').value);
 
 				// Update both mode labels in real-time
 				if (document.getElementById('bothFontSizeLabel')) document.getElementById('bothFontSizeLabel').textContent = activeFontSize + 'px';
+				if (document.getElementById('bothLogoSizeLabel')) document.getElementById('bothLogoSizeLabel').textContent = activeLogoSize + 'px';
 				if (document.getElementById('bothOpacityLabel')) document.getElementById('bothOpacityLabel').textContent = Math.round(activeOpacity * 100) + '%';
 				if (document.getElementById('bothRotLabel')) document.getElementById('bothRotLabel').textContent = activeRotation + '°';
 			} else if (watermarkType === 'text') {
@@ -2155,17 +2251,33 @@
 				centerTitle.style.color = textColor;
 				centerTitle.style.fontSize = Math.round(activeFontSize * 1.8) + 'px';
 
+				const centerContent = document.getElementById('fottoCenterContent');
 				if (watermarkType === 'both') {
 					centerLogo.style.display = 'block';
 					centerLogo.src = logoUrl;
-					centerLogo.style.maxHeight = Math.round(activeFontSize * 1.6) + 'px';
 					centerTitle.style.display = 'block';
+
+					const isInline = (bothLayout === 'inline');
+					if (centerContent) centerContent.style.flexDirection = isInline ? 'row' : 'column';
+
+					if (isInline) {
+						centerLogo.style.maxHeight = Math.round(activeFontSize * 1.5) + 'px';
+						centerLogo.style.maxWidth = Math.round(activeLogoSize * 1.8) + 'px';
+						centerTitle.style.fontSize = Math.round(activeFontSize * 1.6) + 'px';
+					} else {
+						centerLogo.style.maxHeight = Math.round(activeLogoSize * 1.3) + 'px';
+						centerLogo.style.maxWidth = Math.round(activeLogoSize * 2.8) + 'px';
+						centerTitle.style.fontSize = Math.round(activeFontSize * 1.6) + 'px';
+					}
 				} else if (watermarkType === 'logo') {
+					if (centerContent) centerContent.style.flexDirection = 'column';
 					centerLogo.style.display = 'block';
 					centerLogo.src = logoUrl;
 					centerLogo.style.maxHeight = Math.round(activeLogoSize * 1.4) + 'px';
+					centerLogo.style.maxWidth = Math.round(activeLogoSize * 3) + 'px';
 					centerTitle.style.display = 'none';
 				} else { // text only
+					if (centerContent) centerContent.style.flexDirection = 'column';
 					centerLogo.style.display = 'none';
 					centerTitle.style.display = 'block';
 				}
@@ -2217,11 +2329,13 @@
 					const fontPx = Math.round(singleSize * 0.45);
 					singleLargeContent.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8);">${activeText}</div>`;
 				} else { // both
-					const logoPx = Math.round(singleSize * 0.7);
-					const fontPx = Math.round(singleSize * 0.35);
+					const logoPx = Math.round(singleSize * 0.85);
+					const fontPx = Math.round(singleSize * 0.28);
+					const isInline = (bothLayout === 'inline');
+					const flexDir = isInline ? 'row' : 'column';
 					singleLargeContent.innerHTML = `
-						<div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-							<img src="${logoUrl}" style="width:${logoPx}px; height:auto; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6));" alt="Watermark Logo">
+						<div style="display:flex; flex-direction:${flexDir}; align-items:center; justify-content:center; gap:12px;">
+							<img src="${logoUrl}" style="max-width:${logoPx}px; max-height:${Math.round(logoPx * 0.65)}px; width:auto; height:auto; object-fit:contain; filter:drop-shadow(0 2px 10px rgba(0,0,0,0.7));" alt="Watermark Logo">
 							<div style="font-family:'Space Grotesk',sans-serif; font-size:${fontPx}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.08em; text-shadow:0 3px 12px rgba(0,0,0,0.8);">${activeText}</div>
 						</div>`;
 				}
@@ -2254,6 +2368,9 @@
 					}
 					if (logoEl) {
 						logoEl.src = logoUrl;
+						logoEl.style.maxHeight = Math.round(activeLogoSize * 0.9) + 'px';
+						logoEl.style.maxWidth = Math.round(activeLogoSize * 2.2) + 'px';
+						logoEl.style.objectFit = 'contain';
 						logoEl.style.display = (watermarkType === 'text') ? 'none' : 'block';
 					}
 				}
@@ -2279,6 +2396,9 @@
 					}
 					if (logoEl) {
 						logoEl.src = logoUrl;
+						logoEl.style.maxHeight = Math.round(activeLogoSize * 0.9) + 'px';
+						logoEl.style.maxWidth = Math.round(activeLogoSize * 2.2) + 'px';
+						logoEl.style.objectFit = 'contain';
 						logoEl.style.display = (watermarkType === 'text') ? 'none' : 'block';
 					}
 				}
@@ -2316,28 +2436,41 @@
 					}
 					if (logoEl) {
 						logoEl.src = logoUrl;
+						logoEl.style.maxHeight = Math.round(activeLogoSize * 0.9) + 'px';
+						logoEl.style.maxWidth = Math.round(activeLogoSize * 2.2) + 'px';
+						logoEl.style.objectFit = 'contain';
 						logoEl.style.display = (watermarkType === 'text') ? 'none' : 'block';
 					}
 				}
 			}
-			// 6. TILED GRID PATTERN (Dense Anti-AI Protection Shield)
+			// 6. TILED GRID PATTERN (Dense Anti-AI Protection Shield with Smart Auto-Scaling)
 			else {
 				standardOverlay.style.display = 'grid';
 
-				let cols = 9;
-				let rows = 6;
-				let totalItems = 54;
-				const isMicroText = document.getElementById('antiAiMicroTextToggle') ? document.getElementById('antiAiMicroTextToggle').checked : true;
+				const stageW = standardOverlay.clientWidth || 500;
+				const stageH = standardOverlay.clientHeight || 400;
 
-				if (watermarkDensity === 'medium') {
-					cols = 7;
-					rows = 5;
-					totalItems = 35;
-				} else if (watermarkDensity === 'ultra') {
-					cols = 12;
-					rows = 8;
-					totalItems = 96;
-				}
+				let targetCellW = (watermarkDensity === 'ultra') ? 130 : ((watermarkDensity === 'medium') ? 240 : 170);
+				let targetCellH = (watermarkDensity === 'ultra') ? 90 : ((watermarkDensity === 'medium') ? 170 : 120);
+
+				let cols = Math.max(2, Math.min(12, Math.round(stageW / targetCellW)));
+				let rows = Math.max(2, Math.min(8, Math.round(stageH / targetCellH)));
+
+				if (stageW < 340) cols = Math.min(2, cols);
+				if (stageH < 360) rows = Math.min(3, rows);
+
+				const cellW = stageW / cols;
+				const cellH = stageH / rows;
+				let totalItems = cols * rows;
+
+				// Responsive bounds for font and logo to guarantee zero overlap:
+				const maxFontByCell = Math.max(8, Math.round(cellW * 0.12));
+				const responsiveFontSize = Math.min(activeFontSize, maxFontByCell);
+
+				const maxLogoByCell = Math.max(16, Math.round(Math.min(cellW * 0.50, cellH * 0.45)));
+				const responsiveLogoSize = Math.min(activeLogoSize, maxLogoByCell);
+
+				const isMicroText = document.getElementById('antiAiMicroTextToggle') ? document.getElementById('antiAiMicroTextToggle').checked : true;
 
 				standardOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 				standardOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
@@ -2345,31 +2478,37 @@
 				let itemHtml = '';
 				if (watermarkType === 'text') {
 					itemHtml = `
-						<div style="display:flex; flex-direction:column; align-items:center; line-height:1.1;">
-							<span style="font-family:'Space Grotesk',sans-serif; font-size:${activeFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.06em; text-shadow:0 1px 4px rgba(0,0,0,0.7);">${activeText}</span>
-							${isMicroText ? `<span style="font-size:${Math.max(9, Math.round(activeFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; text-transform:uppercase;">DO NOT COPY</span>` : ''}
+						<div style="display:flex; flex-direction:column; align-items:center; line-height:1.1; max-width:${Math.round(cellW * 0.85)}px; overflow:hidden;">
+							<span style="font-family:'Space Grotesk',sans-serif; font-size:${responsiveFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.06em; text-shadow:0 1px 4px rgba(0,0,0,0.7); text-overflow:ellipsis; white-space:nowrap;">${activeText}</span>
+							${isMicroText ? `<span style="font-size:${Math.max(8, Math.round(responsiveFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; text-transform:uppercase;">DO NOT COPY</span>` : ''}
 						</div>`;
 				} else if (watermarkType === 'logo') {
 					itemHtml = `
 						<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-							<img src="${logoUrl}" style="width:${activeLogoSize}px; height:auto; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6));" alt="Logo">
-							${isMicroText ? `<span style="font-size:9px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.1em;">PROTECTED</span>` : ''}
+							<img src="${logoUrl}" style="max-width:${Math.round(responsiveLogoSize * 1.5)}px; max-height:${responsiveLogoSize}px; width:auto; height:auto; object-fit:contain; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6));" alt="Logo">
+							${isMicroText ? `<span style="font-size:8px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.1em;">PROTECTED</span>` : ''}
 						</div>`;
 				} else { // both
+					const isInline = (bothLayout === 'inline');
+					const flexDir = isInline ? 'row' : 'column';
+					const logoMaxW = isInline ? Math.round(responsiveLogoSize * 0.85) : Math.round(responsiveLogoSize * 1.2);
+					const logoMaxH = isInline ? Math.round(responsiveFontSize * 1.2) : Math.round(responsiveLogoSize * 0.70);
+					const gap = isInline ? '6px' : '2px';
+
 					itemHtml = `
-						<div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
-							<div style="display:flex; align-items:center; gap:5px;">
-								<img src="${logoUrl}" style="width:${Math.round(activeFontSize * 1.15)}px; height:auto; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));" alt="Logo">
-								<span style="font-family:'Space Grotesk',sans-serif; font-size:${activeFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.05em; text-shadow:0 1px 4px rgba(0,0,0,0.7);">${activeText}</span>
+						<div style="display:flex; flex-direction:column; align-items:center; max-width:${Math.round(cellW * 0.88)}px; overflow:hidden;">
+							<div style="display:flex; flex-direction:${flexDir}; align-items:center; justify-content:center; gap:${gap};">
+								<img src="${logoUrl}" style="max-width:${logoMaxW}px; max-height:${logoMaxH}px; width:auto; height:auto; object-fit:contain; filter:drop-shadow(0 1px 4px rgba(0,0,0,0.7));" alt="Logo">
+								<span style="font-family:'Space Grotesk',sans-serif; font-size:${responsiveFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.05em; text-shadow:0 1px 4px rgba(0,0,0,0.8); white-space:nowrap; text-overflow:ellipsis;">${activeText}</span>
 							</div>
-							${isMicroText ? `<span style="font-size:${Math.max(9, Math.round(activeFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em;">ANTI-AI SECURE</span>` : ''}
+							${isMicroText ? `<span style="font-size:${Math.max(8, Math.round(responsiveFontSize * 0.38))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; margin-top:2px;">ANTI-AI SECURE</span>` : ''}
 						</div>`;
 				}
 
 				let itemsHtmlArr = [];
 				for (let i = 0; i < totalItems; i++) {
 					const rowIndex = Math.floor(i / cols);
-					const staggerOffset = (rowIndex % 2 === 1) ? `transform: rotate(${activeRotation}deg) translateX(14px);` : `transform: rotate(${activeRotation}deg);`;
+					const staggerOffset = (rowIndex % 2 === 1) ? `transform: rotate(${activeRotation}deg) translateX(12px);` : `transform: rotate(${activeRotation}deg);`;
 					itemsHtmlArr.push(`
 						<div class="wm-watermark-item" style="${staggerOffset} opacity: ${activeOpacity};">
 							${itemHtml}
@@ -2379,10 +2518,26 @@
 				standardOverlay.innerHTML = itemsHtmlArr.join('');
 			}
 
-			// Continuous Anti-AI Security Grid Lines
+			// Continuous Anti-AI Security Grid Lines & Frosted Shield
 			const antiAiSvg = document.getElementById('antiAiLinesSvg');
 			const antiAiToggle = document.getElementById('antiAiLinesToggle');
+			const studioBlurLayer = document.getElementById('studioAntiAiBlurLayer');
 			const isAntiAiLinesEnabled = antiAiToggle ? antiAiToggle.checked : true;
+
+			if (studioBlurLayer) {
+				if (isAntiAiLinesEnabled && isWatermarkEnabled) {
+					studioBlurLayer.classList.remove('d-none');
+					studioBlurLayer.classList.add('active');
+					const basePhoto = document.getElementById('previewBasePhoto');
+					const blurImg = document.getElementById('studioPhotoImgBlur');
+					if (basePhoto && blurImg && basePhoto.src) {
+						blurImg.src = basePhoto.src;
+					}
+				} else {
+					studioBlurLayer.classList.add('d-none');
+					studioBlurLayer.classList.remove('active');
+				}
+			}
 
 			if (antiAiSvg) {
 				if (isAntiAiLinesEnabled && isWatermarkEnabled) {
@@ -2427,8 +2582,26 @@
 				formData.append('sponsor_logo', uploadedSponsorFile);
 			}
 
+			// Security badge and cross lines (applies across all watermark types)
+			if (document.getElementById('securityBadgeTextInput')) {
+				formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
+			}
+			if (document.getElementById('hasCrossLinesToggle')) {
+				formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
+			}
+			if (document.getElementById('hasSecurityBadgeToggle')) {
+				formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
+			}
+
+			let activeWText = 'PhotoX';
+			if (document.getElementById('bothTextInputVal') && document.getElementById('bothTextInputVal').value) {
+				activeWText = document.getElementById('bothTextInputVal').value;
+			} else if (document.getElementById('watermarkTextInput') && document.getElementById('watermarkTextInput').value) {
+				activeWText = document.getElementById('watermarkTextInput').value;
+			}
+			formData.append('watermark_text', activeWText);
+
 			if (watermarkType === 'text') {
-				formData.append('watermark_text', document.getElementById('watermarkTextInput').value);
 				formData.append('font_size', document.getElementById('textSizeRange').value);
 				formData.append('opacity', document.getElementById('textOpacityRange').value);
 				formData.append('rotation', document.getElementById('textRotRange').value);
@@ -2437,14 +2610,11 @@
 				formData.append('opacity', document.getElementById('logoOpacityRange').value);
 				formData.append('rotation', document.getElementById('logoRotRange').value);
 			} else if (watermarkType === 'both') {
-				formData.append('watermark_text', document.getElementById('bothTextInputVal').value);
 				formData.append('font_size', document.getElementById('bothFontSizeRange').value);
+				formData.append('logo_size', document.getElementById('bothLogoSizeRange') ? document.getElementById('bothLogoSizeRange').value : 55);
 				formData.append('opacity', document.getElementById('bothOpacityRange').value);
 				formData.append('rotation', document.getElementById('bothRotRange').value);
-				formData.append('both_layout', 'fotto_style');
-				formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
-				formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
-				formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
+				formData.append('both_layout', bothLayout || 'stacked');
 			}
 
 			if (uploadedLogoFile) {

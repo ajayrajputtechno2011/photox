@@ -2443,8 +2443,26 @@
 				formData.append('sponsor_logo', uploadedSponsorFile);
 			}
 
+			// Security badge and cross lines (applies across all watermark types)
+			if (document.getElementById('securityBadgeTextInput')) {
+				formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
+			}
+			if (document.getElementById('hasCrossLinesToggle')) {
+				formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
+			}
+			if (document.getElementById('hasSecurityBadgeToggle')) {
+				formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
+			}
+
+			let activeWText = 'PhotoX';
+			if (document.getElementById('bothTextInputVal') && document.getElementById('bothTextInputVal').value) {
+				activeWText = document.getElementById('bothTextInputVal').value;
+			} else if (document.getElementById('watermarkTextInput') && document.getElementById('watermarkTextInput').value) {
+				activeWText = document.getElementById('watermarkTextInput').value;
+			}
+			formData.append('watermark_text', activeWText);
+
 			if (watermarkType === 'text') {
-				formData.append('watermark_text', document.getElementById('watermarkTextInput').value);
 				formData.append('font_size', document.getElementById('textSizeRange').value);
 				formData.append('opacity', document.getElementById('textOpacityRange').value);
 				formData.append('rotation', document.getElementById('textRotRange').value);
@@ -2453,14 +2471,10 @@
 				formData.append('opacity', document.getElementById('logoOpacityRange').value);
 				formData.append('rotation', document.getElementById('logoRotRange').value);
 			} else if (watermarkType === 'both') {
-				formData.append('watermark_text', document.getElementById('bothTextInputVal').value);
 				formData.append('font_size', document.getElementById('bothFontSizeRange').value);
 				formData.append('opacity', document.getElementById('bothOpacityRange').value);
 				formData.append('rotation', document.getElementById('bothRotRange').value);
 				formData.append('both_layout', 'fotto_style');
-				formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
-				formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
-				formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
 			}
 
 			if (uploadedLogoFile) {

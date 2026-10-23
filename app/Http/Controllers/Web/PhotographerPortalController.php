@@ -113,17 +113,30 @@ class PhotographerPortalController extends Controller
         $photographer = $this->resolvePhotographer();
 
         $request->validate([
-            'album_name' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'album_name' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'exists:categories,id'],
             'category' => ['nullable', 'string'],
+            'description' => ['nullable', 'string'],
             'caption' => ['nullable', 'string'],
             'event_date' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
-            'starting_price' => ['nullable', 'numeric', 'min:0'],
+            'starting_price' => ['nullable', 'string', 'max:50'],
+            'cover_image' => ['nullable', 'string', 'max:1000'],
+            'cover_file' => ['nullable', 'image', 'max:15360'],
+            'status' => ['nullable', 'in:published,draft,archived'],
             'photos.*' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
         ]);
 
+        $title = $request->input('title') ?: $request->input('album_name');
+        if (empty($title)) {
+            return back()->withErrors(['title' => 'Event name is required.'])->withInput();
+        }
+
         $category = null;
-        if ($request->filled('category')) {
+        if ($request->filled('category_id')) {
+            $category = Category::find($request->input('category_id'));
+        } elseif ($request->filled('category')) {
             $catVal = $request->input('category');
             $category = Category::where('slug', $catVal)->orWhere('name', $catVal)->first();
         }
@@ -131,8 +144,16 @@ class PhotographerPortalController extends Controller
             $category = Category::first();
         }
 
-        $title = $request->input('album_name');
+        $coverImage = $request->input('cover_image');
+        if ($request->hasFile('cover_file') && $request->file('cover_file')->isValid()) {
+            $path = $request->file('cover_file')->store('events', 'public');
+            $coverImage = '/storage/'.$path;
+        }
+
+        $status = $request->input('status', 'published');
         $slug = Str::slug($title).'-'.time();
+        $description = $request->input('description') ?: ($request->input('caption') ?: 'Official event photo gallery captured by '.$photographer->name.'.');
+        $startingPrice = $request->input('starting_price') ? preg_replace('/[^0-9.]/', '', (string) $request->input('starting_price')) : '75.00';
 
         $event = Event::create([
             'title' => $title,
@@ -143,12 +164,23 @@ class PhotographerPortalController extends Controller
             'category_name' => $category?->name ?? 'Sports',
             'location' => $request->input('location') ?: ($photographer->location ?: 'Cape Town, South Africa'),
             'event_date' => $request->input('event_date') ?: now(),
-            'starting_price' => $request->input('starting_price') ?: 75.00,
-            'description' => $request->input('caption') ?: 'Official event photo gallery captured by '.$photographer->name.'.',
-            'status' => 'published',
+            'starting_price' => (float) ($startingPrice ?: 75.00),
+            'description' => $description,
+            'cover_image' => $coverImage,
+            'status' => $status,
             'is_featured' => false,
             'total_photos' => 0,
+            'commercial_price' => $request->filled('commercial_price') ? (float) $request->input('commercial_price') : null,
+            'selfie_bundle_price' => $request->filled('selfie_bundle_price') ? (float) $request->input('selfie_bundle_price') : null,
+            'full_gallery_price' => $request->filled('full_gallery_price') ? (float) $request->input('full_gallery_price') : null,
+            'is_password_protected' => $request->boolean('is_password_protected'),
+            'access_password' => $request->input('access_password'),
+            'photographer_notes' => $request->input('photographer_notes'),
+            'privacy_mode' => $request->boolean('privacy_mode'),
         ]);
+
+        $personalPrice = (float) ($request->input('personal_price') ?: ($startingPrice ?: 75.00));
+        $commercialPrice = (float) ($request->input('commercial_price') ?: ($personalPrice * 2.5));
 
         // Process uploaded photos
         $photosCount = 0;
@@ -159,7 +191,7 @@ class PhotographerPortalController extends Controller
             }
 
             foreach ($request->file('photos') as $idx => $file) {
-                if ($file->isValid()) {
+                if ($file && $file->isValid()) {
                     $filename = 'photo_'.time().'_'.$idx.'.'.$file->getClientOriginalExtension();
                     $file->move($uploadDir, $filename);
                     $relPath = '/uploads/events/'.$event->id.'/'.$filename;
@@ -172,8 +204,8 @@ class PhotographerPortalController extends Controller
                         'watermarked_path' => $relPath,
                         'original_name' => $file->getClientOriginalName(),
                         'title' => $title.' #'.($idx + 1),
-                        'personal_price' => $event->starting_price ?: 75.00,
-                        'commercial_price' => ($event->starting_price ?: 75.00) * 2.5,
+                        'personal_price' => $personalPrice,
+                        'commercial_price' => $commercialPrice,
                         'captured_at' => now(),
                     ]);
                     $photosCount++;
@@ -181,38 +213,25 @@ class PhotographerPortalController extends Controller
             }
         }
 
-        // If no files were provided via file input, attach fallback demo photos so the gallery looks complete
-        if ($photosCount === 0) {
-            $sampleImages = [
-                'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=85',
-                'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1200&q=85',
-                'https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=85',
-            ];
-            foreach ($sampleImages as $idx => $url) {
-                EventPhoto::create([
-                    'event_id' => $event->id,
-                    'photographer_id' => $photographer->id,
-                    'photographer_name' => $photographer->name,
-                    'file_path' => $url,
-                    'watermarked_path' => $url,
-                    'original_name' => 'shot_'.($idx + 1).'.jpg',
-                    'title' => $title.' Shot #'.($idx + 1),
-                    'personal_price' => $event->starting_price ?: 75.00,
-                    'commercial_price' => ($event->starting_price ?: 75.00) * 2.5,
-                    'captured_at' => now(),
-                ]);
-            }
-            $photosCount = count($sampleImages);
-        }
-
         $firstPhoto = EventPhoto::where('event_id', $event->id)->first();
+        $finalCover = $coverImage ?: ($firstPhoto?->file_path);
         $event->update([
             'total_photos' => $photosCount,
-            'cover_image' => $firstPhoto?->file_path,
+            'cover_image' => $finalCover,
         ]);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Event '{$title}' created successfully with {$photosCount} photos!",
+                'redirect' => route('photographer.gallery'),
+                'event_id' => $event->id,
+                'photos_count' => $photosCount,
+            ]);
+        }
+
         return redirect()->route('photographer.gallery')
-            ->with('success', "Gallery '{$title}' published successfully with {$photosCount} photos!");
+            ->with('success', "Event '{$title}' created successfully with {$photosCount} photos!");
     }
 
     /**
@@ -228,11 +247,21 @@ class PhotographerPortalController extends Controller
         $categories = Category::where('is_active', true)->orderBy('name')->get();
 
         $selectedCategory = $request->input('category', 'all');
+        $search = $request->input('search');
+        $viewMode = $request->input('view', 'grid');
 
         $query = Event::where('photographer_id', $photographer->id)
             ->with('photos')
             ->withCount('photos')
             ->latest('event_date');
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('category_name', 'like', "%{$search}%");
+            });
+        }
 
         if ($selectedCategory && $selectedCategory !== 'all') {
             $query->whereHas('category', function ($q) use ($selectedCategory) {
@@ -246,7 +275,9 @@ class PhotographerPortalController extends Controller
             'photographer',
             'galleries',
             'categories',
-            'selectedCategory'
+            'selectedCategory',
+            'search',
+            'viewMode'
         ));
     }
 
@@ -499,8 +530,15 @@ class PhotographerPortalController extends Controller
             'event_date' => 'nullable|date',
             'location' => 'nullable|string|max:255',
             'starting_price' => 'nullable|string|max:50',
-            'allow_individual_sales' => 'nullable|boolean',
+            'personal_price' => 'nullable|numeric|min:0',
+            'commercial_price' => 'nullable|numeric|min:0',
+            'selfie_bundle_price' => 'nullable|numeric|min:0',
             'full_gallery_price' => 'nullable|numeric|min:0',
+            'allow_individual_sales' => 'nullable|boolean',
+            'is_password_protected' => 'nullable|boolean',
+            'access_password' => 'nullable|string|max:100',
+            'photographer_notes' => 'nullable|string',
+            'privacy_mode' => 'nullable|boolean',
             'description' => 'nullable|string',
         ]);
 
@@ -509,7 +547,7 @@ class PhotographerPortalController extends Controller
             $category = Category::find($validated['category_id']);
         }
 
-        $event->update([
+        $updateData = [
             'title' => $validated['title'],
             'category_id' => $category ? $category->id : $event->category_id,
             'category_name' => $category ? $category->name : $event->category_name,
@@ -517,9 +555,28 @@ class PhotographerPortalController extends Controller
             'event_date' => $validated['event_date'] ?? $event->event_date,
             'starting_price' => $validated['starting_price'] ?? $event->starting_price,
             'allow_individual_sales' => $request->boolean('allow_individual_sales', true),
-            'full_gallery_price' => $request->input('full_gallery_price', 450.00),
+            'full_gallery_price' => $request->filled('full_gallery_price') ? (float) $request->input('full_gallery_price') : null,
+            'selfie_bundle_price' => $request->filled('selfie_bundle_price') ? (float) $request->input('selfie_bundle_price') : null,
+            'commercial_price' => $request->filled('commercial_price') ? (float) $request->input('commercial_price') : null,
+            'is_password_protected' => $request->boolean('is_password_protected'),
+            'access_password' => $request->input('access_password') ?: $event->access_password,
+            'photographer_notes' => $request->input('photographer_notes'),
+            'privacy_mode' => $request->boolean('privacy_mode'),
             'description' => $validated['description'] ?? $event->description,
-        ]);
+        ];
+
+        $event->update($updateData);
+
+        // Update individual photo prices if new single/personal price provided
+        if ($request->filled('personal_price')) {
+            $pPrice = (float) $request->input('personal_price');
+            $event->photos()->update(['personal_price' => $pPrice]);
+            $event->update(['starting_price' => 'From R'.$pPrice]);
+        }
+        if ($request->filled('commercial_price')) {
+            $cPrice = (float) $request->input('commercial_price');
+            $event->photos()->update(['commercial_price' => $cPrice]);
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
@@ -545,8 +602,10 @@ class PhotographerPortalController extends Controller
 
         $request->validate([
             'photos.*' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
+            'sub_album' => ['nullable', 'string', 'max:100'],
         ]);
 
+        $subAlbum = trim($request->input('sub_album', '')) ?: null;
         $uploadedCount = 0;
         if ($request->hasFile('photos')) {
             $uploadDir = public_path('uploads/events/'.$event->id);
@@ -570,6 +629,7 @@ class PhotographerPortalController extends Controller
                         'title' => $event->title.' #'.($event->photos()->count() + 1),
                         'personal_price' => (float) ($event->starting_price ?: 75.00),
                         'commercial_price' => ((float) ($event->starting_price ?: 75.00)) * 2.5,
+                        'sub_album' => $subAlbum,
                         'captured_at' => now(),
                     ]);
                     $uploadedCount++;
@@ -580,6 +640,10 @@ class PhotographerPortalController extends Controller
         $event->update([
             'total_photos' => $event->photos()->count(),
         ]);
+
+        if ($uploadedCount > 0) {
+            EventController::dispatchPendingEventNotifications($event);
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
@@ -648,7 +712,7 @@ class PhotographerPortalController extends Controller
 
         $event->update([
             'cover_photo_id' => $photo->id,
-            'cover_image' => $photo->file_path,
+            'cover_image' => url('/protected-photo/'.$photo->id),
         ]);
 
         if ($request->expectsJson() || $request->ajax()) {
@@ -656,11 +720,45 @@ class PhotographerPortalController extends Controller
                 'success' => true,
                 'message' => "Photo #{$photo->id} is now set as the Best Featured Cover Photo for this gallery!",
                 'photo_id' => $photo->id,
-                'cover_image' => $photo->file_path,
+                'cover_image' => url('/protected-photo/'.$photo->id),
             ]);
         }
 
         return redirect()->back()->with('success', 'Best cover photo selected! This image will be highlighted on the homepage.');
+    }
+
+    /**
+     * Update individual photo price and sub-album/station for photographer.
+     */
+    public function updatePhotoPrice(Request $request, int $id): RedirectResponse|JsonResponse
+    {
+        $validated = $request->validate([
+            'personal_price' => 'required|numeric|min:0',
+            'commercial_price' => 'nullable|numeric|min:0',
+            'title' => 'nullable|string|max:255',
+            'sub_album' => 'nullable|string|max:100',
+        ]);
+
+        $photo = EventPhoto::findOrFail($id);
+        $photo->update([
+            'personal_price' => $validated['personal_price'],
+            'commercial_price' => $validated['commercial_price'] ?? 0,
+            'title' => ! empty($validated['title']) ? $validated['title'] : $photo->title,
+            'sub_album' => array_key_exists('sub_album', $validated) ? $validated['sub_album'] : $photo->sub_album,
+        ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Photo #{$photo->id} pricing updated successfully!",
+                'personal_price' => number_format((float) $photo->personal_price, 2),
+                'commercial_price' => number_format((float) $photo->commercial_price, 2),
+                'title' => $photo->title,
+                'sub_album' => $photo->sub_album,
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Pricing for '{$photo->title}' updated successfully!");
     }
 
     /**
@@ -736,7 +834,7 @@ class PhotographerPortalController extends Controller
             'user_id' => $photographer->id,
             'is_watermark_enabled' => $request->boolean('is_watermark_enabled', true),
             'watermark_type' => $validated['watermark_type'],
-            'watermark_text' => $validated['watermark_text'] ?: $photographer->name,
+            'watermark_text' => ($validated['watermark_text'] ?? null) ?: $photographer->name,
             'font_size' => (int) ($validated['font_size'] ?? 24),
             'opacity' => (int) ($validated['opacity'] ?? 65),
             'rotation' => (int) ($validated['rotation'] ?? -12),
@@ -749,7 +847,7 @@ class PhotographerPortalController extends Controller
             'both_layout' => $validated['both_layout'] ?? 'fotto_style',
             'both_gap' => (int) ($validated['both_gap'] ?? 8),
             'watermark_color' => $validated['watermark_color'] ?? '#ff8a00',
-            'security_badge_text' => $validated['security_badge_text'] ?? 'Do not screenshot',
+            'security_badge_text' => $request->has('security_badge_text') ? $request->input('security_badge_text') : 'Do not screenshot',
             'has_cross_lines' => $request->boolean('has_cross_lines', true),
             'has_security_badge' => $request->boolean('has_security_badge', true),
             'is_download_protection_enabled' => $request->boolean('is_download_protection_enabled', true),
@@ -785,11 +883,11 @@ class PhotographerPortalController extends Controller
         );
 
         // Invalidate watermarked preview files for this photographer's photos so website immediately reflects custom watermark
-        $photoIds = EventPhoto::where('photographer_id', $photographer->id)->pluck('id');
-        foreach ($photoIds as $pId) {
-            $wmPath = storage_path('app/public/uploads/demo/watermarked/'.$pId.'_wm.jpg');
-            if (file_exists($wmPath)) {
-                @unlink($wmPath);
+        $wmDir = storage_path('app/public/uploads/demo/watermarked');
+        if (is_dir($wmDir)) {
+            $existingPreviews = glob($wmDir.'/*_wm.jpg');
+            foreach ($existingPreviews as $previewFile) {
+                @unlink($previewFile);
             }
         }
 

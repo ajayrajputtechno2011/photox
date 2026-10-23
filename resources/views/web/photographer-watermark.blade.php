@@ -1090,11 +1090,11 @@
                   </button>
                 </div>
 
-                <!-- Anti-AI Continuous Security Wires Toggle -->
+                <!-- Anti-AI Half-Frost Shield (Hover to Reveal) Toggle -->
                 <div class="form-check form-switch mb-2 d-flex align-items-center justify-content-between ps-0 pe-1">
                   <label class="form-check-label small fw-semibold text-white mb-0" for="antiAiLinesToggle">
-                    <i class="bi bi-slash-circle me-1 text-danger"></i> Anti-AI Diagonal Security Wires
-                    <small class="d-block text-white-50" style="font-size: 0.73rem;">Continuous cross-hatch lines breaking AI inpainting</small>
+                    <i class="bi bi-shield-shaded me-1 text-danger"></i> Anti-AI Half-Frost Shield (Hover to Reveal)
+                    <small class="d-block text-white-50" style="font-size: 0.73rem;">Enables or disables the diagonal frosted blur half on event photo previews</small>
                   </label>
                   <input class="form-check-input ms-0" type="checkbox" role="switch" id="antiAiLinesToggle" {{ ($setting->has_anti_ai_lines ?? true) ? 'checked' : '' }} onchange="updateLivePreview()" style="width: 2.4em; height: 1.25em;">
                 </div>
@@ -1233,13 +1233,23 @@
                 <div class="mb-3">
                   <label class="fw-bold small text-white-50 d-block mb-2">Photographer Logo</label>
                   <div class="d-flex align-items-center gap-3">
-                    <div class="wm-logo-box" style="width: 55px; height: 55px;">
-                      <img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" alt="Watermark Logo">
+                    <div class="wm-logo-box" style="width: 85px; height: 55px; background: rgba(255,255,255,0.06); border-radius: 8px;">
+                      <img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Watermark Logo">
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
-                      <i class="bi bi-cloud-arrow-up me-1"></i> Upload / Replace Logo
-                    </button>
+                    <div>
+                      <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload / Replace Logo
+                      </button>
+                      <small class="text-white-50 d-block mt-1">PNG, SVG or WebP with transparency.</small>
+                    </div>
                   </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between small fw-bold mb-1">
+                    <span>Logo Size: <span id="bothLogoSizeLabel" class="text-warning">{{ $setting->logo_size ?? 55 }}px</span></span>
+                  </div>
+                  <input type="range" class="wm-range-slider" id="bothLogoSizeRange" min="20" max="150" value="{{ $setting->logo_size ?? 55 }}" oninput="updateLivePreview()">
                 </div>
 
                 <div class="mb-3">
@@ -1247,6 +1257,18 @@
                     <span>Text Font Size: <span id="bothFontSizeLabel" class="text-warning">{{ $setting->font_size ?? 25 }}px</span></span>
                   </div>
                   <input type="range" class="wm-range-slider" id="bothFontSizeRange" min="14" max="60" value="{{ $setting->font_size ?? 25 }}" oninput="updateLivePreview()">
+                </div>
+
+                <div class="mb-3">
+                  <label class="fw-bold small text-white-50 d-block mb-1">Logo &amp; Text Layout</label>
+                  <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-sm {{ ($setting->both_layout ?? 'stacked') === 'stacked' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white' }}" id="btnLayoutStacked" onclick="setBothLayout('stacked')">
+                      <i class="bi bi-distribute-vertical me-1"></i> Stacked (Logo Above Text)
+                    </button>
+                    <button type="button" class="btn btn-sm {{ ($setting->both_layout ?? 'stacked') === 'inline' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white' }}" id="btnLayoutInline" onclick="setBothLayout('inline')">
+                      <i class="bi bi-distribute-horizontal me-1"></i> Inline (Side-by-Side)
+                    </button>
+                  </div>
                 </div>
 
                 <div class="mb-3">
@@ -1720,8 +1742,18 @@
     let watermarkType = "{{ $setting->watermark_type ?? 'both' }}";
     let watermarkPattern = "{{ $setting->watermark_pattern ?? 'fotto_pro' }}";
     let watermarkDensity = "{{ $setting->watermark_density ?? 'high' }}";
+    let bothLayout = "{{ $setting->both_layout ?? 'stacked' }}";
     let postPurchaseMode = "{{ $setting->post_purchase_mode ?? 'clean' }}";
     let sponsorPlacement = "{{ $setting->sponsor_placement ?? 'bottom_right' }}";
+
+    function setBothLayout(layout) {
+      bothLayout = layout;
+      const btnStacked = document.getElementById('btnLayoutStacked');
+      const btnInline = document.getElementById('btnLayoutInline');
+      if (btnStacked) btnStacked.className = (layout === 'stacked') ? 'btn btn-sm btn-warning text-dark fw-bold' : 'btn btn-sm btn-outline-secondary text-white';
+      if (btnInline) btnInline.className = (layout === 'inline') ? 'btn btn-sm btn-warning text-dark fw-bold' : 'btn btn-sm btn-outline-secondary text-white';
+      updateLivePreview();
+    }
 
     function setWatermarkDensity(density) {
       watermarkDensity = density;
@@ -2457,24 +2489,34 @@
           }
         }
       }
-      // 6. TILED GRID PATTERN (Dense Anti-AI Protection Shield)
+      // 6. TILED GRID PATTERN (Dense Anti-AI Protection Shield with Smart Auto-Scaling)
       else {
         standardOverlay.style.display = 'grid';
 
-        let cols = 9;
-        let rows = 6;
-        let totalItems = 54;
-        const isMicroText = document.getElementById('antiAiMicroTextToggle') ? document.getElementById('antiAiMicroTextToggle').checked : true;
+        const stageW = standardOverlay.clientWidth || 500;
+        const stageH = standardOverlay.clientHeight || 400;
 
-        if (watermarkDensity === 'medium') {
-          cols = 7;
-          rows = 5;
-          totalItems = 35;
-        } else if (watermarkDensity === 'ultra') {
-          cols = 12;
-          rows = 8;
-          totalItems = 96;
-        }
+        let targetCellW = (watermarkDensity === 'ultra') ? 130 : ((watermarkDensity === 'medium') ? 240 : 170);
+        let targetCellH = (watermarkDensity === 'ultra') ? 90 : ((watermarkDensity === 'medium') ? 170 : 120);
+
+        let cols = Math.max(2, Math.min(12, Math.round(stageW / targetCellW)));
+        let rows = Math.max(2, Math.min(8, Math.round(stageH / targetCellH)));
+
+        if (stageW < 340) cols = Math.min(2, cols);
+        if (stageH < 360) rows = Math.min(3, rows);
+
+        const cellW = stageW / cols;
+        const cellH = stageH / rows;
+        let totalItems = cols * rows;
+
+        // Responsive bounds for font and logo to guarantee zero overlap:
+        const maxFontByCell = Math.max(8, Math.round(cellW * 0.12));
+        const responsiveFontSize = Math.min(activeFontSize, maxFontByCell);
+
+        const maxLogoByCell = Math.max(16, Math.round(Math.min(cellW * 0.50, cellH * 0.45)));
+        const responsiveLogoSize = Math.min(activeLogoSize, maxLogoByCell);
+
+        const isMicroText = document.getElementById('antiAiMicroTextToggle') ? document.getElementById('antiAiMicroTextToggle').checked : true;
 
         standardOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         standardOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
@@ -2482,31 +2524,37 @@
         let itemHtml = '';
         if (watermarkType === 'text') {
           itemHtml = `
-            <div style="display:flex; flex-direction:column; align-items:center; line-height:1.1;">
-              <span style="font-family:'Space Grotesk',sans-serif; font-size:${activeFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.06em; text-shadow:0 1px 4px rgba(0,0,0,0.7);">${activeText}</span>
-              ${isMicroText ? `<span style="font-size:${Math.max(9, Math.round(activeFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; text-transform:uppercase;">DO NOT COPY</span>` : ''}
+            <div style="display:flex; flex-direction:column; align-items:center; line-height:1.1; max-width:${Math.round(cellW * 0.85)}px; overflow:hidden;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:${responsiveFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.06em; text-shadow:0 1px 4px rgba(0,0,0,0.7); text-overflow:ellipsis; white-space:nowrap;">${activeText}</span>
+              ${isMicroText ? `<span style="font-size:${Math.max(8, Math.round(responsiveFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; text-transform:uppercase;">DO NOT COPY</span>` : ''}
             </div>`;
         } else if (watermarkType === 'logo') {
           itemHtml = `
             <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-              <img src="${logoUrl}" style="width:${activeLogoSize}px; height:auto; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6));" alt="Logo">
-              ${isMicroText ? `<span style="font-size:9px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.1em;">PROTECTED</span>` : ''}
+              <img src="${logoUrl}" style="max-width:${Math.round(responsiveLogoSize * 1.5)}px; max-height:${responsiveLogoSize}px; width:auto; height:auto; object-fit:contain; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.6));" alt="Logo">
+              ${isMicroText ? `<span style="font-size:8px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.1em;">PROTECTED</span>` : ''}
             </div>`;
         } else { // both
+          const isInline = (bothLayout === 'inline');
+          const flexDir = isInline ? 'row' : 'column';
+          const logoMaxW = isInline ? Math.round(responsiveLogoSize * 0.85) : Math.round(responsiveLogoSize * 1.2);
+          const logoMaxH = isInline ? Math.round(responsiveFontSize * 1.2) : Math.round(responsiveLogoSize * 0.70);
+          const gap = isInline ? '6px' : '2px';
+
           itemHtml = `
-            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
-              <div style="display:flex; align-items:center; gap:5px;">
-                <img src="${logoUrl}" style="width:${Math.round(activeFontSize * 1.15)}px; height:auto; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));" alt="Logo">
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:${activeFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.05em; text-shadow:0 1px 4px rgba(0,0,0,0.7);">${activeText}</span>
+            <div style="display:flex; flex-direction:column; align-items:center; max-width:${Math.round(cellW * 0.88)}px; overflow:hidden;">
+              <div style="display:flex; flex-direction:${flexDir}; align-items:center; justify-content:center; gap:${gap};">
+                <img src="${logoUrl}" style="max-width:${logoMaxW}px; max-height:${logoMaxH}px; width:auto; height:auto; object-fit:contain; filter:drop-shadow(0 1px 4px rgba(0,0,0,0.7));" alt="Logo">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:${responsiveFontSize}px; font-weight:800; color:${textColor}; text-transform:uppercase; letter-spacing:0.05em; text-shadow:0 1px 4px rgba(0,0,0,0.8); white-space:nowrap; text-overflow:ellipsis;">${activeText}</span>
               </div>
-              ${isMicroText ? `<span style="font-size:${Math.max(9, Math.round(activeFontSize * 0.4))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em;">ANTI-AI SECURE</span>` : ''}
+              ${isMicroText ? `<span style="font-size:${Math.max(8, Math.round(responsiveFontSize * 0.38))}px; font-weight:700; color:${textColor}; opacity:0.85; letter-spacing:0.12em; margin-top:2px;">ANTI-AI SECURE</span>` : ''}
             </div>`;
         }
 
         let itemsHtmlArr = [];
         for (let i = 0; i < totalItems; i++) {
           const rowIndex = Math.floor(i / cols);
-          const staggerOffset = (rowIndex % 2 === 1) ? `transform: rotate(${activeRotation}deg) translateX(14px);` : `transform: rotate(${activeRotation}deg);`;
+          const staggerOffset = (rowIndex % 2 === 1) ? `transform: rotate(${activeRotation}deg) translateX(12px);` : `transform: rotate(${activeRotation}deg);`;
           itemsHtmlArr.push(`
             <div class="wm-watermark-item" style="${staggerOffset} opacity: ${activeOpacity};">
               ${itemHtml}
@@ -2564,8 +2612,26 @@
         formData.append('sponsor_logo', uploadedSponsorFile);
       }
 
+      // Security badge and cross lines (applies across all watermark types)
+      if (document.getElementById('securityBadgeTextInput')) {
+        formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
+      }
+      if (document.getElementById('hasCrossLinesToggle')) {
+        formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
+      }
+      if (document.getElementById('hasSecurityBadgeToggle')) {
+        formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
+      }
+
+      let activeWText = 'PhotoX';
+      if (document.getElementById('bothTextInputVal') && document.getElementById('bothTextInputVal').value) {
+        activeWText = document.getElementById('bothTextInputVal').value;
+      } else if (document.getElementById('watermarkTextInput') && document.getElementById('watermarkTextInput').value) {
+        activeWText = document.getElementById('watermarkTextInput').value;
+      }
+      formData.append('watermark_text', activeWText);
+
       if (watermarkType === 'text') {
-        formData.append('watermark_text', document.getElementById('watermarkTextInput').value);
         formData.append('font_size', document.getElementById('textSizeRange').value);
         formData.append('opacity', document.getElementById('textOpacityRange').value);
         formData.append('rotation', document.getElementById('textRotRange').value);
@@ -2574,14 +2640,11 @@
         formData.append('opacity', document.getElementById('logoOpacityRange').value);
         formData.append('rotation', document.getElementById('logoRotRange').value);
       } else if (watermarkType === 'both') {
-        formData.append('watermark_text', document.getElementById('bothTextInputVal').value);
         formData.append('font_size', document.getElementById('bothFontSizeRange').value);
+        formData.append('logo_size', document.getElementById('bothLogoSizeRange') ? document.getElementById('bothLogoSizeRange').value : 55);
         formData.append('opacity', document.getElementById('bothOpacityRange').value);
         formData.append('rotation', document.getElementById('bothRotRange').value);
-        formData.append('both_layout', 'fotto_style');
-        formData.append('security_badge_text', document.getElementById('securityBadgeTextInput').value);
-        formData.append('has_cross_lines', document.getElementById('hasCrossLinesToggle').checked ? 1 : 0);
-        formData.append('has_security_badge', document.getElementById('hasSecurityBadgeToggle').checked ? 1 : 0);
+        formData.append('both_layout', bothLayout || 'stacked');
       }
 
       if (uploadedLogoFile) {

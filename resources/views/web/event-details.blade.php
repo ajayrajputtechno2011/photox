@@ -785,7 +785,7 @@
              onclick="openZebraLightbox({{ $loop->index }})">
           
           <!-- Protected Watermarked Image -->
-          <img src="/protected-photo/{{ $photo->id }}" 
+          <img src="/protected-photo/{{ $photo->id }}?v={{ $watermarkSetting->updated_at?->timestamp ?? 1 }}" 
                alt="{{ $photo->title }}" 
                loading="lazy" 
                draggable="false">
@@ -1484,7 +1484,7 @@
     // Load protected watermarked image
     const photoImg = document.getElementById('modalPhotoImg');
     const photoImgBlur = document.getElementById('modalPhotoImgBlur');
-    const photoSrc = `/protected-photo/${photo.id}`;
+    const photoSrc = `/protected-photo/${photo.id}?v={{ $watermarkSetting->updated_at?->timestamp ?? 1 }}`;
     if (photoImg) {
       photoImg.onload = function() {
         requestAnimationFrame(syncPreviewAdWidth);

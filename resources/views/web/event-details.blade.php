@@ -779,6 +779,8 @@
       @forelse($photos as $photo)
         <div class="event-photo-card" 
              data-index="{{ $loop->index }}" 
+             data-photo-id="{{ $photo->id }}"
+             data-price="{{ (float) ($photo->personal_price ?: ($event->starting_price ?: 50)) }}"
              data-bib="{{ $photo->bib_number ?? '' }}" 
              data-subalbum="{{ $photo->sub_album ?? '' }}" 
              data-title="{{ $photo->title }}"
@@ -1508,8 +1510,9 @@
     }
 
     // Pricing labels
-    const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
-    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
+    const eventBaseStartingPrice = {{ (float) ($event->starting_price ?: 50) }};
+    const personalPrice = parseFloat(photo.personal_price || eventBaseStartingPrice).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || (personalPrice * 3.5)).toFixed(2);
     const personalTag = document.getElementById('modalPersonalPriceLabel');
     if (personalTag) personalTag.textContent = `R${personalPrice}`;
     const commercialTag = document.getElementById('modalCommercialPriceLabel');
@@ -1763,15 +1766,19 @@
   function filterPhotosByBib(query) {
     const cards = document.querySelectorAll('.event-photo-card');
     let visibleCount = 0;
+    let totalFoundPrice = 0;
     const cleanQuery = query.trim().toLowerCase();
 
     cards.forEach(card => {
       const bib = (card.getAttribute('data-bib') || '').toLowerCase();
       const title = (card.getAttribute('data-title') || '').toLowerCase();
       const subalbum = (card.getAttribute('data-subalbum') || '').toLowerCase();
+      const cardPrice = parseFloat(card.getAttribute('data-price')) || 50;
+
       if (!cleanQuery || bib.includes(cleanQuery) || title.includes(cleanQuery) || subalbum.includes(cleanQuery)) {
         card.style.display = '';
         visibleCount++;
+        totalFoundPrice += cardPrice;
       } else {
         card.style.display = 'none';
       }
@@ -1787,7 +1794,7 @@
         btnFound.classList.remove('d-none');
         btnFound.classList.remove('btn-secondary');
         btnFound.classList.add('btn-success');
-        lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${visibleCount} Found Photo${visibleCount > 1 ? 's' : ''} to Basket · R${(visibleCount * 75).toFixed(2)}`;
+        lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${visibleCount} Found Photo${visibleCount > 1 ? 's' : ''} to Basket · R${totalFoundPrice.toFixed(2)}`;
       } else {
         btnFound.classList.add('d-none');
       }
@@ -1801,22 +1808,23 @@
     let addedCount = 0;
     visibleCards.forEach(card => {
       const photoId = card.getAttribute('data-photo-id');
-      const photo = currentEventPhotos.find(p => String(p.id) === String(photoId));
-      if (photo) {
-        const item = {
-          id: String(photo.id),
-          title: photo.title || `Photo #${photo.id}`,
-          price: 75.00,
-          licenseType: 'personal',
-          licenseName: 'Personal Digital License',
-          image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
-          eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
-          eventSlug: {!! json_encode($event->slug ?? '') !!},
-          photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
-        };
-        const res = window.PhotoXCart.addItem(item);
-        if (res.added) addedCount++;
-      }
+      const cardPrice = parseFloat(card.getAttribute('data-price')) || 50;
+      const photo = currentEventPhotos.find(p => String(p.id) === String(photoId)) || {};
+      const itemPrice = parseFloat(photo.personal_price) || cardPrice;
+
+      const item = {
+        id: String(photo.id || photoId),
+        title: photo.title || `Photo #${photo.id || photoId}`,
+        price: itemPrice,
+        licenseType: 'personal',
+        licenseName: 'Personal Digital License',
+        image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id || photoId}`,
+        eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
+        eventSlug: {!! json_encode($event->slug ?? '') !!},
+        photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
+      };
+      const res = window.PhotoXCart.addItem(item);
+      if (res.added) addedCount++;
     });
 
     const btnFound = document.getElementById('btnAddSearchResultsToCart');
@@ -2206,9 +2214,10 @@
       'full_gallery': 'Full Gallery Digital Package'
     };
 
+    const eventBaseStartingPrice = {{ (float) ($event->starting_price ?: 50) }};
     const prices = {
-      'personal': parseFloat(currentPhoto.personal_price || 75).toFixed(2),
-      'commercial': parseFloat(currentPhoto.commercial_price || 350).toFixed(2),
+      'personal': parseFloat(currentPhoto.personal_price || eventBaseStartingPrice).toFixed(2),
+      'commercial': parseFloat(currentPhoto.commercial_price || (eventBaseStartingPrice * 3.5)).toFixed(2),
       'selfie': '150.00',
       'full_gallery': '450.00'
     };
@@ -2216,7 +2225,7 @@
     const item = {
       id: currentPhoto.id,
       title: currentPhoto.title || `Photo #${currentPhoto.id}`,
-      price: prices[license] || '75.00',
+      price: prices[license] || eventBaseStartingPrice.toFixed(2),
       licenseType: license,
       licenseName: licenseNames[license] || 'Personal License',
       image: currentPhoto.preview_url || currentPhoto.image_path || `/protected-photo/${currentPhoto.id}`,

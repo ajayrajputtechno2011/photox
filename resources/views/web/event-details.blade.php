@@ -609,7 +609,7 @@
               <span>
                 <i class="bi bi-camera me-1 text-warning"></i>
                 @if($evPhotographer)
-                  <a href="{{ route('photographers.show', $evPhotographer->slug) }}" class="text-warning text-decoration-none fw-semibold">
+                  <a href="{{ route('photographers.show', $evPhotographer->id) }}" class="text-warning text-decoration-none fw-semibold">
                     {{ $evPhotographer->name }}
                   </a>
                 @else
@@ -669,361 +669,210 @@
 
     <!-- SPONSORED PARTNER BANNER PLACEMENT (Matching Client Screenshot) -->
     @php
-      $eventDetailBanners = \App\Models\Banner::where('is_active', true)
-          ->where('placement', 'event_detail')
-          ->orderBy('sort_order')
-          ->get();
-      if ($eventDetailBanners->isEmpty()) {
-          $eventDetailBanners = \App\Models\Banner::where('is_active', true)
-              ->whereIn('placement', ['home_before_featured', 'image_preview'])
-              ->orderBy('sort_order')
-              ->get();
-      }
-      if ($eventDetailBanners->isEmpty() && !empty($sponsorBanner)) {
-          $eventDetailBanners = collect([$sponsorBanner]);
-      }
-      $uniqueEventDetailAdId = 'eventDetailAdCarousel_' . uniqid();
+      $eventPartnerAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'event_detail')->first() ?: (\App\Models\Banner::where('is_active', true)->where('placement', 'home_before_featured')->first() ?: \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first());
+      $hasAdText = !empty(trim($eventPartnerAd->title ?? '')) || !empty(trim($eventPartnerAd->subtitle ?? ''));
+      $adHref = (!empty($eventPartnerAd->link_url) && $eventPartnerAd->link_url !== '/events') ? $eventPartnerAd->link_url : '/#latest-events';
     @endphp
-    @if($eventDetailBanners->isNotEmpty())
-    <aside class="site-ad-banner mb-4" id="{{ $uniqueEventDetailAdId }}" aria-label="Sponsored placement" style="height: auto !important; max-height: 200px !important; min-height: unset !important; overflow: hidden; border-radius: 15px; background: #07152b; position: relative;">
-      @foreach($eventDetailBanners as $idx => $eventPartnerAd)
-        @php
-          $adHref = (!empty($eventPartnerAd->link_url) && $eventPartnerAd->link_url !== '/events') ? $eventPartnerAd->link_url : '/#latest-events';
-          $adInterval = ($eventPartnerAd->rotation_interval && $eventPartnerAd->rotation_interval > 0) ? ($eventPartnerAd->rotation_interval * 1000) : 5000;
-        @endphp
-        <div class="event-detail-ad-slide {{ $loop->first ? 'active' : '' }}" data-interval="{{ $adInterval }}" style="{{ $loop->first ? 'display: block;' : 'display: none;' }}; position: relative; width: 100%;">
-          <a class="site-ad-link" href="{{ $adHref }}" target="_blank" style="height: auto !important; max-height: 200px !important; display: block; line-height: 0; position: relative;">
-            <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}" style="width: 100%; height: 200px; max-height: 200px; display: block; object-fit: cover; object-position: center; position: relative; background: #07152b;">
-          </a>
-        </div>
-      @endforeach
+    @if($eventPartnerAd)
+    <aside class="site-ad-banner mb-4" aria-label="Sponsored placement" style="height: auto !important; max-height: 200px !important; min-height: unset !important; overflow: hidden; border-radius: 15px; background: #07152b;">
+      <a class="site-ad-link" href="{{ $adHref }}" style="height: auto !important; max-height: 200px !important; display: block; line-height: 0; position: relative;">
+        <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}" style="width: 100%; height: 200px; max-height: 200px; display: block; object-fit: cover; object-position: center; position: relative; background: #07152b;">
+      </a>
     </aside>
-    @if($eventDetailBanners->count() > 1)
-      <script>
-        (function() {
-          const wrap = document.getElementById('{{ $uniqueEventDetailAdId }}');
-          if (!wrap) return;
-          const slides = wrap.querySelectorAll('.event-detail-ad-slide');
-          if (slides.length <= 1) return;
-          let activeIdx = 0;
-          let slideTimer = null;
-
-          function nextSlide() {
-            if (slideTimer) clearTimeout(slideTimer);
-            const current = slides[activeIdx];
-            const interval = parseInt(current?.getAttribute('data-interval')) || 5000;
-
-            slideTimer = setTimeout(function() {
-              slides[activeIdx].style.display = 'none';
-              slides[activeIdx].classList.remove('active');
-              activeIdx = (activeIdx + 1) % slides.length;
-              slides[activeIdx].style.display = 'block';
-              slides[activeIdx].classList.add('active');
-              nextSlide();
-            }, interval);
-          }
-          nextSlide();
-        })();
-      </script>
-    @endif
     @endif
 
-    <!-- PHOTOGRAPHER'S NOTES (ZebraSnap) -->
-    @if(!empty($event->photographer_notes))
-      <div class="alert bg-white border rounded-4 p-3 mb-4 shadow-sm d-flex align-items-start gap-3">
-        <div class="p-2 rounded-circle bg-warning bg-opacity-10 text-warning flex-shrink-0">
-          <i class="bi bi-chat-quote-fill fs-5"></i>
-        </div>
+    <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number & Action Buttons) -->
+    <div class="find-photos-card">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
         <div>
-          <strong class="text-dark d-block mb-1">Message from {{ $event->photographer_name ?? 'the Photographer' }}:</strong>
-          <p class="text-muted mb-0 small" style="white-space: pre-line;">{{ $event->photographer_notes }}</p>
+          <h5 class="fw-bold text-dark mb-1">Find your photos</h5>
+          <span class="text-muted small">Filter captures by athlete bib number or selfie</span>
+        </div>
+        <div class="d-flex align-items-stretch align-items-md-center gap-2 flex-column flex-md-row justify-content-md-end w-100 w-lg-auto">
+          <div class="input-group bib-search-group shadow-sm action-toolbar-item" style="max-width: 100%;">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0" id="bibSearchInput" placeholder="Bib search..." onkeyup="filterPhotosByBib(this.value)">
+            <button class="btn btn-dark px-3 fw-semibold" type="button" onclick="filterPhotosByBib(document.getElementById('bibSearchInput').value)">Search</button>
+          </div>
+          <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="openSelfieSearchModal()">
+            <i class="bi bi-camera-fill"></i>
+            <span>Search by Selfie</span>
+          </button>
+          <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="buyCompleteGalleryPackage();">
+            <i class="bi bi-box-seam-fill"></i>
+            <span>Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}</span>
+          </button>
+          <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap d-none action-toolbar-item" id="btnAddSearchResultsToCart" onclick="addSearchResultsToCart()" style="height: 38px;">
+            <i class="bi bi-bag-plus-fill"></i>
+            <span id="btnAddSearchResultsLabel">Add Found Photos to Basket</span>
+          </button>
         </div>
       </div>
-    @endif
+    </div>
 
-    @if(!empty($isLocked))
-      <!-- PASSWORD PROTECTION GATE (ZebraSnap) -->
-      <div class="row justify-content-center my-5">
-        <div class="col-md-7 col-lg-5">
-          <div class="card border-0 shadow-lg p-4 p-md-5 text-center rounded-4" style="background: #ffffff; border: 1px solid #e2e8f0;">
-            <div class="mb-4">
-              <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 text-warning mb-3">
-                <i class="bi bi-lock-fill fs-1"></i>
-              </div>
-              <h4 class="fw-bold text-dark mb-2">Password-Protected Gallery</h4>
-              <p class="text-muted small mb-0">This album is private. Please enter the access password provided by your event organizer or photographer to view and purchase photos.</p>
-            </div>
-
-            @if($errors->has('password'))
-              <div class="alert alert-danger py-2 small mb-3">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $errors->first('password') }}
-              </div>
-            @endif
-
-            <form action="{{ route('event.unlock', $event->id) }}" method="POST">
-              @csrf
-              <div class="mb-3">
-                <input type="password" name="password" class="form-control form-control-lg text-center fw-bold" placeholder="Enter gallery password..." required autofocus style="border: 2px solid #cbd5e1; border-radius: 12px; letter-spacing: 2px;">
-              </div>
-              <button type="submit" class="btn btn-warning btn-lg rounded-pill w-100 fw-bold text-dark shadow-sm">
-                <i class="bi bi-unlock-fill me-1"></i> Unlock Album Photos
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    @else
-    @if($photos->isNotEmpty())
-      <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number & Action Buttons) -->
-      <div class="find-photos-card">
-        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-          <div>
-            <h5 class="fw-bold text-dark mb-1">Find your photos</h5>
-            <span class="text-muted small">Filter captures by athlete bib number or selfie</span>
-          </div>
-          <div class="d-flex align-items-stretch align-items-md-center gap-2 flex-column flex-md-row justify-content-md-end w-100 w-lg-auto">
-            <div class="input-group bib-search-group shadow-sm action-toolbar-item" style="max-width: 100%;">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control border-start-0" id="bibSearchInput" placeholder="Bib search..." onkeyup="filterPhotosByBib(this.value)">
-              <button class="btn btn-dark px-3 fw-semibold" type="button" onclick="filterPhotosByBib(document.getElementById('bibSearchInput').value)">Search</button>
-            </div>
-            <button type="button" class="btn btn-lime rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="openSelfieSearchModal()">
-              <i class="bi bi-camera-fill"></i>
-              <span>Search by Selfie</span>
-            </button>
-            @if(!empty($event->full_gallery_price) && $event->full_gallery_price > 0)
-            <button type="button" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap action-toolbar-item" style="height: 38px;" onclick="buyCompleteGalleryPackage();">
-              <i class="bi bi-box-seam-fill"></i>
-              <span>Buy Complete Gallery · R{{ number_format($event->full_gallery_price, 2) }}</span>
-            </button>
-            @endif
-            <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-2 shadow-sm text-nowrap d-none action-toolbar-item" id="btnAddSearchResultsToCart" onclick="addSearchResultsToCart()" style="height: 38px;">
-              <i class="bi bi-bag-plus-fill"></i>
-              <span id="btnAddSearchResultsLabel">Add Found Photos to Basket</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <style>
+    <style>
+      .action-toolbar-item {
+        width: 100%;
+      }
+      @media (min-width: 768px) {
         .action-toolbar-item {
-          width: 100%;
+          width: auto !important;
+          flex: 0 0 auto !important;
         }
-        @media (min-width: 768px) {
-          .action-toolbar-item {
-            width: auto !important;
-            flex: 0 0 auto !important;
-          }
-          .bib-search-group {
-            width: 260px !important;
-          }
+        .bib-search-group {
+          width: 260px !important;
         }
-      </style>
+      }
+    </style>
 
-      @if(!($event->allow_individual_sales ?? true))
-        <!-- Exclusive Complete Gallery Only Banner -->
-        <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="background: linear-gradient(135deg, rgba(255, 138, 0, 0.15), rgba(245, 158, 11, 0.25)); border: 1px solid rgba(255, 138, 0, 0.4) !important;">
-          <div class="d-flex align-items-center gap-3">
-            <i class="bi bi-box-seam-fill text-warning fs-3"></i>
-            <div>
-              <strong class="text-dark d-block">Exclusive Complete Gallery Collection</strong>
-              <small class="text-muted">This event is offered exclusively as a complete gallery package (R{{ number_format($event->full_gallery_price ?: 450, 0) }} for all {{ number_format($event->total_photos > 0 ? $event->total_photos : $photos->count()) }} photos). Individual photos are not sold separately.</small>
-            </div>
+    @if(!($event->allow_individual_sales ?? true))
+      <!-- Exclusive Complete Gallery Only Banner -->
+      <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="background: linear-gradient(135deg, rgba(255, 138, 0, 0.15), rgba(245, 158, 11, 0.25)); border: 1px solid rgba(255, 138, 0, 0.4) !important;">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-box-seam-fill text-warning fs-3"></i>
+          <div>
+            <strong class="text-dark d-block">Exclusive Complete Gallery Collection</strong>
+            <small class="text-muted">This event is offered exclusively as a complete gallery package (R{{ number_format($event->full_gallery_price ?: 450, 0) }} for all {{ number_format($event->total_photos > 0 ? $event->total_photos : $photos->count()) }} photos). Individual photos are not sold separately.</small>
           </div>
-          <button type="button" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm" onclick="buyCompleteGalleryPackage();">
-            <i class="bi bi-bag-check-fill me-1"></i> Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}
-          </button>
         </div>
-      @endif
+        <button type="button" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm" onclick="buyCompleteGalleryPackage();">
+          <i class="bi bi-bag-check-fill me-1"></i> Buy Complete Gallery · R{{ number_format($event->full_gallery_price ?: 450, 0) }}
+        </button>
+      </div>
+    @endif
 
-      <!-- GALLERY SUBHEADER & VIEW CONTROLS -->
-      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-        <div>
-          <h2 class="h4 fw-bold text-dark mb-0">
-            <span id="photoCountDisplay">{{ number_format($event->total_photos > 0 ? $event->total_photos : $photos->count()) }}</span> photos
-          </h2>
-          <span class="text-muted small">High-resolution event captures protected by PhotoX server watermarking</span>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-secondary active" onclick="setGridColumns(4)"><i class="bi bi-grid-3x3-gap-fill"></i></button>
-            <button type="button" class="btn btn-outline-secondary" onclick="setGridColumns(3)"><i class="bi bi-grid-fill"></i></button>
-          </div>
-          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="bi bi-funnel me-1"></i> Filters
-          </button>
-          @php
-            $dynamicSubAlbums = $photos->pluck('sub_album')->filter()->unique()->values();
-          @endphp
-          <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 240px;">
-            <li><a class="dropdown-item fw-semibold" href="javascript:void(0)" onclick="resetAllGalleryFilters()"><i class="bi bi-grid me-2 text-primary"></i>Show All Photos</a></li>
-            
-            @if($dynamicSubAlbums->isNotEmpty())
-              <li><hr class="dropdown-divider"></li>
-              <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;"><i class="bi bi-folder2-open me-1 text-warning"></i> Albums / Stations</h6></li>
-              @foreach($dynamicSubAlbums as $subAlb)
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('{{ addslashes($subAlb) }}')"><i class="bi bi-chevron-right me-1 text-muted small"></i>{{ $subAlb }}</a></li>
-              @endforeach
-            @endif
-
-            <li><hr class="dropdown-divider"></li>
-            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;"><i class="bi bi-clock-history me-1 text-info"></i> Sort by Time Taken</h6></li>
-            <li><a class="dropdown-item" href="javascript:void(0)" onclick="sortPhotosByTime('asc')"><i class="bi bi-sort-numeric-down me-2 text-warning"></i>Earliest First (Morning / Start)</a></li>
-            <li><a class="dropdown-item" href="javascript:void(0)" onclick="sortPhotosByTime('desc')"><i class="bi bi-sort-numeric-up-alt me-2 text-warning"></i>Latest First (Finish / Awards)</a></li>
-          </ul>
-        </div>
+    <!-- GALLERY SUBHEADER & VIEW CONTROLS (Matching ZebraSnap Screenshot 2) -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h2 class="h4 fw-bold text-dark mb-0">
+          <span id="photoCountDisplay">{{ number_format($event->total_photos > 0 ? $event->total_photos : $photos->count()) }}</span> photos
+        </h2>
+        <span class="text-muted small">High-resolution event captures protected by PhotoX server watermarking</span>
       </div>
 
-      <!-- 3. PHOTO GALLERY GRID -->
-      <div class="photo-gallery-grid" id="eventPhotosGrid">
-        @foreach($photos as $photo)
-          <div class="event-photo-card" 
-               data-index="{{ $loop->index }}" 
-               data-photo-id="{{ $photo->id }}"
-               data-bib="{{ $photo->bib_number ?? '' }}" 
-               data-subalbum="{{ $photo->sub_album ?? '' }}" 
-               data-timestamp="{{ $photo->captured_at ? $photo->captured_at->timestamp : 0 }}"
-               data-time="{{ $photo->captured_at ? $photo->captured_at->format('H:i') : '' }}"
-               data-hour="{{ $photo->captured_at ? (int)$photo->captured_at->format('H') : -1 }}"
-               data-title="{{ $photo->title }}"
-               onclick="openZebraLightbox({{ $loop->index }})">
-            
-            <!-- Protected Watermarked Image -->
-            <img src="/protected-photo/{{ $photo->id }}?v={{ $watermarkSetting->updated_at?->timestamp ?? 1 }}" 
-                 alt="{{ $photo->title }}" 
-                 loading="lazy" 
-                 draggable="false"
-                 style="cursor: pointer;"
-                 onclick="openZebraLightbox({{ $loop->index }});">
+      <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm" role="group">
+          <button type="button" class="btn btn-outline-secondary active" onclick="setGridColumns(4)"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+          <button type="button" class="btn btn-outline-secondary" onclick="setGridColumns(3)"><i class="bi bi-grid-fill"></i></button>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="bi bi-funnel me-1"></i> Filters
+        </button>
+        @php
+          $dynamicSubAlbums = $photos->pluck('sub_album')->filter()->unique()->values();
+        @endphp
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+          <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosByBib('')">Show All Photos</a></li>
+          @if($dynamicSubAlbums->isNotEmpty())
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem;">Albums / Stations</h6></li>
+            @foreach($dynamicSubAlbums as $subAlb)
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('{{ addslashes($subAlb) }}')">{{ $subAlb }}</a></li>
+            @endforeach
+          @endif
+        </ul>
+      </div>
+    </div>
 
-            <!-- Watermark security gradient & pattern overlay -->
-            <div class="anti-theft-overlay"></div>
+    <!-- 3. PHOTO GALLERY GRID (Matching ZebraSnap Screenshot 2 & 4) -->
+    <div class="photo-gallery-grid" id="eventPhotosGrid">
+      @forelse($photos as $photo)
+        <div class="event-photo-card" 
+             data-index="{{ $loop->index }}" 
+             data-bib="{{ $photo->bib_number ?? '' }}" 
+             data-subalbum="{{ $photo->sub_album ?? '' }}" 
+             data-title="{{ $photo->title }}"
+             onclick="openZebraLightbox({{ $loop->index }})">
+          
+          <!-- Protected Watermarked Image -->
+          <img src="/protected-photo/{{ $photo->id }}" 
+               alt="{{ $photo->title }}" 
+               loading="lazy" 
+               draggable="false">
 
-            <!-- Top-Left: Photographer Avatar Circle -->
-            <div class="card-avatar-pill" title="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'PhotoX Creator') }}">
-              <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: asset('logo.png')) }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}" style="{{ ($photo->photographer?->avatar || $event->photographer?->avatar) ? '' : 'background: #0b1a29; padding: 2px; object-fit: contain;' }}">
-            </div>
+          <!-- Watermark security gradient & pattern overlay -->
+          <div class="anti-theft-overlay"></div>
 
-            <!-- Top-Right: Price Tag (Matching Screenshot 2) -->
-            @if($event->allow_individual_sales ?? true)
-              <span class="card-price-pill">
-                R{{ number_format($photo->personal_price ?: 50, 2) }}
-              </span>
-            @else
-              <span class="card-price-pill" style="background: rgba(16, 185, 129, 0.95); font-size: 0.68rem; letter-spacing: 0.03em;">
-                <i class="bi bi-collection-fill me-1"></i> Gallery Pack
-              </span>
-            @endif
+          <!-- Top-Left: Photographer Avatar Circle -->
+          <div class="card-avatar-pill" title="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'PhotoX Creator') }}">
+            <img src="{{ $photo->photographer?->avatar ?: ($event->photographer?->avatar ?: asset('logo.png')) }}" alt="{{ $photo->photographer?->name ?? ($event->photographer?->name ?? 'Photographer') }}" style="{{ ($photo->photographer?->avatar || $event->photographer?->avatar) ? '' : 'background: #0b1a29; padding: 2px; object-fit: contain;' }}">
+          </div>
 
-            @php
-              $isPhotoSaved = in_array($photo->id, $savedPhotoIds ?? []);
-            @endphp
+          <!-- Top-Right: Price Tag (Matching Screenshot 2) -->
+          @if($event->allow_individual_sales ?? true)
+            <span class="card-price-pill">
+              R{{ number_format($photo->personal_price ?: 50, 2) }}
+            </span>
+          @else
+            <span class="card-price-pill" style="background: rgba(16, 185, 129, 0.95); font-size: 0.68rem; letter-spacing: 0.03em;">
+              <i class="bi bi-collection-fill me-1"></i> Gallery Pack
+            </span>
+          @endif
 
-            <!-- Bottom-Left: Bookmark / Save Button -->
-            <button class="card-bookmark-btn {{ $isPhotoSaved ? 'active' : '' }}" 
-                    id="cardBookmarkBtn_{{ $photo->id }}"
-                    type="button" 
-                    title="{{ $isPhotoSaved ? 'Bookmarked in your collection' : 'Bookmark this photo' }}" 
-                    onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
-              <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
-            </button>
+          @php
+            $isPhotoSaved = in_array($photo->id, $savedPhotoIds ?? []);
+          @endphp
 
-            <!-- Bottom-Right Flag Button -->
-            <button class="card-flag-btn" 
-                    id="cardFlagBtn_{{ $photo->id }}"
-                    type="button" 
-                    title="Flag / Report photo" 
-                    onclick="event.stopPropagation(); openPhotoReportModal({{ $photo->id }}, '{{ addslashes($photo->title ?: 'Action Photo') }}');">
-              <i class="bi bi-flag"></i>
-            </button>
+          <!-- Bottom-Left: Bookmark / Save Button (Always visible on card) -->
+          <button class="card-bookmark-btn {{ $isPhotoSaved ? 'active' : '' }}" 
+                  id="cardBookmarkBtn_{{ $photo->id }}"
+                  type="button" 
+                  title="{{ $isPhotoSaved ? 'Bookmarked in your collection' : 'Bookmark this photo' }}" 
+                  onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
+            <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
+          </button>
 
-            <!-- Hover Overlay Controls -->
-            <div class="card-hover-actions" style="cursor: pointer;" onclick="openZebraLightbox({{ $loop->index }});">
-              <div class="hover-action-row">
-                <button type="button" 
-                        class="hover-circle-btn {{ $isPhotoSaved ? 'active text-warning' : '' }}" 
-                        id="hoverBookmarkBtn_{{ $photo->id }}"
-                        title="{{ $isPhotoSaved ? 'Bookmarked in your vault' : 'Bookmark photo' }}" 
-                        onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
-                  <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
+          <!-- Bottom-Right Flag Button (Opens report modal) -->
+          <button class="card-flag-btn" 
+                  id="cardFlagBtn_{{ $photo->id }}"
+                  type="button" 
+                  title="Flag / Report photo" 
+                  onclick="event.stopPropagation(); openPhotoReportModal({{ $photo->id }}, '{{ addslashes($photo->title ?: 'Action Photo') }}');">
+            <i class="bi bi-flag"></i>
+          </button>
+
+          <!-- Hover Overlay Controls (Matching ZebraSnap Screenshot 4) -->
+          <div class="card-hover-actions">
+            <span class="text-white small fw-bold mb-1 px-3 py-1 rounded bg-dark bg-opacity-75">
+              {{ $photo->title ?: 'Event Action' }}
+            </span>
+            <div class="hover-action-row">
+              <button type="button" 
+                      class="hover-circle-btn {{ $isPhotoSaved ? 'active text-warning' : '' }}" 
+                      id="hoverBookmarkBtn_{{ $photo->id }}"
+                      title="{{ $isPhotoSaved ? 'Bookmarked in your vault' : 'Bookmark photo' }}" 
+                      onclick="event.stopPropagation(); toggleWishlist({{ $photo->id }}, this);">
+                <i class="bi {{ $isPhotoSaved ? 'bi-bookmark-star-fill text-warning' : 'bi-bookmark-star' }}"></i>
+              </button>
+              <button type="button" class="hover-circle-btn" title="Inspect Photo" onclick="event.stopPropagation(); openZebraLightbox({{ $loop->index }});">
+                <i class="bi bi-search"></i>
+              </button>
+              <button type="button" class="hover-circle-btn" title="Share" onclick="event.stopPropagation(); shareSinglePhoto({{ $photo->id }});">
+                <i class="bi bi-share"></i>
+              </button>
+              @if($event->allow_individual_sales ?? true)
+                <button type="button" class="hover-cart-btn" title="Add to cart" onclick="event.stopPropagation(); quickAddToCart({{ $photo->id }});">
+                  <i class="bi bi-cart3"></i>
                 </button>
-                <button type="button" class="hover-circle-btn" title="Inspect Photo" onclick="event.stopPropagation(); openZebraLightbox({{ $loop->index }});">
-                  <i class="bi bi-search"></i>
+              @else
+                <button type="button" class="hover-cart-btn" style="background: #10b981;" title="Complete Gallery Only · Buy Package" onclick="event.stopPropagation(); buyCompleteGalleryPackage();">
+                  <i class="bi bi-box-seam-fill"></i>
                 </button>
-                <button type="button" class="hover-circle-btn" title="Share" onclick="event.stopPropagation(); shareSinglePhoto({{ $photo->id }});">
-                  <i class="bi bi-share"></i>
-                </button>
-                @if($event->allow_individual_sales ?? true)
-                  <button type="button" class="hover-cart-btn" title="Add to cart" onclick="event.stopPropagation(); quickAddToCart({{ $photo->id }});">
-                    <i class="bi bi-cart3"></i>
-                  </button>
-                @else
-                  <button type="button" class="hover-cart-btn" style="background: #10b981;" title="Complete Gallery Only · Buy Package" onclick="event.stopPropagation(); buyCompleteGalleryPackage();">
-                    <i class="bi bi-box-seam-fill"></i>
-                  </button>
-                @endif
-              </div>
-              @if(!empty($photo->bib_number))
-                <span class="badge bg-warning text-dark font-monospace mt-1">BIB #{{ $photo->bib_number }}</span>
               @endif
             </div>
-          </div>
-        @endforeach
-      </div>
-    @else
-      <!-- DEDICATED CLEAN EMPTY GALLERY & NOTIFY ME LIVE CARD -->
-      <div class="card border-0 rounded-4 shadow-sm py-5 px-3 px-md-4 text-center my-4" style="background: #ffffff; border: 1px solid #e2e8f0 !important;">
-        <div class="mx-auto" style="max-width: 580px; width: 100%;">
-          <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 text-warning mb-3">
-            <i class="bi bi-camera-fill display-5"></i>
-          </div>
-          <h3 class="text-dark fw-bold mb-2">Photos are currently uploading for this event</h3>
-          <p class="text-muted mb-4 small">Official photographers are currently processing watermarked proofs. Check back shortly.</p>
-
-          <!-- Client Requested: Notify Me When Gallery is Live Box -->
-          <div class="p-4 rounded-4 shadow-sm text-start" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-bell-fill text-warning fs-5"></i>
-              <strong class="text-dark fs-6">Notify me when gallery is live</strong>
-            </div>
-            <p class="text-muted small mb-3">Leave your email address and we will alert you the moment these photos are ready to view and download.</p>
-            
-            <form action="{{ route('event.notify', $event->id) }}" method="POST" id="notifyGalleryForm" onsubmit="handleNotifySubmit(event, this)">
-              @csrf
-              <div class="row g-2 align-items-center">
-                <div class="col-sm-8">
-                  <div class="input-group">
-                    <span class="input-group-text bg-white text-muted border-end-0" style="border-color: #cbd5e1; border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; padding-left: 16px;">
-                      <i class="bi bi-envelope"></i>
-                    </span>
-                    <input type="email" 
-                           name="email" 
-                           id="notifyEmailInput"
-                           class="form-control border-start-0 text-dark" 
-                           placeholder="Enter your email address..." 
-                           required 
-                           style="border-color: #cbd5e1; font-size: 0.95rem; background: #ffffff; height: 48px; border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; padding-right: 16px; color: #0b2d5b !important;">
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <button type="submit" 
-                          id="notifySubmitBtn"
-                          class="btn btn-warning rounded-pill w-100 text-dark fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm" 
-                          style="font-size: 0.95rem; height: 48px; white-space: nowrap;">
-                    <i class="bi bi-send-fill"></i> Notify Me
-                  </button>
-                </div>
-              </div>
-            </form>
-            <div id="notifySuccessAlert" class="alert alert-success mt-3 py-2 small d-none mb-0">
-              <i class="bi bi-check-circle-fill me-1"></i> You're on the list! We will email you as soon as the photos go live.
-            </div>
+            @if(!empty($photo->bib_number))
+              <span class="badge bg-warning text-dark font-monospace mt-1">BIB #{{ $photo->bib_number }}</span>
+            @endif
           </div>
         </div>
-      </div>
-    @endif
-    @endif
+      @empty
+        <div class="col-12 py-5 text-center text-muted">
+          <i class="bi bi-camera-fill text-warning display-4 mb-3 d-block"></i>
+          <h4>Photos are currently uploading for this event</h4>
+          <p>Official photographers are currently processing watermarked proofs. Check back shortly.</p>
+        </div>
+      @endforelse
+    </div>
 
     <!-- 4. DYNAMIC RELATED EVENTS SECTION -->
     @if(isset($relatedEvents) && $relatedEvents->isNotEmpty())
@@ -1080,7 +929,7 @@
   </div>
 
   <!-- 4. HIGH-SECURITY PHOTO INSPECTOR MODAL (Matching Client Approved Reference) -->
-  <div class="modal fade" id="photoInspectorModal" tabindex="-1" aria-labelledby="modalPhotoTitle" aria-hidden="true" style="backdrop-filter: blur(8px); z-index: 1060;">
+  <div class="modal fade" id="photoInspectorModal" tabindex="-1" aria-labelledby="modalPhotoTitle" aria-hidden="true" style="backdrop-filter: blur(8px);">
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content border-0 shadow-2xl" style="background: #07131f; color: #fff; border-radius: 18px; overflow: hidden; border: 1px solid #1c354d !important;">
         
@@ -1090,8 +939,18 @@
             <span class="badge" style="background: #ff8a00; color: #fff; font-size: 0.72rem; text-transform: uppercase;">
               <i class="bi bi-shield-check me-1"></i> Anti-Theft Watermark
             </span>
+            <h5 class="modal-title fs-6 fw-bold mb-0 text-white" id="modalPhotoTitle">Beach Sprint Splash</h5>
             <span class="badge bg-dark border border-secondary text-warning font-monospace" id="modalIndexCounter">Photo 1 of {{ $photos->count() }}</span>
-            <span id="modalPhotoTitle" class="d-none"></span>
+
+            <!-- Anti-AI Triangle Blur Live Toggle -->
+            <button type="button" id="toggleAntiAiBlurBtn" class="btn btn-sm btn-outline-warning rounded-pill px-2 py-0 ms-md-2" style="font-size: 0.72rem; height: 26px;" onclick="toggleAntiAiBlur()" title="Toggle Opposing Triangle Anti-AI Blur Mask">
+              <i class="bi bi-shield-slash-fill me-1"></i> Anti-AI Blur: <span id="antiAiBlurStateText" class="fw-bold">ON</span>
+            </button>
+
+            <!-- WaterMotion Live Toggle -->
+            <button type="button" id="toggleWaterMotionBtn" class="btn btn-sm {{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'btn-outline-info' : 'btn-outline-secondary' }} rounded-pill px-2 py-0" style="font-size: 0.72rem; height: 26px;" onclick="toggleWaterMotion()" title="Toggle WaterMotion Dynamic Liquid Glass Lens">
+              <i class="bi bi-droplet-half me-1"></i> WaterMotion: <span id="waterMotionStateText" class="fw-bold">{{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'ON' : 'OFF' }}</span>
+            </button>
 
             <!-- Flag / Report Button in Modal -->
             <button type="button" id="modalFlagPhotoBtn" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0 ms-md-1" style="font-size: 0.72rem; height: 26px;" onclick="openCurrentModalPhotoReport()" title="Report or flag this photo for review">
@@ -1139,7 +998,7 @@
                 </div>
 
                 <!-- 2. Interactive Anti-AI Opposing Triangle Blur Mask (Diagonal BD) -->
-                <div id="antiAiTriangleBlurLayer" class="anti-ai-triangle-blur-wrap {{ ($watermarkSetting->has_anti_ai_lines ?? false) ? 'active' : 'd-none' }}">
+                <div id="antiAiTriangleBlurLayer" class="anti-ai-triangle-blur-wrap active">
                   <img id="modalPhotoImgBlur" 
                        src="" 
                        alt="Anti-AI Blurred Layer" 
@@ -1203,43 +1062,32 @@
 
               <!-- SPONSOR BANNER (Placement: Image Preview - Wide Banner Requested by Client) -->
               @php
-                $previewAds = \App\Models\Banner::where('is_active', true)
-                    ->where('placement', 'image_preview')
-                    ->orderBy('sort_order')
-                    ->get();
-                if ($previewAds->isEmpty() && !empty($sponsorBanner)) {
-                    $previewAds = collect([$sponsorBanner]);
-                }
+                $previewAd = \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first() ?: ($sponsorBanner ?? null);
+                $modalAdHref = (!empty($previewAd?->link_url) && $previewAd->link_url !== '/events') ? $previewAd->link_url : '/#latest-events';
               @endphp
               <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; max-width: 100%;">
-                @forelse($previewAds as $idx => $previewAd)
-                  @php
-                    $modalAdHref = (!empty($previewAd->link_url) && $previewAd->link_url !== '/events') ? $previewAd->link_url : '/#latest-events';
-                    $slideInterval = ($previewAd->rotation_interval && $previewAd->rotation_interval > 0) ? ($previewAd->rotation_interval * 1000) : 5000;
-                  @endphp
-                  <div class="modal-preview-ad-slide {{ $loop->first ? 'active' : '' }}" data-interval="{{ $slideInterval }}" style="{{ $loop->first ? 'display: block;' : 'display: none;' }}; position: relative; width: 100%;">
-                    <a href="{{ $modalAdHref }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
-                      <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
-                      @if(!empty($previewAd->badge_text))
-                        <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
-                          {{ $previewAd->badge_text }}
-                        </span>
-                      @endif
-                      @if(!empty($previewAd->title))
-                        <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
-                          <strong>{{ $previewAd->title }}</strong>
-                          @if(!empty($previewAd->subtitle))
-                            <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
-                          @endif
-                        </div>
-                      @endif
-                    </a>
-                  </div>
-                @empty
+                @if($previewAd)
+                  <a href="{{ $modalAdHref }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
+                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
+                    @if(!empty($previewAd->badge_text))
+                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
+                        {{ $previewAd->badge_text }}
+                      </span>
+                    @endif
+                    @if(!empty($previewAd->title))
+                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
+                        <strong>{{ $previewAd->title }}</strong>
+                        @if(!empty($previewAd->subtitle))
+                          <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
+                        @endif
+                      </div>
+                    @endif
+                  </a>
+                @else
                   <div class="p-2 d-flex align-items-center justify-content-center text-muted" style="min-height: 60px; font-size: 0.75rem;">
                     <span><i class="bi bi-award text-warning me-1"></i> <strong>Official Event Sponsor</strong></span>
                   </div>
-                @endforelse
+                @endif
               </div>
             </div>
 
@@ -1266,8 +1114,8 @@
                       <span class="fs-6 fw-bold text-warning" id="modalPersonalPriceLabel">R75.00</span>
                     </label>
 
-                    <!-- Option 2: Commercial Single Photo (Hidden by default unless price > 0) -->
-                    <label id="modalCommercialOptionRow" class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer; display: none !important;">
+                    <!-- Option 2: Commercial Single Photo -->
+                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="commercial" onchange="updateModalPrice('commercial')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
@@ -1278,7 +1126,6 @@
                       <span class="fs-6 fw-bold text-success" id="modalCommercialPriceLabel">R350.00</span>
                     </label>
 
-                    @if(!empty($event->selfie_bundle_price) && $event->selfie_bundle_price > 0)
                     <!-- Option 3: Selfie / Athlete Bundle (Flat Rate for 1 or 100+ images) -->
                     <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
@@ -1291,11 +1138,9 @@
                           <small style="font-size: 0.76rem; color: #cbd5e1;">All your matched photos from bib/selfie search (1 or 100+)</small>
                         </div>
                       </div>
-                      <span class="fs-6 fw-bold text-info" id="modalSelfieBundlePriceLabel">R{{ number_format($event->selfie_bundle_price, 2) }}</span>
+                      <span class="fs-6 fw-bold text-info" id="modalSelfieBundlePriceLabel">R150.00</span>
                     </label>
-                    @endif
 
-                    @if(!empty($event->full_gallery_price) && $event->full_gallery_price > 0)
                     <!-- Option 4: Buy Complete Gallery (All Photos in Event) -->
                     <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
@@ -1308,9 +1153,8 @@
                           <small style="font-size: 0.76rem; color: #cbd5e1;">Instant high-res bundle of all captures in this event</small>
                         </div>
                       </div>
-                      <span class="fs-6 fw-bold text-warning" id="modalFullGalleryPriceLabel">R{{ number_format($event->full_gallery_price, 2) }}</span>
+                      <span class="fs-6 fw-bold text-warning" id="modalFullGalleryPriceLabel">R450.00</span>
                     </label>
-                    @endif
                   </div>
                 </div>
 
@@ -1559,11 +1403,9 @@
     currentSelectedLicense = type;
     const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
     const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
-    const eventCommercial = parseFloat({{ (float) ($event->commercial_price ?? 0) }});
-    const photoCommercial = (photo.commercial_price !== undefined && photo.commercial_price !== null && photo.commercial_price !== '') ? parseFloat(photo.commercial_price) : eventCommercial;
-    const commercialPrice = (photoCommercial > 0 ? photoCommercial : 350).toFixed(2);
-    const selfieBundlePrice = parseFloat({{ (float) ($event->selfie_bundle_price ?? 150) }}).toFixed(2);
-    const fullGalleryPrice = parseFloat({{ (float) ($event->full_gallery_price ?? 450) }}).toFixed(2);
+    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
+    const selfieBundlePrice = (150).toFixed(2);
+    const fullGalleryPrice = (450).toFixed(2);
 
     let chosenPrice = personalPrice;
     let buttonLabel = 'Purchase Hi-Res';
@@ -1642,7 +1484,7 @@
     // Load protected watermarked image
     const photoImg = document.getElementById('modalPhotoImg');
     const photoImgBlur = document.getElementById('modalPhotoImgBlur');
-    const photoSrc = `/protected-photo/${photo.id}?v={{ $watermarkSetting->updated_at?->timestamp ?? 1 }}`;
+    const photoSrc = `/protected-photo/${photo.id}`;
     if (photoImg) {
       photoImg.onload = function() {
         requestAnimationFrame(syncPreviewAdWidth);
@@ -1667,26 +1509,11 @@
 
     // Pricing labels
     const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
-    const eventCommercial = parseFloat({{ (float) ($event->commercial_price ?? 0) }});
-    const photoCommercial = (photo.commercial_price !== undefined && photo.commercial_price !== null && photo.commercial_price !== '') ? parseFloat(photo.commercial_price) : eventCommercial;
-
+    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
     const personalTag = document.getElementById('modalPersonalPriceLabel');
     if (personalTag) personalTag.textContent = `R${personalPrice}`;
-    
-    // Dynamic visibility for Commercial License option
-    const commercialRow = document.getElementById('modalCommercialOptionRow');
-    if (commercialRow) {
-      if (photoCommercial > 0) {
-        commercialRow.style.setProperty('display', 'flex', 'important');
-        const commercialTag = document.getElementById('modalCommercialPriceLabel');
-        if (commercialTag) commercialTag.textContent = `R${photoCommercial.toFixed(2)}`;
-      } else {
-        commercialRow.style.setProperty('display', 'none', 'important');
-        if (currentLicenseChoice === 'commercial') {
-          currentLicenseChoice = 'personal';
-        }
-      }
-    }
+    const commercialTag = document.getElementById('modalCommercialPriceLabel');
+    if (commercialTag) commercialTag.textContent = `R${commercialPrice}`;
 
     // Default to selected license
     const personalRadio = document.querySelector(`input[name="license_type"][value="${currentLicenseChoice}"]`);
@@ -1705,53 +1532,17 @@
     }
 
     const modalEl = document.getElementById('photoInspectorModal');
-    if (modalEl) {
-      try {
-        if (window.bootstrap && bootstrap.Modal) {
-          const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-          modalInstance.show();
-        } else {
-          modalEl.classList.add('show');
-          modalEl.style.display = 'block';
-          document.body.classList.add('modal-open');
-        }
-      } catch (err) {
-        console.warn('Bootstrap modal show warning, applying fallback:', err);
-        modalEl.classList.add('show');
-        modalEl.style.display = 'block';
-        document.body.classList.add('modal-open');
-      }
-    }
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modalInstance.show();
     updateModalSaveButtonState();
     setTimeout(syncPreviewAdWidth, 250);
-    startModalAdRotation();
   }
 
   function openPhotoModalByIndex(index) {
     openZebraLightbox(index);
   }
 
-  // Automatic grid click delegation for 100% reliable lightbox opening
-  document.addEventListener('DOMContentLoaded', function() {
-    const grid = document.getElementById('eventPhotosGrid');
-    if (grid) {
-      grid.addEventListener('click', function(e) {
-        if (e.target.closest('button, a, input, .card-bookmark-btn, .card-flag-btn, .hover-cart-btn')) {
-          return;
-        }
-        const card = e.target.closest('.event-photo-card');
-        if (card) {
-          const idx = parseInt(card.getAttribute('data-index'), 10);
-          if (!isNaN(idx)) {
-            openZebraLightbox(idx);
-          }
-        }
-      });
-    }
-  });
-
   function closePhotoInspectorModal() {
-    stopModalAdRotation();
     const modalEl = document.getElementById('photoInspectorModal');
     const container = document.getElementById('modalPhotoContainer');
     if (container) {
@@ -1813,8 +1604,8 @@
     }
   }
 
-  // Anti-AI Opposing Triangle Blur Interaction (Driven by Photographer / Admin Watermark Settings)
-  let antiAiBlurEnabled = {{ ($watermarkSetting->has_anti_ai_lines ?? false) ? 'true' : 'false' }};
+  // Anti-AI Opposing Triangle Blur Interaction
+  let antiAiBlurEnabled = true;
   let isTopLeftClear = true;
 
   function initAntiAiTriangleBlur() {
@@ -1887,7 +1678,56 @@
     if (tagText) tagText.innerHTML = 'Anti-AI Frosted Half · Hover to Reveal';
   }
 
+  function toggleAntiAiBlur() {
+    antiAiBlurEnabled = !antiAiBlurEnabled;
+    const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
+    const text = document.getElementById('antiAiBlurStateText');
+    const btn = document.getElementById('toggleAntiAiBlurBtn');
+    if (blurLayer) {
+      if (antiAiBlurEnabled) {
+        blurLayer.classList.remove('d-none');
+        blurLayer.classList.add('active');
+        resetAntiAiBlurState();
+        if (text) text.textContent = 'ON';
+        if (btn) {
+          btn.classList.remove('btn-outline-secondary');
+          btn.classList.add('btn-outline-warning');
+        }
+      } else {
+        blurLayer.classList.add('d-none');
+        blurLayer.classList.remove('active');
+        if (text) text.textContent = 'OFF';
+        if (btn) {
+          btn.classList.remove('btn-outline-warning');
+          btn.classList.add('btn-outline-secondary');
+        }
+      }
+    }
+  }
 
+  function toggleWaterMotion() {
+    const layer = document.getElementById('modalWaterMotionLayer');
+    const text = document.getElementById('waterMotionStateText');
+    const btn = document.getElementById('toggleWaterMotionBtn');
+    if (!layer) return;
+
+    const isCurrentlyActive = layer.classList.contains('active');
+    if (isCurrentlyActive) {
+      layer.classList.remove('active');
+      if (text) text.textContent = 'OFF';
+      if (btn) {
+        btn.classList.remove('btn-outline-info');
+        btn.classList.add('btn-outline-secondary');
+      }
+    } else {
+      layer.classList.add('active');
+      if (text) text.textContent = 'ON';
+      if (btn) {
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-outline-info');
+      }
+    }
+  }
 
   // Keyboard navigation
   document.addEventListener('keydown', function(e) {
@@ -1906,42 +1746,6 @@
     }
   });
 
-  // Lightbox Modal Preview Ad Auto-Rotation
-  let modalAdTimer = null;
-  let modalAdIndex = 0;
-
-  function startModalAdRotation() {
-    stopModalAdRotation();
-    const wrap = document.getElementById('modalPreviewAdWrapper');
-    if (!wrap) return;
-    const slides = wrap.querySelectorAll('.modal-preview-ad-slide');
-    if (slides.length <= 1) return;
-
-    function scheduleNextSlide() {
-      if (modalAdTimer) clearTimeout(modalAdTimer);
-      const current = slides[modalAdIndex];
-      const interval = parseInt(current?.getAttribute('data-interval')) || 5000;
-
-      modalAdTimer = setTimeout(function() {
-        slides[modalAdIndex].style.display = 'none';
-        slides[modalAdIndex].classList.remove('active');
-        modalAdIndex = (modalAdIndex + 1) % slides.length;
-        slides[modalAdIndex].style.display = 'block';
-        slides[modalAdIndex].classList.add('active');
-        scheduleNextSlide();
-      }, interval);
-    }
-
-    scheduleNextSlide();
-  }
-
-  function stopModalAdRotation() {
-    if (modalAdTimer) {
-      clearTimeout(modalAdTimer);
-      modalAdTimer = null;
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
     initAntiAiTriangleBlur();
 
@@ -1949,11 +1753,7 @@
     if (modalEl) {
       modalEl.addEventListener('shown.bs.modal', function() {
         syncPreviewAdWidth();
-        startModalAdRotation();
         setTimeout(syncPreviewAdWidth, 100);
-      });
-      modalEl.addEventListener('hidden.bs.modal', function() {
-        stopModalAdRotation();
       });
     }
     window.addEventListener('resize', syncPreviewAdWidth);
@@ -2034,42 +1834,6 @@
 
   function filterPhotosBySubAlbum(albumName) {
     filterPhotosByBib(albumName);
-    if (typeof showToast === 'function') {
-      showToast(`📁 Station Filter: ${albumName}`);
-    }
-  }
-
-  function resetAllGalleryFilters() {
-    filterPhotosByBib('');
-    if (typeof showToast === 'function') {
-      showToast('Showing all event photos');
-    }
-  }
-
-  function sortPhotosByTime(direction) {
-    const grid = document.getElementById('eventPhotosGrid');
-    if (!grid) return;
-    const cards = Array.from(grid.querySelectorAll('.event-photo-card'));
-    cards.sort((a, b) => {
-      const timeA = parseInt(a.getAttribute('data-timestamp') || '0', 10);
-      const timeB = parseInt(b.getAttribute('data-timestamp') || '0', 10);
-      return direction === 'asc' ? (timeA - timeB) : (timeB - timeA);
-    });
-    cards.forEach(card => grid.appendChild(card));
-
-    // Re-index lightboxes so navigation works in newly sorted order
-    cards.forEach((card, idx) => {
-      card.setAttribute('data-index', idx);
-      card.onclick = function() { openZebraLightbox(idx); };
-      const img = card.querySelector('img');
-      if (img) {
-        img.onclick = function(e) { e.stopPropagation(); openZebraLightbox(idx); };
-      }
-    });
-
-    if (typeof showToast === 'function') {
-      showToast(direction === 'asc' ? '⏱️ Sorted: Earliest time taken first (Start)' : '⏱️ Sorted: Latest time taken first (Finish)');
-    }
   }
 
   function setGridColumns(cols) {
@@ -2594,39 +2358,6 @@
         lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${matchCount} Matched Photos · R150 (Selfie Bundle)`;
       }
     }, 1400);
-  }
-
-  function handleNotifySubmit(e, form) {
-    e.preventDefault();
-    const btn = form.querySelector('button[type="submit"]');
-    const origHtml = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Subscribing...';
-
-    fetch(form.action, {
-      method: 'POST',
-      body: new FormData(form),
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json'
-      }
-    })
-    .then(r => r.json())
-    .then(data => {
-      form.reset();
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-      const alertEl = document.getElementById('notifySuccessAlert');
-      if (alertEl) {
-        alertEl.textContent = data.message || "You're on the list! We will notify you when photos go live.";
-        alertEl.classList.remove('d-none');
-      }
-    })
-    .catch(() => {
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-      alert('Subscription saved! We will notify you when photos go live.');
-    });
   }
 </script>
 @endsection

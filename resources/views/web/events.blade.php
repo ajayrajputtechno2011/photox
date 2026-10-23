@@ -33,8 +33,14 @@
   <section class="search-wrap" id="discover">
     <div class="container-xl">
       <div class="search-card">
-        <form action="/events#all-events" method="GET" class="search-grid">
-          <input type="search" name="q" value="{{ request('q') }}" placeholder="Search by event, venue, school or photographer">
+        <form action="/events#all-events" method="GET" class="search-grid" id="homeMainSearchForm">
+          <div class="position-relative home-main-search-wrap">
+            <input type="search" id="homeMainSearchInput" name="q" value="{{ request('q') }}" placeholder="Search by event, venue, school or photographer" autocomplete="off" aria-label="Search events or creators">
+            <div id="homeMainSearchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute d-none" style="right: 18px; top: 20px; width: 1.1rem; height: 1.1rem;" role="status"></div>
+            <div id="homeMainSearchDropdown" class="home-main-search-dropdown d-none">
+              <div id="homeMainSearchResults"></div>
+            </div>
+          </div>
           <select name="category" aria-label="Sport type">
             <option value="">All categories</option>
             @foreach($categories as $cat)
@@ -296,4 +302,183 @@
 
   @include('web.partials.site-ad-banner')
 </main>
+@endsection
+
+@section('scripts')
+<script>
+  (function() {
+    function initHomeMainSearch() {
+      const input = document.getElementById('homeMainSearchInput');
+      const dropdown = document.getElementById('homeMainSearchDropdown');
+      const resultsContainer = document.getElementById('homeMainSearchResults');
+      const spinner = document.getElementById('homeMainSearchSpinner');
+      const form = document.getElementById('homeMainSearchForm');
+      if (!input || !dropdown || !resultsContainer) return;
+
+      let debounceTimer = null;
+      let abortController = null;
+
+      function renderResults(data, query) {
+        if (!data || data.total === 0) {
+          resultsContainer.innerHTML = `
+            <div class="p-3 text-center text-white-50">
+              <i class="bi bi-search text-white-50 d-block fs-4 mb-2"></i>
+              <div class="small">No matches found for <strong class="text-white">"${escapeHtml(query)}"</strong></div>
+              <div style="font-size: 0.75rem;" class="mt-1">Press <strong>Search</strong> to browse all events.</div>
+            </div>
+            <a href="{{ url('/events') }}?q=${encodeURIComponent(query)}" class="top-search-footer-btn">
+              Search all events for "${escapeHtml(query)}" &rarr;
+            </a>
+          `;
+          dropdown.classList.remove('d-none');
+          return;
+        }
+
+        let html = '';
+
+        // Events
+        if (data.events && data.events.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-calendar-event me-1"></i> Events</div>';
+          data.events.forEach(item => {
+            const imgHtml = item.image 
+              ? `<img src="${item.image}" alt="" class="top-search-thumb">` 
+              : `<div class="top-search-thumb d-flex align-items-center justify-content-center text-white-50"><i class="bi bi-image"></i></div>`;
+            const dateLoc = [item.date, item.location]
+              .filter(Boolean)
+              .map(val => escapeHtml(val))
+              .join(' <span class="opacity-50">&bull;</span> ');
+            html += `
+              <a href="${item.url}" class="top-search-item">
+                ${imgHtml}
+                <div class="overflow-hidden flex-grow-1">
+                  <div class="fw-semibold text-truncate text-white" style="font-size: 0.88rem;">${escapeHtml(item.title)}</div>
+                  <div class="text-white-50 text-truncate" style="font-size: 0.74rem;">${dateLoc}</div>
+                </div>
+                ${item.category ? `<span class="badge bg-secondary bg-opacity-50 text-white-50 small ms-auto" style="font-size: 0.65rem;">${escapeHtml(item.category)}</span>` : ''}
+              </a>
+            `;
+          });
+        }
+
+        // Photographers
+        if (data.photographers && data.photographers.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-camera me-1"></i> Photographers</div>';
+          data.photographers.forEach(p => {
+            const avatarHtml = p.avatar 
+              ? `<img src="${p.avatar}" alt="" class="top-search-avatar">` 
+              : `<div class="top-search-avatar text-warning"><i class="bi bi-camera-fill" style="font-size: 0.85rem;"></i></div>`;
+            html += `
+              <a href="${p.url}" class="top-search-item">
+                ${avatarHtml}
+                <div class="overflow-hidden flex-grow-1">
+                  <div class="fw-semibold text-truncate text-white" style="font-size: 0.88rem;">${escapeHtml(p.name)}</div>
+                  <div class="text-white-50 text-truncate" style="font-size: 0.74rem;">${escapeHtml(p.specialty || 'Creator')}</div>
+                </div>
+                <span class="badge bg-info bg-opacity-25 text-info small ms-auto" style="font-size: 0.65rem;">Creator</span>
+              </a>
+            `;
+          });
+        }
+
+        // Categories / Sports
+        if (data.categories && data.categories.length > 0) {
+          html += '<div class="top-search-header"><i class="bi bi-tag me-1"></i> Sports &amp; Categories</div>';
+          data.categories.forEach(c => {
+            html += `
+              <a href="${c.url}" class="top-search-item">
+                <div class="top-search-avatar text-info"><i class="bi bi-trophy"></i></div>
+                <div class="fw-semibold text-truncate text-white flex-grow-1" style="font-size: 0.88rem;">${escapeHtml(c.name)}</div>
+                <i class="bi bi-arrow-right text-white-50 small ms-auto"></i>
+              </a>
+            `;
+          });
+        }
+
+        // View All Link
+        html += `
+          <a href="${data.view_all_url || ('{{ url('/events') }}?q=' + encodeURIComponent(query))}" class="top-search-footer-btn">
+            View all results for "${escapeHtml(query)}" &rarr;
+          </a>
+        `;
+
+        resultsContainer.innerHTML = html;
+        dropdown.classList.remove('d-none');
+      }
+
+      function doSearch(query) {
+        if (abortController) {
+          abortController.abort();
+        }
+        abortController = new AbortController();
+
+        if (spinner) spinner.classList.remove('d-none');
+
+        fetch('{{ url('/api/quick-search') }}?q=' + encodeURIComponent(query), {
+          signal: abortController.signal,
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (spinner) spinner.classList.add('d-none');
+          renderResults(data, query);
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') return;
+          if (spinner) spinner.classList.add('d-none');
+        });
+      }
+
+      input.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (query.length < 2) {
+          dropdown.classList.add('d-none');
+          if (spinner) spinner.classList.add('d-none');
+          return;
+        }
+        debounceTimer = setTimeout(() => doSearch(query), 250);
+      });
+
+      input.addEventListener('focus', function() {
+        const query = this.value.trim();
+        if (query.length >= 2 && resultsContainer.innerHTML.trim() !== '') {
+          dropdown.classList.remove('d-none');
+        }
+      });
+
+      // Close dropdown on outside click
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#homeMainSearchForm')) {
+          dropdown.classList.add('d-none');
+        }
+      });
+
+      // Close on Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          dropdown.classList.add('d-none');
+        }
+      });
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHomeMainSearch);
+    } else {
+      initHomeMainSearch();
+    }
+  })();
+</script>
 @endsection

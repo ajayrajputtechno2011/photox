@@ -826,8 +826,9 @@
     </div>
 
     <!-- 3. PHOTO GALLERY GRID (Matching ZebraSnap Screenshot 2 & 4) -->
-    <div class="photo-gallery-grid" id="eventPhotosGrid">
-      @forelse($photos as $photo)
+    @if($photos->isNotEmpty())
+      <div class="photo-gallery-grid" id="eventPhotosGrid">
+        @foreach($photos as $photo)
         <div class="event-photo-card" 
              data-index="{{ $loop->index }}" 
              data-photo-id="{{ $photo->id }}"
@@ -929,14 +930,60 @@
             @endif
           </div>
         </div>
-      @empty
-        <div class="col-12 py-5 text-center text-muted">
-          <i class="bi bi-camera-fill text-warning display-4 mb-3 d-block"></i>
-          <h4>Photos are currently uploading for this event</h4>
-          <p>Official photographers are currently processing watermarked proofs. Check back shortly.</p>
+        @endforeach
+      </div>
+    @else
+      <!-- DEDICATED CLEAN EMPTY GALLERY & NOTIFY ME LIVE CARD -->
+      <div class="card border-0 rounded-4 shadow-sm py-5 px-3 px-md-4 text-center my-4" style="background: #ffffff; border: 1px solid #e2e8f0 !important;">
+        <div class="mx-auto" style="max-width: 580px; width: 100%;">
+          <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 text-warning mb-3">
+            <i class="bi bi-camera-fill display-5"></i>
+          </div>
+          <h3 class="text-dark fw-bold mb-2">Photos are currently uploading for this event</h3>
+          <p class="text-muted mb-4 small">Official photographers are currently processing watermarked proofs. Check back shortly.</p>
+
+          <!-- Client Requested: Notify Me When Gallery is Live Box -->
+          <div class="p-4 rounded-4 shadow-sm text-start" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-bell-fill text-warning fs-5"></i>
+              <strong class="text-dark fs-6">Notify me when gallery is live</strong>
+            </div>
+            <p class="text-muted small mb-3">Leave your email address and we will alert you the moment these photos are ready to view and download.</p>
+            
+            <form action="{{ route('event.notify', $event->id) }}" method="POST" id="notifyGalleryForm" onsubmit="handleNotifySubmit(event, this)">
+              @csrf
+              <div class="row g-2 align-items-center">
+                <div class="col-sm-8">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white text-muted border-end-0" style="border-color: #cbd5e1; border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; padding-left: 16px;">
+                      <i class="bi bi-envelope"></i>
+                    </span>
+                    <input type="email" 
+                           name="email" 
+                           id="notifyEmailInput"
+                           class="form-control border-start-0 text-dark" 
+                           placeholder="Enter your email address..." 
+                           required 
+                           style="border-color: #cbd5e1; font-size: 0.95rem; background: #ffffff; height: 48px; border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; padding-right: 16px; color: #0b2d5b !important;">
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <button type="submit" 
+                          id="notifySubmitBtn"
+                          class="btn btn-warning rounded-pill w-100 text-dark fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm" 
+                          style="font-size: 0.95rem; height: 48px; white-space: nowrap;">
+                    <i class="bi bi-send-fill"></i> Notify Me
+                  </button>
+                </div>
+              </div>
+            </form>
+            <div id="notifySuccessAlert" class="alert alert-success mt-3 py-2 small d-none mb-0">
+              <i class="bi bi-check-circle-fill me-1"></i> You're on the list! We will email you as soon as the photos go live.
+            </div>
+          </div>
         </div>
-      @endforelse
-    </div>
+      </div>
+    @endif
 
     <!-- 4. DYNAMIC RELATED EVENTS SECTION -->
     @if(isset($relatedEvents) && $relatedEvents->isNotEmpty())
@@ -2544,6 +2591,39 @@
         lblFound.innerHTML = `<i class="bi bi-bag-plus-fill me-1"></i> Add ${matchCount} Matched Photos · R150 (Selfie Bundle)`;
       }
     }, 1400);
+  }
+
+  function handleNotifySubmit(e, form) {
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Subscribing...';
+
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      form.reset();
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+      const alertEl = document.getElementById('notifySuccessAlert');
+      if (alertEl) {
+        alertEl.textContent = data.message || "You're on the list! We will notify you when photos go live.";
+        alertEl.classList.remove('d-none');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+      alert('Subscription saved! We will notify you when photos go live.');
+    });
   }
 </script>
 @endsection

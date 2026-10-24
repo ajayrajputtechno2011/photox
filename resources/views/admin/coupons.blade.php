@@ -240,51 +240,55 @@
                     </td>
                     <td>
                       @if($coupon->type === 'fixed')
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">Fixed ZAR Off</span>
+                        <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 600;">Fixed ZAR Off</span>
                       @elseif($coupon->type === 'percent')
-                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">Percentage % Off</span>
+                        <span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.35); font-weight: 600;">Percentage % Off</span>
                       @else
-                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">Volume Bundle</span>
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-weight: 600;">Volume Bundle</span>
                       @endif
                     </td>
                     <td>
                       @if($coupon->type === 'fixed')
-                        <strong class="text-success">R {{ number_format($coupon->discount_value, 2) }} OFF</strong>
+                        <strong style="color: #4ade80; font-size: 0.88rem; font-weight: 700;">R {{ number_format($coupon->discount_value, 2) }} OFF</strong>
                       @else
-                        <strong class="text-success">{{ number_format($coupon->discount_value, 0) }}% OFF</strong>
+                        <strong style="color: #4ade80; font-size: 0.88rem; font-weight: 700;">{{ number_format($coupon->discount_value, 0) }}% OFF</strong>
                       @endif
                     </td>
                     <td>
                       @if($coupon->min_items > 0)
-                        <span>Min {{ $coupon->min_items }} {{ Str::plural('photo', $coupon->min_items) }}</span>
+                        <span class="text-white-50">Min {{ $coupon->min_items }} {{ Str::plural('photo', $coupon->min_items) }}</span>
                       @elseif($coupon->min_order_amount > 0)
-                        <span>Min order R {{ number_format($coupon->min_order_amount, 2) }}</span>
+                        <span class="text-white-50">Min order R {{ number_format($coupon->min_order_amount, 2) }}</span>
                       @else
-                        <span class="text-muted">None</span>
+                        <span class="text-white-50 opacity-50">None</span>
                       @endif
                     </td>
                     <td>
-                      <span>{{ $coupon->used_count }} {{ $coupon->max_uses ? '/ ' . $coupon->max_uses : '' }}</span>
+                      <span class="fw-semibold text-white">{{ $coupon->used_count }}</span> <small class="text-white-50">{{ $coupon->max_uses ? '/ ' . $coupon->max_uses : '' }}</small>
                     </td>
                     <td>
                       @if($coupon->is_active)
-                        <span class="badge bg-success bg-opacity-15 text-success">Active</span>
+                        <span class="badge rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1" style="background: rgba(34, 197, 94, 0.22); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.45); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em;">
+                          <i class="bi bi-check-circle-fill" style="font-size: 0.75rem;"></i> Active
+                        </span>
                       @else
-                        <span class="badge bg-secondary bg-opacity-25 text-muted">Paused</span>
+                        <span class="badge rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em;">
+                          <i class="bi bi-pause-circle-fill" style="font-size: 0.75rem;"></i> Paused
+                        </span>
                       @endif
                     </td>
                     <td class="text-end">
                       <div class="d-inline-flex gap-2">
                         <form action="{{ route('admin.coupons.toggle', $coupon->id) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ $coupon->is_active ? 'Pause' : 'Activate' }}">
-                            <i class="bi {{ $coupon->is_active ? 'bi-pause-fill text-warning' : 'bi-play-fill text-success' }}"></i>
+                          <button type="submit" class="btn btn-sm" title="{{ $coupon->is_active ? 'Pause Promo' : 'Activate Promo' }}" style="background: #102131; border: 1px solid #203447; color: {{ $coupon->is_active ? '#fbbf24' : '#4ade80' }}; border-radius: 6px; padding: 4px 10px;">
+                            <i class="bi {{ $coupon->is_active ? 'bi-pause-fill' : 'bi-play-fill' }}"></i>
                           </button>
                         </form>
                         <form action="{{ route('admin.coupons.destroy', $coupon->id) }}" method="POST" onsubmit="return confirm('Delete coupon {{ $coupon->code }}?')">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                          <button type="submit" class="btn btn-sm" title="Delete Promo" style="background: #102131; border: 1px solid #3b2027; color: #f87171; border-radius: 6px; padding: 4px 10px;">
                             <i class="bi bi-trash"></i>
                           </button>
                         </form>

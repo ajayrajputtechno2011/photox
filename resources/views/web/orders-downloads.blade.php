@@ -43,7 +43,118 @@
         </div>
       </div>
 
-      @if($purchasedPhotos->isNotEmpty())
+      @if(isset($purchaseGroups) && $purchaseGroups->isNotEmpty())
+        <!-- Master Summary Banner -->
+        <div class="download-banner mb-4 p-3 p-sm-4 rounded-4 text-white" style="background: linear-gradient(135deg, #0b2d5b, #194680);">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3">
+            <div class="d-flex align-items-start align-items-sm-center gap-3">
+              <i class="bi bi-cloud-check fs-1 text-warning flex-shrink-0"></i>
+              <div>
+                <strong class="fs-5 d-block">{{ $purchasedPhotos->count() }} Digital {{ Str::plural('Download', $purchasedPhotos->count()) }} Ready</strong>
+                <div class="d-flex flex-wrap align-items-center gap-1 gap-sm-2 mt-1">
+                  <span class="badge rounded-pill bg-warning text-dark font-monospace py-1 px-2 small"><i class="bi bi-bag-check me-1"></i>{{ $purchaseGroups->count() }} {{ Str::plural('Purchase', $purchaseGroups->count()) }}</span>
+                  <span class="badge rounded-pill bg-success text-white font-monospace py-1 px-2 small"><i class="bi bi-shield-check me-1"></i>6-Month Digital License Active</span>
+                </div>
+                <small class="text-white-50 d-block mt-1">Download each purchase date separately below, or download all files together.</small>
+              </div>
+            </div>
+            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 flex-shrink-0 w-100 w-md-auto mt-2 mt-md-0">
+              <a class="btn btn-warning rounded-pill px-3 px-sm-4 py-2 fw-bold shadow-sm text-center flex-fill flex-sm-grow-0" href="{{ route('orders.download.zip') }}" title="Download all purchased files across all dates">
+                <i class="bi bi-file-earmark-zip-fill me-1"></i>Download All (All {{ $purchasedPhotos->count() }} Photos)
+              </a>
+              <a class="btn btn-outline-light rounded-pill px-3 px-sm-4 py-2 text-center flex-fill flex-sm-grow-0" href="{{ route('customer.my_photos') }}">
+                <i class="bi bi-images me-1"></i>View All Photos
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Groups sorted by purchase date (newest first) -->
+        @foreach($purchaseGroups as $group)
+          <div class="purchase-group-section mb-5 p-3 p-md-4 rounded-4 bg-white border shadow-sm">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center pb-3 mb-3 border-bottom gap-3">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm">
+                  <i class="bi bi-calendar2-check-fill text-warning"></i>
+                  <span>Purchased on {{ $group->date }}</span>
+                </span>
+                @if($group->order_number)
+                  <span class="badge bg-light text-dark border font-monospace py-1 px-2 small">
+                    <i class="bi bi-receipt me-1 text-primary"></i>Order #{{ $group->order_number }}
+                  </span>
+                @endif
+                @php
+                  $purchaseCarbon = rescue(fn() => \Carbon\Carbon::parse($group->date), now());
+                  $validUntil = $purchaseCarbon->copy()->addMonths(6);
+                  $daysLeft = max(0, (int) now()->diffInDays($validUntil, false));
+                @endphp
+                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-monospace py-1 px-2 small">
+                  <i class="bi bi-clock-history me-1"></i>6-Month Digital License &bull; {{ $daysLeft }} days left (Valid until {{ $validUntil->format('M d, Y') }})
+                </span>
+                <span class="text-muted small fw-medium">
+                  &bull; {{ $group->items_count }} {{ Str::plural('Photo', $group->items_count) }}
+                  @if($group->total_amount)
+                    (R{{ number_format($group->total_amount, 2) }})
+                  @endif
+                </span>
+              </div>
+              <div class="w-100 w-md-auto">
+                <a href="{{ $group->download_zip_url }}" class="btn btn-warning btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1 w-100 justify-content-center">
+                  <i class="bi bi-file-earmark-zip-fill text-dark"></i>
+                  <span>Download {{ $group->date }} ZIP ({{ $group->items_count }} {{ Str::plural('Photo', $group->items_count) }})</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Photos in this specific purchase group -->
+            <div class="row g-3 g-md-4">
+              @foreach($group->items as $photo)
+                @php
+                  $photoRealId = $photo->photo?->id ?: ($photo->event_photo_id ?: $photo->id);
+                  $eventTitle = $photo->event?->title ?: ($photo->photo?->event?->title ?: 'PhotoX Sports Gallery');
+                  $downloadUrl = route('orders.download.single', $photo->id);
+                  $previewImg = $photo->thumbnail_url ?: $photo->file_path;
+                  $fullImg = $photo->file_path;
+                @endphp
+                <div class="col-12 col-sm-6 col-lg-4">
+                  <div class="card h-100 border rounded-4 overflow-hidden shadow-sm photo-download-card">
+                    <div class="photo-card-thumb-wrap" 
+                         onclick="openPhotoPopup(this)" 
+                         data-img-src="{{ $fullImg }}" 
+                         data-title="{{ $photo->title ?: 'Action Photo' }}" 
+                         data-event="{{ $eventTitle }}" 
+                         data-download-url="{{ $downloadUrl }}"
+                         title="Click to view full photo popup">
+                      <img src="{{ $previewImg }}" alt="{{ $photo->title }}" loading="lazy">
+                      <span class="badge bg-success position-absolute top-0 end-0 m-2 font-monospace shadow-sm" style="font-size: 0.68rem;">
+                        <i class="bi bi-patch-check-fill me-1"></i>PAID &bull; 6-MO LICENSE
+                      </span>
+                      <div class="photo-thumb-overlay">
+                        <i class="bi bi-arrows-fullscreen fs-5"></i>
+                        <span>Preview &amp; Download</span>
+                      </div>
+                    </div>
+                    <div class="card-body p-3">
+                      <strong class="d-block text-truncate mb-1 text-dark" title="{{ $photo->title }}">{{ $photo->title ?: 'Action Photo' }}</strong>
+                      <small class="text-muted d-block text-truncate mb-3">{{ $eventTitle }}</small>
+                      <div class="d-flex justify-content-between align-items-center pt-2 border-top gap-2">
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-secondary rounded-pill px-3 flex-fill text-center" 
+                                onclick="openPhotoPopup(this.closest('.photo-download-card').querySelector('.photo-card-thumb-wrap'))">
+                          <i class="bi bi-eye me-1"></i>Preview
+                        </button>
+                        <a href="{{ $downloadUrl }}" download="PhotoX_{{ $photoRealId }}.jpg" class="btn btn-sm btn-lime rounded-pill px-3 shadow-sm fw-semibold flex-fill text-center">
+                          <i class="bi bi-download me-1"></i>Download
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        @endforeach
+      @elseif($purchasedPhotos->isNotEmpty())
         <div class="download-banner mb-4 p-3 p-sm-4 rounded-4 text-white" style="background: linear-gradient(135deg, #0b2d5b, #194680);">
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3">
             <div class="d-flex align-items-start align-items-sm-center gap-3">

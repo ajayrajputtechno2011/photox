@@ -951,17 +951,19 @@ class DemoController extends Controller
                 }
             }
 
-            // 4 Corner Text Marks (Matches Live Canvas fottoCornerTL, fottoCornerTR, fottoCornerBL, fottoCornerBR)
-            $cornerPositions = [
-                [(int) ($w * 0.12), (int) ($h * 0.08)], // Top Left
-                [(int) ($w * 0.88), (int) ($h * 0.08)], // Top Right
-                [(int) ($w * 0.12), (int) ($h * 0.92)], // Bottom Left
-                [(int) ($w * 0.88), (int) ($h * 0.92)], // Bottom Right
-            ];
-            $cornerFontPt = max(8, (int) round($brandFontSize * 0.65));
-            $cornerText = ! empty($text) ? $text : 'PHOTOX';
-            foreach ($cornerPositions as $cPos) {
-                $this->renderWatermarkText($im, $cornerText, $fontFile, $cornerFontPt, $cPos[0], $cPos[1], 0, $textColor, $shadowColor);
+            // 4 Corner Text Marks (Only render for text or both, NEVER for logo only)
+            if ($type !== 'logo') {
+                $cornerPositions = [
+                    [(int) ($w * 0.12), (int) ($h * 0.08)], // Top Left
+                    [(int) ($w * 0.88), (int) ($h * 0.08)], // Top Right
+                    [(int) ($w * 0.12), (int) ($h * 0.92)], // Bottom Left
+                    [(int) ($w * 0.88), (int) ($h * 0.92)], // Bottom Right
+                ];
+                $cornerFontPt = max(8, (int) round($brandFontSize * 0.65));
+                $cornerText = ! empty($text) ? $text : 'PHOTOX';
+                foreach ($cornerPositions as $cPos) {
+                    $this->renderWatermarkText($im, $cornerText, $fontFile, $cornerFontPt, $cPos[0], $cPos[1], 0, $textColor, $shadowColor);
+                }
             }
 
             // Bottom Center Anti-Screenshot Security Pill Badge (Matches Live Canvas)

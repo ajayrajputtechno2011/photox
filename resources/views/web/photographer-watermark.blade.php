@@ -2337,23 +2337,33 @@
           centerTitle.style.display = 'block';
         }
 
-        // Corner Marks
+        // Corner Marks (Only show if watermarkType !== 'logo')
         ['fottoCornerTL', 'fottoCornerTR', 'fottoCornerBL', 'fottoCornerBR'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
-            el.textContent = activeText;
-            el.style.color = textColor;
-            el.style.opacity = activeOpacity;
-            el.style.fontSize = Math.max(9, Math.round(activeFontSize * 0.55 * scaleRatio)) + 'px';
+            if (watermarkType === 'logo') {
+              el.style.display = 'none';
+            } else {
+              el.style.display = 'block';
+              el.textContent = activeText;
+              el.style.color = textColor;
+              el.style.opacity = activeOpacity;
+              el.style.fontSize = Math.max(9, Math.round(activeFontSize * 0.55 * scaleRatio)) + 'px';
+            }
           }
         });
 
-        // Vertical Ribbon
+        // Vertical Ribbon (Only show if watermarkType !== 'logo')
         const ribbon = document.getElementById('fottoVerticalRibbon');
         if (ribbon) {
-          ribbon.style.color = textColor;
-          ribbon.style.opacity = activeOpacity * 0.85;
-          ribbon.style.fontSize = Math.max(9, Math.round(11 * scaleRatio)) + 'px';
+          if (watermarkType === 'logo') {
+            ribbon.style.display = 'none';
+          } else {
+            ribbon.style.display = 'block';
+            ribbon.style.color = textColor;
+            ribbon.style.opacity = activeOpacity * 0.85;
+            ribbon.style.fontSize = Math.max(9, Math.round(11 * scaleRatio)) + 'px';
+          }
         }
 
         // Security Badge

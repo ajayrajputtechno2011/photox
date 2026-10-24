@@ -835,8 +835,14 @@
 
           <!-- Hover Overlay Controls (Matching ZebraSnap Screenshot 4) -->
           <div class="card-hover-actions">
+            @php
+              $isFilename = empty($photo->title) || preg_match('/^(clint|dsc|img|samples|\d+)/i', $photo->title);
+              $displayTitle = (!$isFilename && !empty($photo->title)) 
+                ? $photo->title 
+                : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : ($event->title . ' · #' . ($loop->index + 1)));
+            @endphp
             <span class="text-white small fw-bold mb-1 px-3 py-1 rounded bg-dark bg-opacity-75">
-              {{ $photo->title ?: 'Event Action' }}
+              {{ $displayTitle }}
             </span>
             <div class="hover-action-row">
               <button type="button" 
@@ -1473,7 +1479,12 @@
     // Update Header info
     const titleEl = document.getElementById('modalPhotoTitle');
     if (titleEl) {
-      titleEl.textContent = photo.title || 'Beach Sprint Splash';
+      const isFilename = !photo.title || /^(clint|dsc|img|samples|\d+)/i.test(photo.title);
+      const evTitle = {!! json_encode($event->title ?? 'Event Gallery') !!};
+      const displayTitle = (!isFilename && photo.title) 
+        ? photo.title 
+        : (photo.bib_number ? `Athlete #${photo.bib_number}` : `${evTitle} · Photo #${currentPhotoIndex + 1}`);
+      titleEl.textContent = displayTitle;
     }
     const counterEl = document.getElementById('modalIndexCounter');
     if (counterEl) {
@@ -1812,7 +1823,12 @@
       const cardTitle = card.getAttribute('data-title') || '';
       const photo = currentEventPhotos.find(p => String(p.id) === String(photoId)) || {};
       const itemPrice = parseFloat(photo.personal_price) || cardPrice;
-      const itemTitle = photo.title || cardTitle || `Photo #${photo.id || photoId}`;
+      const rawTitle = photo.title || cardTitle || '';
+      const isFilename = !rawTitle || /^(clint|dsc|img|samples|\d+)/i.test(rawTitle);
+      const evTitle = {!! json_encode($event->title ?? 'Event Gallery') !!};
+      const itemTitle = (!isFilename && rawTitle) 
+        ? rawTitle 
+        : (photo.bib_number ? `Athlete #${photo.bib_number}` : `${evTitle} · Photo #${photo.id || photoId}`);
 
       const item = {
         id: String(photo.id || photoId),

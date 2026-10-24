@@ -255,6 +255,9 @@ window.PhotoXCart = {
     const existingIndex = items.findIndex(item => String(item.id) === String(photo.id) && item.licenseType === (photo.licenseType || 'personal'));
 
     if (existingIndex > -1) {
+      if (photo.price) items[existingIndex].price = parseFloat(photo.price);
+      if (photo.title) items[existingIndex].title = photo.title;
+      this.saveItems(items);
       return { added: false, message: 'Already in your cart' };
     }
 

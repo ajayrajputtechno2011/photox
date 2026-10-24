@@ -1809,12 +1809,14 @@
     visibleCards.forEach(card => {
       const photoId = card.getAttribute('data-photo-id');
       const cardPrice = parseFloat(card.getAttribute('data-price')) || 50;
+      const cardTitle = card.getAttribute('data-title') || '';
       const photo = currentEventPhotos.find(p => String(p.id) === String(photoId)) || {};
       const itemPrice = parseFloat(photo.personal_price) || cardPrice;
+      const itemTitle = photo.title || cardTitle || `Photo #${photo.id || photoId}`;
 
       const item = {
         id: String(photo.id || photoId),
-        title: photo.title || `Photo #${photo.id || photoId}`,
+        title: itemTitle,
         price: itemPrice,
         licenseType: 'personal',
         licenseName: 'Personal Digital License',

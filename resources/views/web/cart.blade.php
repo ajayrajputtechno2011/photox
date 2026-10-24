@@ -436,6 +436,7 @@
                   <span class="badge bg-secondary bg-opacity-25 text-dark font-monospace" style="font-size: 0.68rem; font-weight: 600;">
                     ${item.licenseName || 'Personal License'}
                   </span>
+                  ${(purchasedPhotoIds && (purchasedPhotoIds.includes(parseInt(item.id)) || purchasedPhotoIds.includes(String(item.id)))) ? '<span class="badge bg-info bg-opacity-25 text-primary ms-1" style="font-size: 0.68rem;"><i class="bi bi-patch-check-fill me-1"></i>In Your Vault</span>' : ''}
                 </div>
                 <div class="cart-item-meta">
                   <span><i class="bi bi-calendar-event me-1"></i>${item.eventTitle || 'Event Gallery'}</span>
@@ -586,24 +587,6 @@
         } catch(e) {}
         if (window.PhotoXCart) {
           window.PhotoXCart.clear();
-          window.PhotoXCart.updateBadge();
-        }
-      }
-
-      // 2. Automatically remove any items from the cart that the customer has already purchased
-      if (window.PhotoXCart && purchasedPhotoIds && purchasedPhotoIds.length > 0) {
-        let items = window.PhotoXCart.getItems();
-        let changed = false;
-        items = items.filter(item => {
-          const match = purchasedPhotoIds.includes(parseInt(item.id)) || purchasedPhotoIds.includes(String(item.id));
-          if (match) {
-            changed = true;
-            return false;
-          }
-          return true;
-        });
-        if (changed) {
-          window.PhotoXCart.saveItems(items);
           window.PhotoXCart.updateBadge();
         }
       }

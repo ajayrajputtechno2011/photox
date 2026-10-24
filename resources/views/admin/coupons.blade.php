@@ -117,7 +117,7 @@
       </div>
     </aside>
 
-    <div class="main-content">
+    <div class="main-panel">
       <header class="topbar">
         <div class="topbar-left">
           <button class="btn btn-sm btn-outline-secondary d-md-none" id="sidebarToggle" type="button"><i class="bi bi-list"></i></button>

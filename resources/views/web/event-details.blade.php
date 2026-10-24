@@ -669,16 +669,63 @@
 
     <!-- SPONSORED PARTNER BANNER PLACEMENT (Matching Client Screenshot) -->
     @php
-      $eventPartnerAd = $sponsorBanner ?? \App\Models\Banner::where('is_active', true)->where('placement', 'event_detail')->first() ?: (\App\Models\Banner::where('is_active', true)->where('placement', 'home_before_featured')->first() ?: \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first());
-      $hasAdText = !empty(trim($eventPartnerAd->title ?? '')) || !empty(trim($eventPartnerAd->subtitle ?? ''));
-      $adHref = (!empty($eventPartnerAd->link_url) && $eventPartnerAd->link_url !== '/events') ? $eventPartnerAd->link_url : '/#latest-events';
+      $eventDetailBanners = \App\Models\Banner::where('is_active', true)
+          ->where('placement', 'event_detail')
+          ->orderBy('sort_order')
+          ->get();
+      if ($eventDetailBanners->isEmpty()) {
+          $eventDetailBanners = \App\Models\Banner::where('is_active', true)
+              ->whereIn('placement', ['home_before_featured', 'image_preview'])
+              ->orderBy('sort_order')
+              ->get();
+      }
+      if ($eventDetailBanners->isEmpty() && !empty($sponsorBanner)) {
+          $eventDetailBanners = collect([$sponsorBanner]);
+      }
+      $uniqueEventDetailAdId = 'eventDetailAdCarousel_' . uniqid();
     @endphp
-    @if($eventPartnerAd)
-    <aside class="site-ad-banner mb-4" aria-label="Sponsored placement" style="height: auto !important; max-height: 200px !important; min-height: unset !important; overflow: hidden; border-radius: 15px; background: #07152b;">
-      <a class="site-ad-link" href="{{ $adHref }}" style="height: auto !important; max-height: 200px !important; display: block; line-height: 0; position: relative;">
-        <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}" style="width: 100%; height: 200px; max-height: 200px; display: block; object-fit: cover; object-position: center; position: relative; background: #07152b;">
-      </a>
+    @if($eventDetailBanners->isNotEmpty())
+    <aside class="site-ad-banner mb-4" id="{{ $uniqueEventDetailAdId }}" aria-label="Sponsored placement" style="height: auto !important; max-height: 200px !important; min-height: unset !important; overflow: hidden; border-radius: 15px; background: #07152b; position: relative;">
+      @foreach($eventDetailBanners as $idx => $eventPartnerAd)
+        @php
+          $adHref = (!empty($eventPartnerAd->link_url) && $eventPartnerAd->link_url !== '/events') ? $eventPartnerAd->link_url : '/#latest-events';
+          $adInterval = ($eventPartnerAd->rotation_interval && $eventPartnerAd->rotation_interval > 0) ? ($eventPartnerAd->rotation_interval * 1000) : 5000;
+        @endphp
+        <div class="event-detail-ad-slide {{ $loop->first ? 'active' : '' }}" data-interval="{{ $adInterval }}" style="{{ $loop->first ? 'display: block;' : 'display: none;' }}; position: relative; width: 100%;">
+          <a class="site-ad-link" href="{{ $adHref }}" target="_blank" style="height: auto !important; max-height: 200px !important; display: block; line-height: 0; position: relative;">
+            <img src="{{ $eventPartnerAd->image_url }}" alt="{{ $eventPartnerAd->title ?: 'Sponsored Partner' }}" style="width: 100%; height: 200px; max-height: 200px; display: block; object-fit: cover; object-position: center; position: relative; background: #07152b;">
+          </a>
+        </div>
+      @endforeach
     </aside>
+    @if($eventDetailBanners->count() > 1)
+      <script>
+        (function() {
+          const wrap = document.getElementById('{{ $uniqueEventDetailAdId }}');
+          if (!wrap) return;
+          const slides = wrap.querySelectorAll('.event-detail-ad-slide');
+          if (slides.length <= 1) return;
+          let activeIdx = 0;
+          let slideTimer = null;
+
+          function nextSlide() {
+            if (slideTimer) clearTimeout(slideTimer);
+            const current = slides[activeIdx];
+            const interval = parseInt(current?.getAttribute('data-interval')) || 5000;
+
+            slideTimer = setTimeout(function() {
+              slides[activeIdx].style.display = 'none';
+              slides[activeIdx].classList.remove('active');
+              activeIdx = (activeIdx + 1) % slides.length;
+              slides[activeIdx].style.display = 'block';
+              slides[activeIdx].classList.add('active');
+              nextSlide();
+            }, interval);
+          }
+          nextSlide();
+        })();
+      </script>
+    @endif
     @endif
 
     <!-- FIND YOUR PHOTOS TOOLBAR (Search by Bib Number & Action Buttons) -->
@@ -1070,32 +1117,43 @@
 
               <!-- SPONSOR BANNER (Placement: Image Preview - Wide Banner Requested by Client) -->
               @php
-                $previewAd = \App\Models\Banner::where('is_active', true)->where('placement', 'image_preview')->first() ?: ($sponsorBanner ?? null);
-                $modalAdHref = (!empty($previewAd?->link_url) && $previewAd->link_url !== '/events') ? $previewAd->link_url : '/#latest-events';
+                $previewAds = \App\Models\Banner::where('is_active', true)
+                    ->where('placement', 'image_preview')
+                    ->orderBy('sort_order')
+                    ->get();
+                if ($previewAds->isEmpty() && !empty($sponsorBanner)) {
+                    $previewAds = collect([$sponsorBanner]);
+                }
               @endphp
               <div class="mt-3 image-preview-ad-wrapper mx-auto" id="modalPreviewAdWrapper" style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(255, 138, 0, 0.25); background: #061019; width: 100%; max-width: 100%;">
-                @if($previewAd)
-                  <a href="{{ $modalAdHref }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
-                    <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
-                    @if(!empty($previewAd->badge_text))
-                      <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
-                        {{ $previewAd->badge_text }}
-                      </span>
-                    @endif
-                    @if(!empty($previewAd->title))
-                      <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
-                        <strong>{{ $previewAd->title }}</strong>
-                        @if(!empty($previewAd->subtitle))
-                          <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
-                        @endif
-                      </div>
-                    @endif
-                  </a>
-                @else
+                @forelse($previewAds as $idx => $previewAd)
+                  @php
+                    $modalAdHref = (!empty($previewAd->link_url) && $previewAd->link_url !== '/events') ? $previewAd->link_url : '/#latest-events';
+                    $slideInterval = ($previewAd->rotation_interval && $previewAd->rotation_interval > 0) ? ($previewAd->rotation_interval * 1000) : 5000;
+                  @endphp
+                  <div class="modal-preview-ad-slide {{ $loop->first ? 'active' : '' }}" data-interval="{{ $slideInterval }}" style="{{ $loop->first ? 'display: block;' : 'display: none;' }}; position: relative; width: 100%;">
+                    <a href="{{ $modalAdHref }}" target="_blank" class="d-block w-100 position-relative text-decoration-none" style="line-height: 0;">
+                      <img src="{{ $previewAd->image_url }}" alt="{{ $previewAd->title ?: 'Sponsor Banner' }}" style="width: 100%; height: auto; display: block; object-fit: contain; border-radius: 7px;">
+                      @if(!empty($previewAd->badge_text))
+                        <span class="position-absolute top-0 end-0 m-1 px-2 py-0 badge bg-dark text-warning border border-warning" style="font-size: 0.60rem; letter-spacing: 0.05em; z-index: 2; line-height: 1.3;">
+                          {{ $previewAd->badge_text }}
+                        </span>
+                      @endif
+                      @if(!empty($previewAd->title))
+                        <div class="position-absolute bottom-0 start-0 w-100 px-3 py-1 text-white text-truncate" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent); font-size: 0.78rem; z-index: 2; line-height: 1.4;">
+                          <strong>{{ $previewAd->title }}</strong>
+                          @if(!empty($previewAd->subtitle))
+                            <span class="text-white-50 ms-2" style="font-size: 0.70rem;">{{ $previewAd->subtitle }}</span>
+                          @endif
+                        </div>
+                      @endif
+                    </a>
+                  </div>
+                @empty
                   <div class="p-2 d-flex align-items-center justify-content-center text-muted" style="min-height: 60px; font-size: 0.75rem;">
                     <span><i class="bi bi-award text-warning me-1"></i> <strong>Official Event Sponsor</strong></span>
                   </div>
-                @endif
+                @endforelse
               </div>
             </div>
 
@@ -1550,6 +1608,7 @@
     modalInstance.show();
     updateModalSaveButtonState();
     setTimeout(syncPreviewAdWidth, 250);
+    startModalAdRotation();
   }
 
   function openPhotoModalByIndex(index) {
@@ -1557,6 +1616,7 @@
   }
 
   function closePhotoInspectorModal() {
+    stopModalAdRotation();
     const modalEl = document.getElementById('photoInspectorModal');
     const container = document.getElementById('modalPhotoContainer');
     if (container) {
@@ -1760,6 +1820,42 @@
     }
   });
 
+  // Lightbox Modal Preview Ad Auto-Rotation
+  let modalAdTimer = null;
+  let modalAdIndex = 0;
+
+  function startModalAdRotation() {
+    stopModalAdRotation();
+    const wrap = document.getElementById('modalPreviewAdWrapper');
+    if (!wrap) return;
+    const slides = wrap.querySelectorAll('.modal-preview-ad-slide');
+    if (slides.length <= 1) return;
+
+    function scheduleNextSlide() {
+      if (modalAdTimer) clearTimeout(modalAdTimer);
+      const current = slides[modalAdIndex];
+      const interval = parseInt(current?.getAttribute('data-interval')) || 5000;
+
+      modalAdTimer = setTimeout(function() {
+        slides[modalAdIndex].style.display = 'none';
+        slides[modalAdIndex].classList.remove('active');
+        modalAdIndex = (modalAdIndex + 1) % slides.length;
+        slides[modalAdIndex].style.display = 'block';
+        slides[modalAdIndex].classList.add('active');
+        scheduleNextSlide();
+      }, interval);
+    }
+
+    scheduleNextSlide();
+  }
+
+  function stopModalAdRotation() {
+    if (modalAdTimer) {
+      clearTimeout(modalAdTimer);
+      modalAdTimer = null;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     initAntiAiTriangleBlur();
 
@@ -1767,7 +1863,11 @@
     if (modalEl) {
       modalEl.addEventListener('shown.bs.modal', function() {
         syncPreviewAdWidth();
+        startModalAdRotation();
         setTimeout(syncPreviewAdWidth, 100);
+      });
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        stopModalAdRotation();
       });
     }
     window.addEventListener('resize', syncPreviewAdWidth);

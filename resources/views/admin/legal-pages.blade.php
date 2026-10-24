@@ -33,6 +33,30 @@
 			color: #ffffff !important;
 			box-shadow: 0 4px 12px rgba(11, 45, 91, 0.2);
 		}
+		.ck-editor__editable_inline {
+			min-height: 480px;
+			max-height: 800px;
+			font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+			font-size: 0.95rem;
+			line-height: 1.65;
+			color: #1e293b;
+			padding: 1.25rem 1.5rem !important;
+		}
+		.ck.ck-toolbar {
+			background: #f8fafc !important;
+			border-color: #cbd5e1 !important;
+			border-top-left-radius: 8px !important;
+			border-top-right-radius: 8px !important;
+		}
+		.ck.ck-content {
+			border-color: #cbd5e1 !important;
+			border-bottom-left-radius: 8px !important;
+			border-bottom-right-radius: 8px !important;
+		}
+		.ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+			border-color: #0b2d5b !important;
+			box-shadow: 0 0 0 3px rgba(11, 45, 91, 0.12) !important;
+		}
 	</style>
 </head>
 <body>
@@ -60,6 +84,7 @@
 				<div class="nav-label nav-label-spaced">AI &amp; Media</div>
 				<nav class="nav flex-column sidebar-nav">
 					<a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
+          <a class="nav-link" href="/admin/media"><i class="bi bi-images"></i><span>Media Manager</span></a>
 					<a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
 					<a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
 				</nav>
@@ -175,17 +200,18 @@
 								</div>
 
 								<div class="col-12">
-									<label class="form-label fw-semibold">
-										Policy Content <small class="text-muted fw-normal">(HTML supported for headings, paragraphs, lists)</small>
+									<label class="form-label fw-semibold d-flex align-items-center justify-content-between">
+										<span>Policy Content &amp; Clauses</span>
+										<span class="badge bg-primary bg-opacity-10 text-primary fw-medium"><i class="bi bi-pencil-square me-1"></i> Rich WYSIWYG Editor</span>
 									</label>
-									<textarea name="content" class="form-control font-monospace" rows="18" required>{{ old('content', $currentPage->content) }}</textarea>
+									<textarea id="policyContentEditor" name="content" class="form-control" rows="18" required>{{ old('content', $currentPage->content) }}</textarea>
 									<small class="text-muted d-block mt-2">
-										Use standard HTML tags like <code>&lt;h3&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;li&gt;</code>, and <code>&lt;strong&gt;</code> for structured clauses.
+										<i class="bi bi-info-circle me-1"></i> Format headings, lists, bold text, links, and tables directly using the editor toolbar above. Changes are automatically saved as compliant HTML.
 									</small>
 								</div>
 
 								<div class="col-12 mt-4 text-end">
-									<button type="submit" class="btn btn-primary rounded-pill px-5 fw-semibold">
+									<button type="submit" class="btn btn-primary rounded-pill px-5 fw-semibold shadow-sm">
 										<i class="bi bi-check2-circle me-1"></i> Save Policy
 									</button>
 								</div>
@@ -198,5 +224,49 @@
 	</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const editorElement = document.querySelector('#policyContentEditor');
+			if (editorElement) {
+				ClassicEditor
+					.create(editorElement, {
+						toolbar: {
+							items: [
+								'heading', '|',
+								'bold', 'italic', 'underline', 'strikethrough', 'link', '|',
+								'bulletedList', 'numberedList', '|',
+								'outdent', 'indent', '|',
+								'blockQuote', 'insertTable', '|',
+								'undo', 'redo'
+							],
+							shouldNotGroupWhenFull: true
+						},
+						heading: {
+							options: [
+								{ model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+								{ model: 'heading2', view: 'h2', title: 'Heading 2 (Main Clause)', class: 'ck-heading_heading2' },
+								{ model: 'heading3', view: 'h3', title: 'Heading 3 (Sub-Clause)', class: 'ck-heading_heading3' },
+								{ model: 'heading4', view: 'h4', title: 'Heading 4 (Item)', class: 'ck-heading_heading4' }
+							]
+						},
+						table: {
+							contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+						}
+					})
+					.then(editor => {
+						const form = editorElement.closest('form');
+						if (form) {
+							form.addEventListener('submit', () => {
+								editorElement.value = editor.getData();
+							});
+						}
+					})
+					.catch(error => {
+						console.error('CKEditor initialization error:', error);
+					});
+			}
+		});
+	</script>
 </body>
 </html>

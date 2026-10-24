@@ -59,7 +59,7 @@
                     role="tab" 
                     aria-controls="purchased-pane" 
                     aria-selected="{{ (isset($purchasedPhotos) && $purchasedPhotos->isNotEmpty()) ? 'true' : 'false' }}">
-              <i class="bi bi-patch-check-fill text-success me-2"></i>Purchased &amp; Unlocked ({{ isset($purchasedPhotos) ? $purchasedPhotos->count() : 0 }})
+              <i class="bi bi-patch-check-fill text-success me-2"></i>Purchased Photos (Clean) ({{ isset($purchasedPhotos) ? $purchasedPhotos->count() : 0 }})
             </button>
           </li>
           <li class="nav-item" role="presentation">
@@ -71,7 +71,7 @@
                     role="tab" 
                     aria-controls="wishlist-pane" 
                     aria-selected="{{ (isset($purchasedPhotos) && $purchasedPhotos->isNotEmpty()) ? 'false' : 'true' }}">
-              <i class="bi bi-bookmark-star-fill text-warning me-2"></i>Saved Wishlist ({{ $savedCount ?? 0 }})
+              <i class="bi bi-heart-fill text-danger me-2"></i>Saved Photos (Wishlist) ({{ $savedCount ?? 0 }})
             </button>
           </li>
         </ul>

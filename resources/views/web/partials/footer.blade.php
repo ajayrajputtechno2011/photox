@@ -41,9 +41,14 @@
           For Creators
         </p>
         <ul class="list-unstyled mb-0 footer-link-list">
-          <li class="mb-2"><a href="{{ url('/login') }}" class="footer-nav-link">Creator Login</a></li>
-          <li class="mb-2"><a href="{{ url('/signup') }}" class="footer-nav-link">Join PhotoX</a></li>
-          <li class="mb-2"><a href="{{ url('/photographer-upload-new') }}" class="footer-nav-link">Upload Photos</a></li>
+          @if(Auth::check() && Auth::user()->role === 'photographer')
+            <li class="mb-2"><a href="{{ url('/photographer-dashboard') }}" class="footer-nav-link">Creator Studio</a></li>
+            <li class="mb-2"><a href="{{ url('/photographer-upload-new') }}" class="footer-nav-link">Upload Photos</a></li>
+            <li class="mb-2"><a href="{{ url('/photographer-gallery') }}" class="footer-nav-link">My Galleries</a></li>
+          @else
+            <li class="mb-2"><a href="{{ url('/login') }}" class="footer-nav-link">Creator Login</a></li>
+            <li class="mb-2"><a href="{{ url('/signup') }}" class="footer-nav-link">Join PhotoX</a></li>
+          @endif
           <li class="mb-2"><a href="{{ url('/about') }}" class="footer-nav-link">About Us</a></li>
           <li class="mb-2"><a href="{{ url('/contact') }}" class="footer-nav-link">Support & Contact</a></li>
         </ul>

@@ -115,17 +115,25 @@
                   $downloadUrl = route('orders.download.single', $photo->id);
                   $previewImg = $photo->thumbnail_url ?: $photo->file_path;
                   $fullImg = $photo->file_path;
+                  $rawTitle = trim($photo->title ?? '');
+                  $isFilename = empty($rawTitle)
+                    || preg_match('/^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i', $rawTitle)
+                    || preg_match('/\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i', $rawTitle)
+                    || preg_match('/-\d{3,}/', $rawTitle);
+                  $displayTitle = (!$isFilename && !empty($rawTitle)) 
+                    ? $rawTitle 
+                    : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : ($eventTitle . ' · Photo #' . $photoRealId));
                 @endphp
                 <div class="col-12 col-sm-6 col-lg-4">
                   <div class="card h-100 border rounded-4 overflow-hidden shadow-sm photo-download-card">
                     <div class="photo-card-thumb-wrap" 
                          onclick="openPhotoPopup(this)" 
                          data-img-src="{{ $fullImg }}" 
-                         data-title="{{ $photo->title ?: 'Action Photo' }}" 
+                         data-title="{{ $displayTitle }}" 
                          data-event="{{ $eventTitle }}" 
                          data-download-url="{{ $downloadUrl }}"
                          title="Click to view full photo popup">
-                      <img src="{{ $previewImg }}" alt="{{ $photo->title }}" loading="lazy">
+                      <img src="{{ $previewImg }}" alt="{{ $displayTitle }}" loading="lazy">
                       <span class="badge bg-success position-absolute top-0 end-0 m-2 font-monospace shadow-sm" style="font-size: 0.68rem;">
                         <i class="bi bi-patch-check-fill me-1"></i>PAID &bull; 6-MO LICENSE
                       </span>
@@ -135,7 +143,7 @@
                       </div>
                     </div>
                     <div class="card-body p-3">
-                      <strong class="d-block text-truncate mb-1 text-dark" title="{{ $photo->title }}">{{ $photo->title ?: 'Action Photo' }}</strong>
+                      <strong class="d-block text-truncate mb-1 text-dark" title="{{ $displayTitle }}">{{ $displayTitle }}</strong>
                       <small class="text-muted d-block text-truncate mb-3">{{ $eventTitle }}</small>
                       <div class="d-flex justify-content-between align-items-center pt-2 border-top gap-2">
                         <button type="button" 
@@ -187,17 +195,25 @@
               $downloadUrl = route('orders.download.single', $photo->id);
               $previewImg = $photo->thumbnail_url ?: $photo->file_path;
               $fullImg = $photo->file_path;
+              $rawTitle = trim($photo->title ?? '');
+              $isFilename = empty($rawTitle)
+                || preg_match('/^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i', $rawTitle)
+                || preg_match('/\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i', $rawTitle)
+                || preg_match('/-\d{3,}/', $rawTitle);
+              $displayTitle = (!$isFilename && !empty($rawTitle)) 
+                ? $rawTitle 
+                : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : ($eventTitle . ' · Photo #' . $photoRealId));
             @endphp
             <div class="col-12 col-sm-6 col-lg-4">
               <div class="card h-100 border rounded-4 overflow-hidden shadow-sm photo-download-card">
                 <div class="photo-card-thumb-wrap" 
                      onclick="openPhotoPopup(this)" 
                      data-img-src="{{ $fullImg }}" 
-                     data-title="{{ $photo->title ?: 'Action Photo' }}" 
+                     data-title="{{ $displayTitle }}" 
                      data-event="{{ $eventTitle }}" 
                      data-download-url="{{ $downloadUrl }}"
                      title="Click to view full photo popup">
-                  <img src="{{ $previewImg }}" alt="{{ $photo->title }}" loading="lazy">
+                  <img src="{{ $previewImg }}" alt="{{ $displayTitle }}" loading="lazy">
                   <span class="badge bg-success position-absolute top-0 end-0 m-2 font-monospace shadow-sm">
                     <i class="bi bi-patch-check-fill me-1"></i>PAID
                   </span>
@@ -207,7 +223,7 @@
                   </div>
                 </div>
                 <div class="card-body p-3">
-                  <strong class="d-block text-truncate mb-1 text-dark" title="{{ $photo->title }}">{{ $photo->title ?: 'Action Photo' }}</strong>
+                  <strong class="d-block text-truncate mb-1 text-dark" title="{{ $displayTitle }}">{{ $displayTitle }}</strong>
                   <small class="text-muted d-block text-truncate mb-3">{{ $eventTitle }}</small>
                   <div class="d-flex justify-content-between align-items-center pt-2 border-top gap-2">
                     <button type="button" 

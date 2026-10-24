@@ -47,7 +47,7 @@
           <h2 class="fw-bold mb-1">Hello, {{ $user->name }} 👋</h2>
           <p class="text-muted mb-0">Manage your saved photos, digital orders, and unwatermarked downloads.</p>
         </div>
-        <div class="d-flex align-items-center flex-wrap gap-2 w-100 w-sm-auto">
+        <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
           <a class="btn btn-outline-primary rounded-pill px-3 py-2 flex-fill flex-sm-grow-0 text-center" href="{{ route('customer.my_photos') }}">
             <i class="bi bi-heart me-1 text-danger"></i> Saved Photos
           </a>
@@ -98,7 +98,7 @@
       </div>
 
       <!-- Digital Downloads Banner Callout -->
-      <div class="p-3 p-sm-4 rounded-4 mb-4 text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 shadow-sm" style="background: linear-gradient(135deg, #0b2d5b, #133a6b);">
+      <div class="p-3 p-sm-4 rounded-4 mb-4 text-white d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 shadow-sm" style="background: linear-gradient(135deg, #0b2d5b, #133a6b);">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-circle p-2 p-sm-3 d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(201, 253, 2, 0.15); width: 48px; height: 48px;">
             <i class="bi bi-cloud-check-fill fs-3" style="color: #c9fd02;"></i>
@@ -108,9 +108,11 @@
             <p class="mb-0 small text-white-50">You have original, unwatermarked photo downloads waiting in your vault.</p>
           </div>
         </div>
-        <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold w-100 w-sm-auto text-center flex-shrink-0" href="{{ route('orders.downloads') }}">
-          <i class="bi bi-download me-1"></i> Open Downloads Vault
-        </a>
+        <div class="flex-shrink-0 align-self-stretch align-self-md-auto">
+          <a class="btn btn-lime rounded-pill px-4 py-2 fw-semibold text-center text-nowrap d-block d-md-inline-block" href="{{ route('orders.downloads') }}">
+            <i class="bi bi-download me-1"></i> Open Downloads Vault
+          </a>
+        </div>
       </div>
 
       <!-- Recently Saved Photos Section -->
@@ -142,19 +144,37 @@
             @php
               $isSaved = $user->savedPhotos()->where('event_photos.id', $photo->id)->exists();
               $isPurchased = $user ? $user->orderItems()->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))->where('event_photo_id', $photo->id)->exists() : false;
+              $rawTitle = trim($photo->title ?? '');
+              $isFilename = empty($rawTitle)
+                || preg_match('/^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i', $rawTitle)
+                || preg_match('/\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i', $rawTitle)
+                || preg_match('/-\d{3,}/', $rawTitle);
+              $displayTitle = (!$isFilename && !empty($rawTitle)) 
+                ? $rawTitle 
+                : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : (($photo->event?->title ?: 'PhotoX') . ' · Photo #' . $photo->id));
+              $photoPrice = (float) ($photo->personal_price ?: 75.0);
+              $photoImg = $photo->watermarked_path ? asset($photo->watermarked_path) : ($photo->file_path ?: '/protected-photo/'.$photo->id);
+              $eventTitle = $photo->event?->title ?: 'Sports Event';
+              $photographerName = $photo->photographer_name ?: ($photo->photographer?->name ?: 'PhotoX Creator');
             @endphp
             <article class="saved-photo-card {{ $loop->first ? 'featured' : '' }}" id="photo-card-{{ $photo->id }}">
-              <img src="/protected-photo/{{ $photo->id }}" alt="{{ $photo->title }}">
+              <img src="/protected-photo/{{ $photo->id }}" alt="{{ $displayTitle }}">
               <div>
                 <span>{{ strtoupper($photo->event?->category_name ?: 'SPORTS') }}</span>
-                <strong>{{ $photo->title ?: 'Action Shot' }}</strong>
-                <small>{{ $photo->event?->title }}</small>
+                <strong title="{{ $displayTitle }}">{{ $displayTitle }}</strong>
+                <small>{{ $eventTitle }}</small>
                 @if(!$isPurchased)
                   <div class="mt-2">
                     <button type="button" 
-                            onclick="addSavedPhotoToCart({{ $photo->id }}, {!! json_encode($photo->title ?: 'Action Shot') !!}, {{ $photo->personal_price ?: 75 }}, {!! json_encode($photo->thumbnail_url ?: $photo->file_path) !!}, {!! json_encode($photo->event?->title ?: 'Sports Event') !!})" 
-                            class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.75rem;">
-                      <i class="bi bi-cart-plus me-1"></i>Buy Clean Copy (R{{ number_format($photo->personal_price ?: 75, 0) }})
+                            class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.75rem;"
+                            data-photo-id="{{ $photo->id }}"
+                            data-title="{{ $displayTitle }}"
+                            data-price="{{ $photoPrice }}"
+                            data-image="{{ $photoImg }}"
+                            data-event="{{ $eventTitle }}"
+                            data-photographer="{{ $photographerName }}"
+                            onclick="addSavedPhotoToCart(this)">
+                      <i class="bi bi-cart-plus me-1"></i>Buy Clean Copy (R{{ number_format($photoPrice, 0) }})
                     </button>
                   </div>
                 @endif
@@ -299,21 +319,55 @@
       .catch(err => console.error(err));
     }
 
-    function addSavedPhotoToCart(photoId, title, price, img, eventTitle) {
-      if (window.PhotoXCart) {
-        const item = {
-          id: String(photoId),
-          title: title || `Photo #${photoId}`,
-          price: parseFloat(price) || 75.0,
-          licenseType: 'personal',
-          licenseName: 'Personal Digital License',
-          image: img || `/protected-photo/${photoId}`,
-          eventTitle: eventTitle || 'Saved Photos',
-          eventSlug: '',
-          photographer: 'PhotoX Creator'
-        };
-        window.PhotoXCart.addItem(item);
+    function addSavedPhotoToCart(target, title, price, img, eventTitle, photographer) {
+      let photoId = target;
+      let itemTitle = title;
+      let itemPrice = price;
+      let itemImg = img;
+      let itemEvent = eventTitle;
+      let itemPhotographer = photographer || 'PhotoX Creator';
+
+      if (target instanceof HTMLElement || (typeof target === 'object' && target !== null && target.getAttribute)) {
+        photoId = target.getAttribute('data-photo-id');
+        itemTitle = target.getAttribute('data-title') || `Photo #${photoId}`;
+        itemPrice = parseFloat(target.getAttribute('data-price')) || 75.0;
+        itemImg = target.getAttribute('data-image') || `/protected-photo/${photoId}`;
+        itemEvent = target.getAttribute('data-event') || 'Saved Photos';
+        itemPhotographer = target.getAttribute('data-photographer') || 'PhotoX Creator';
       }
+
+      const item = {
+        id: String(photoId),
+        title: itemTitle || `Photo #${photoId}`,
+        price: parseFloat(itemPrice) || 75.0,
+        licenseType: 'personal',
+        licenseName: 'Personal Digital License',
+        image: itemImg || `/protected-photo/${photoId}`,
+        eventTitle: itemEvent || 'Saved Photos',
+        eventSlug: '',
+        photographer: itemPhotographer,
+        addedAt: new Date().toISOString()
+      };
+
+      if (window.PhotoXCart) {
+        window.PhotoXCart.addItem(item);
+      } else {
+        try {
+          const storageKey = 'photox_user_cart';
+          let items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          const existingIdx = items.findIndex(i => String(i.id) === String(photoId) && i.licenseType === 'personal');
+          if (existingIdx > -1) {
+            items[existingIdx].price = item.price;
+            items[existingIdx].title = item.title;
+          } else {
+            items.push(item);
+          }
+          localStorage.setItem(storageKey, JSON.stringify(items));
+        } catch (e) {
+          console.error('PhotoX cart error:', e);
+        }
+      }
+
       window.location.href = '/cart';
     }
   </script>

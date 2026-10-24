@@ -57,6 +57,12 @@
 			border-color: #0b2d5b !important;
 			box-shadow: 0 0 0 3px rgba(11, 45, 91, 0.12) !important;
 		}
+		.card .form-check-label {
+			color: #0f172a !important;
+		}
+		.card .form-check-input {
+			cursor: pointer;
+		}
 	</style>
 </head>
 <body>
@@ -192,10 +198,16 @@
 									<input type="text" name="last_updated" class="form-control" value="{{ old('last_updated', $currentPage->last_updated) }}" placeholder="e.g. October 2026">
 								</div>
 
-								<div class="col-md-6 d-flex align-items-center pt-4">
-									<div class="form-check form-switch">
-										<input class="form-check-input" type="checkbox" name="is_active" value="1" id="isActiveSwitch" {{ $currentPage->is_active ? 'checked' : '' }}>
-										<label class="form-check-label fw-semibold ms-2" for="isActiveSwitch">Active &amp; Publicly Visible</label>
+								<div class="col-md-6 pt-1">
+									<label class="form-label fw-semibold d-block">Publication Status</label>
+									<div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: #f8fafc; border: 1px solid #e2e8f0; min-height: 48px;">
+										<label class="form-check-label fw-bold text-dark m-0 d-flex align-items-center gap-2" for="isActiveSwitch" style="color: #0f172a !important; cursor: pointer;">
+											<i class="bi bi-eye-fill text-success fs-5"></i>
+											<span style="color: #0f172a !important;">Active &amp; Publicly Visible</span>
+										</label>
+										<div class="form-check form-switch m-0 d-flex align-items-center">
+											<input class="form-check-input" type="checkbox" name="is_active" value="1" id="isActiveSwitch" {{ $currentPage->is_active ? 'checked' : '' }} style="cursor: pointer; width: 2.8em; height: 1.5em;">
+										</div>
 									</div>
 								</div>
 

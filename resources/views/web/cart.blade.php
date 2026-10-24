@@ -424,15 +424,21 @@
 
         const thumbSrc = item.image || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=300&q=80';
 
+        const rawTitle = (item.title || 'Photo').trim();
+        const isRawFile = /^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i.test(rawTitle)
+          || /\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i.test(rawTitle)
+          || /-\d{3,}/.test(rawTitle);
+        const displayItemTitle = isRawFile ? `${item.eventTitle || 'Event'} · Photo #${item.id}` : rawTitle;
+
         html += `
           <div class="cart-item-row" id="cartRow_${item.id}_${item.licenseType}">
             <div class="cart-item-main">
-              <div class="cart-item-thumb-box" onclick="previewCartPhoto('${thumbSrc}', '${(item.title || '').replace(/'/g, "\\'")}', '${(item.licenseName || '').replace(/'/g, "\\'")}', 'R${itemPrice.toFixed(2)}')" title="Click to view full photo">
-                <img src="${thumbSrc}" alt="${item.title}" class="cart-item-thumb" loading="lazy">
+              <div class="cart-item-thumb-box" onclick="previewCartPhoto('${thumbSrc}', '${displayItemTitle.replace(/'/g, "\\'")}', '${(item.licenseName || '').replace(/'/g, "\\'")}', 'R${itemPrice.toFixed(2)}')" title="Click to view full photo">
+                <img src="${thumbSrc}" alt="${displayItemTitle}" class="cart-item-thumb" loading="lazy">
               </div>
               <div class="cart-item-info">
                 <div class="cart-item-title">
-                  <span>${item.title}</span>
+                  <span>${displayItemTitle}</span>
                   <span class="badge bg-secondary bg-opacity-25 text-dark font-monospace" style="font-size: 0.68rem; font-weight: 600;">
                     ${item.licenseName || 'Personal License'}
                   </span>

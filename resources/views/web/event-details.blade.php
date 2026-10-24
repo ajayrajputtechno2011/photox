@@ -809,14 +809,18 @@
           $dynamicSubAlbums = $photos->pluck('sub_album')->filter()->unique()->values();
         @endphp
         <ul class="dropdown-menu dropdown-menu-end shadow">
-          <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosByBib('')">Show All Photos</a></li>
+          <li><a class="dropdown-item fw-semibold" href="javascript:void(0)" onclick="resetAllGalleryFilters()"><i class="bi bi-grid me-2 text-primary"></i>Show All Photos</a></li>
           @if($dynamicSubAlbums->isNotEmpty())
             <li><hr class="dropdown-divider"></li>
-            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem;">Albums / Stations</h6></li>
+            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;"><i class="bi bi-folder2-open me-1 text-warning"></i> Albums / Stations</h6></li>
             @foreach($dynamicSubAlbums as $subAlb)
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('{{ addslashes($subAlb) }}')">{{ $subAlb }}</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterPhotosBySubAlbum('{{ addslashes($subAlb) }}')"><i class="bi bi-chevron-right me-1 text-muted small"></i>{{ $subAlb }}</a></li>
             @endforeach
           @endif
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;"><i class="bi bi-clock-history me-1 text-info"></i> Sort by Time Taken</h6></li>
+          <li><a class="dropdown-item" href="javascript:void(0)" onclick="sortPhotosByTime('asc')"><i class="bi bi-sort-numeric-down me-2 text-warning"></i>Earliest First (Morning / Start)</a></li>
+          <li><a class="dropdown-item" href="javascript:void(0)" onclick="sortPhotosByTime('desc')"><i class="bi bi-sort-numeric-up-alt me-2 text-warning"></i>Latest First (Finish / Awards)</a></li>
         </ul>
       </div>
     </div>
@@ -827,6 +831,7 @@
         <div class="event-photo-card" 
              data-index="{{ $loop->index }}" 
              data-photo-id="{{ $photo->id }}"
+             data-timestamp="{{ $photo->captured_at ? $photo->captured_at->timestamp : ($photo->created_at ? $photo->created_at->timestamp : $photo->id) }}"
              data-price="{{ (float) ($photo->personal_price ?: ($event->starting_price ?: 50)) }}"
              data-bib="{{ $photo->bib_number ?? '' }}" 
              data-subalbum="{{ $photo->sub_album ?? '' }}" 
@@ -883,10 +888,14 @@
           <!-- Hover Overlay Controls (Matching ZebraSnap Screenshot 4) -->
           <div class="card-hover-actions">
             @php
-              $isFilename = empty($photo->title) || preg_match('/^(clint|dsc|img|samples|\d+)/i', $photo->title);
-              $displayTitle = (!$isFilename && !empty($photo->title)) 
-                ? $photo->title 
-                : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : ($event->title . ' · #' . ($loop->index + 1)));
+              $rawTitle = trim($photo->title ?? '');
+              $isFilename = empty($rawTitle)
+                || preg_match('/^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i', $rawTitle)
+                || preg_match('/\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i', $rawTitle)
+                || preg_match('/-\d{3,}/', $rawTitle);
+              $displayTitle = (!$isFilename && !empty($rawTitle)) 
+                ? $rawTitle 
+                : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : ($event->title . ' · Photo #' . ($loop->index + 1)));
             @endphp
             <span class="text-white small fw-bold mb-1 px-3 py-1 rounded bg-dark bg-opacity-75">
               {{ $displayTitle }}
@@ -1537,10 +1546,14 @@
     // Update Header info
     const titleEl = document.getElementById('modalPhotoTitle');
     if (titleEl) {
-      const isFilename = !photo.title || /^(clint|dsc|img|samples|\d+)/i.test(photo.title);
+      const rawTitle = (photo.title || '').trim();
+      const isFilename = !rawTitle 
+        || /^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i.test(rawTitle)
+        || /\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i.test(rawTitle)
+        || /-\d{3,}/.test(rawTitle);
       const evTitle = {!! json_encode($event->title ?? 'Event Gallery') !!};
-      const displayTitle = (!isFilename && photo.title) 
-        ? photo.title 
+      const displayTitle = (!isFilename && rawTitle) 
+        ? rawTitle 
         : (photo.bib_number ? `Athlete #${photo.bib_number}` : `${evTitle} · Photo #${currentPhotoIndex + 1}`);
       titleEl.textContent = displayTitle;
     }
@@ -1960,6 +1973,42 @@
 
   function filterPhotosBySubAlbum(albumName) {
     filterPhotosByBib(albumName);
+    if (typeof showToast === 'function') {
+      showToast(`📁 Station Filter: ${albumName}`);
+    }
+  }
+
+  function resetAllGalleryFilters() {
+    filterPhotosByBib('');
+    if (typeof showToast === 'function') {
+      showToast('Showing all event photos');
+    }
+  }
+
+  function sortPhotosByTime(direction) {
+    const grid = document.getElementById('eventPhotosGrid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.event-photo-card'));
+    cards.sort((a, b) => {
+      const timeA = parseInt(a.getAttribute('data-timestamp') || '0', 10);
+      const timeB = parseInt(b.getAttribute('data-timestamp') || '0', 10);
+      return direction === 'asc' ? (timeA - timeB) : (timeB - timeA);
+    });
+    cards.forEach(card => grid.appendChild(card));
+
+    // Re-index lightboxes so navigation works in newly sorted order
+    cards.forEach((card, idx) => {
+      card.setAttribute('data-index', idx);
+      card.onclick = function() { openZebraLightbox(idx); };
+      const img = card.querySelector('img');
+      if (img) {
+        img.onclick = function(e) { e.stopPropagation(); openZebraLightbox(idx); };
+      }
+    });
+
+    if (typeof showToast === 'function') {
+      showToast(direction === 'asc' ? '⏱️ Sorted: Earliest time taken first (Start)' : '⏱️ Sorted: Latest time taken first (Finish)');
+    }
   }
 
   function setGridColumns(cols) {
@@ -2289,9 +2338,19 @@
       photo = { id: photoId, personal_price: 75 };
     }
 
+    const rawPhotoTitle = (photo.title || '').trim();
+    const isPhotoFilename = !rawPhotoTitle 
+      || /^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i.test(rawPhotoTitle)
+      || /\.(jpg|jpeg|png|webp|cr2|nef|arw|dng|raw)$/i.test(rawPhotoTitle)
+      || /-\d{3,}/.test(rawPhotoTitle);
+    const evTitle = {!! json_encode($event->title ?? 'Event Gallery') !!};
+    const cleanCartTitle = (!isPhotoFilename && rawPhotoTitle)
+      ? rawPhotoTitle
+      : (photo.bib_number ? `Athlete #${photo.bib_number}` : `${evTitle} · Photo #${photo.id}`);
+
     const item = {
       id: photo.id,
-      title: photo.title || `Photo #${photo.id}`,
+      title: cleanCartTitle,
       price: parseFloat(photo.personal_price || 75).toFixed(2),
       licenseType: 'personal',
       licenseName: 'Personal Digital License',

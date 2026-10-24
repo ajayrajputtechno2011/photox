@@ -1996,7 +1996,7 @@
         price: itemPrice,
         licenseType: 'personal',
         licenseName: 'Personal Digital License',
-        image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id || photoId}`,
+        image: `/protected-photo/${photo.id || photoId}`,
         eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
         eventSlug: {!! json_encode($event->slug ?? '') !!},
         photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
@@ -2401,7 +2401,7 @@
       price: parseFloat(photo.personal_price || 75).toFixed(2),
       licenseType: 'personal',
       licenseName: 'Personal Digital License',
-      image: photo.preview_url || photo.image_path || `/protected-photo/${photo.id}`,
+      image: `/protected-photo/${photo.id}`,
       eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
       eventSlug: {!! json_encode($event->slug ?? '') !!},
       photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}
@@ -2452,7 +2452,7 @@
       price: prices[license] || eventBaseStartingPrice.toFixed(2),
       licenseType: license,
       licenseName: licenseNames[license] || 'Personal License',
-      image: currentPhoto.preview_url || currentPhoto.image_path || `/protected-photo/${currentPhoto.id}`,
+      image: `/protected-photo/${currentPhoto.id}`,
       eventTitle: {!! json_encode($event->title ?? 'Event Gallery') !!},
       eventSlug: {!! json_encode($event->slug ?? '') !!},
       photographer: {!! json_encode($event->photographer?->name ?? 'PhotoX Creator') !!}

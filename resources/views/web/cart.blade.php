@@ -70,6 +70,10 @@
       object-fit: contain; /* Complete photo always visible, NEVER CROPPED */
       display: block;
       border-radius: 4px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none; /* Prevents browser right-click save on image element */
     }
     .cart-item-info {
       flex: 1;
@@ -360,8 +364,10 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center p-3">
-          <div style="max-height: 70vh; display: flex; align-items: center; justify-content: center; background: #030810; border-radius: 12px; overflow: hidden; padding: 10px;">
-            <img src="" id="cartPreviewModalImg" alt="Selected photo" style="max-width: 100%; max-height: 65vh; width: auto; height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div style="max-height: 70vh; display: flex; align-items: center; justify-content: center; background: #030810; border-radius: 12px; overflow: hidden; padding: 10px; position: relative;">
+            <img src="" id="cartPreviewModalImg" alt="Selected photo" oncontextmenu="return false;" ondragstart="return false;" style="max-width: 100%; max-height: 65vh; width: auto; height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); user-select: none; -webkit-user-drag: none; pointer-events: none;">
+            <!-- Anti-Theft Watermark Shield overlay -->
+            <div style="position: absolute; inset: 0; z-index: 5; background: transparent; cursor: default;" oncontextmenu="event.preventDefault(); return false;"></div>
           </div>
           <div class="d-flex justify-content-between align-items-center mt-3 px-2">
             <span class="text-white-50 small"><i class="bi bi-shield-check text-success me-1"></i> Full clean unwatermarked master file delivered on checkout</span>
@@ -422,7 +428,24 @@
         const itemPrice = parseFloat(item.price) || 75.0;
         total += itemPrice;
 
-        const thumbSrc = item.image || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=300&q=80';
+        const isGalleryBundle = String(item.id || '').startsWith('gallery_');
+        const photoNumericId = String(item.id || '').replace(/\D/g, '');
+        let thumbSrc = (!isGalleryBundle && photoNumericId) 
+          ? `/protected-photo/${photoNumericId}` 
+          : (item.image || '/logo.png');
+
+        // Automatically cleanse localStorage if any previously added items contained raw storage URLs
+        if (!isGalleryBundle && photoNumericId && item.image !== thumbSrc) {
+          item.image = thumbSrc;
+          try {
+            const allItems = window.PhotoXCart ? window.PhotoXCart.getItems() : [];
+            const idx = allItems.findIndex(x => String(x.id) === String(item.id) && x.licenseType === item.licenseType);
+            if (idx > -1) {
+              allItems[idx].image = thumbSrc;
+              if (window.PhotoXCart) window.PhotoXCart.saveItems(allItems);
+            }
+          } catch(e) {}
+        }
 
         const rawTitle = (item.title || 'Photo').trim();
         const isRawFile = /^(clint|dsc|img|samples|cruiser|safariprojek|p\d+|\d+)/i.test(rawTitle)
@@ -433,8 +456,9 @@
         html += `
           <div class="cart-item-row" id="cartRow_${item.id}_${item.licenseType}">
             <div class="cart-item-main">
-              <div class="cart-item-thumb-box" onclick="previewCartPhoto('${thumbSrc}', '${displayItemTitle.replace(/'/g, "\\'")}', '${(item.licenseName || '').replace(/'/g, "\\'")}', 'R${itemPrice.toFixed(2)}')" title="Click to view full photo">
-                <img src="${thumbSrc}" alt="${displayItemTitle}" class="cart-item-thumb" loading="lazy">
+              <div class="cart-item-thumb-box position-relative overflow-hidden" onclick="previewCartPhoto('${thumbSrc}', '${displayItemTitle.replace(/'/g, "\\'")}', '${(item.licenseName || '').replace(/'/g, "\\'")}', 'R${itemPrice.toFixed(2)}')" title="Click to view photo" oncontextmenu="return false;">
+                <img src="${thumbSrc}" alt="${displayItemTitle}" class="cart-item-thumb" loading="lazy" oncontextmenu="return false;" ondragstart="return false;">
+                <div style="position: absolute; inset: 0; z-index: 2; background: transparent;" oncontextmenu="event.preventDefault(); return false;"></div>
               </div>
               <div class="cart-item-info">
                 <div class="cart-item-title">

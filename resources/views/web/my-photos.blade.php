@@ -177,7 +177,7 @@
                     ? $rawTitle 
                     : (!empty($photo->bib_number) ? 'Athlete #' . $photo->bib_number : (($photo->event?->title ?: 'PhotoX') . ' · Photo #' . $photo->id));
                   $photoPrice = (float) ($photo->personal_price ?: 75.0);
-                  $photoImg = $photo->watermarked_path ? asset($photo->watermarked_path) : ($photo->file_path ?: '/protected-photo/'.$photo->id);
+                  $photoImg = '/protected-photo/'.$photo->id;
                   $eventTitle = $photo->event?->title ?: 'Sports Event';
                   $photographerName = $photo->photographer_name ?: ($photo->photographer?->name ?: 'PhotoX Creator');
                 @endphp

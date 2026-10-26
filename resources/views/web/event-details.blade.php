@@ -1223,9 +1223,9 @@
                     <i class="bi bi-tag-fill me-1"></i> SELECT PURCHASE OPTION
                   </label>
                   
-                  <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-column gap-2" id="modalPurchaseOptionsContainer">
                     <!-- Option 1: Personal Single Photo -->
-                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <label id="modalOptionPersonal" class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" onclick="setLightboxLicense('personal')" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="personal" checked onchange="updateModalPrice('personal')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
@@ -1237,7 +1237,7 @@
                     </label>
 
                     <!-- Option 2: Commercial Single Photo -->
-                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <label id="modalOptionCommercial" class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" onclick="setLightboxLicense('commercial')" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="commercial" onchange="updateModalPrice('commercial')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
@@ -1249,7 +1249,7 @@
                     </label>
 
                     <!-- Option 3: Selfie / Athlete Bundle (Flat Rate for 1 or 100+ images) -->
-                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <label id="modalOptionSelfieBundle" class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" onclick="setLightboxLicense('selfie')" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="selfie" onchange="updateModalPrice('selfie')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
@@ -1264,7 +1264,7 @@
                     </label>
 
                     <!-- Option 4: Buy Complete Gallery (All Photos in Event) -->
-                    <label class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
+                    <label id="modalOptionFullGallery" class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded cursor-pointer border" onclick="setLightboxLicense('full_gallery')" style="background: #0e243a; border-color: #2b5680 !important; cursor: pointer;">
                       <div class="d-flex align-items-center gap-3">
                         <input type="radio" name="license_type" value="full_gallery" onchange="updateModalPrice('full_gallery')" style="transform: scale(1.25); accent-color: #ff8a00;">
                         <div>
@@ -1516,32 +1516,109 @@
     }
   }
 
+  @php
+    $parsedStartingPrice = 0.0;
+    if (!empty($event->starting_price)) {
+      if (preg_match('/[0-9]+(?:\.[0-9]+)?/', (string)$event->starting_price, $m)) {
+        $parsedStartingPrice = (float) $m[0];
+      }
+    }
+    $eventStartingPriceVal = $parsedStartingPrice > 0 ? $parsedStartingPrice : 75.0;
+    $eventCommercialPriceVal = (float) ($event->commercial_price ?? 0);
+    $eventSelfieBundlePriceVal = (float) ($event->selfie_bundle_price ?? 0);
+    $eventFullGalleryPriceVal = (float) ($event->full_gallery_price ?? 0);
+  @endphp
+
+  const eventPricingConfig = {
+    startingPrice: {{ $eventStartingPriceVal }},
+    commercialPrice: {{ $eventCommercialPriceVal }},
+    selfieBundlePrice: {{ $eventSelfieBundlePriceVal }},
+    fullGalleryPrice: {{ $eventFullGalleryPriceVal }}
+  };
+
+  function getCalculatedPricesForPhoto(photo) {
+    photo = photo || {};
+
+    // 1. Personal License (Single Photo)
+    let personal = 0;
+    if (photo.personal_price !== undefined && photo.personal_price !== null && photo.personal_price !== '' && parseFloat(photo.personal_price) > 0) {
+      personal = parseFloat(photo.personal_price);
+    } else if (eventPricingConfig.startingPrice > 0) {
+      personal = eventPricingConfig.startingPrice;
+    }
+
+    // 2. Commercial License (Single Photo):
+    // If photo has explicit price > 0, use it.
+    // If photo commercial price is missing/empty/null and event has commercial price > 0, use event price.
+    // If photo commercial price is 0 or 0.00, commercial license is not offered (price = 0).
+    let commercial = 0;
+    if (photo.commercial_price !== undefined && photo.commercial_price !== null && photo.commercial_price !== '') {
+      commercial = parseFloat(photo.commercial_price);
+    } else if (eventPricingConfig.commercialPrice > 0) {
+      commercial = eventPricingConfig.commercialPrice;
+    }
+
+    // 3. Selfie / Athlete Bundle (All matched photos)
+    let selfie = 0;
+    if (eventPricingConfig.selfieBundlePrice > 0) {
+      selfie = eventPricingConfig.selfieBundlePrice;
+    }
+
+    // 4. Complete Gallery Bundle (All photos in event)
+    let fullGallery = 0;
+    if (eventPricingConfig.fullGalleryPrice > 0) {
+      fullGallery = eventPricingConfig.fullGalleryPrice;
+    }
+
+    return {
+      personal: personal,
+      commercial: commercial,
+      selfie: selfie,
+      full_gallery: fullGallery
+    };
+  }
+
+  function updateModalPurchaseOptionsVisibility(prices) {
+    const options = [
+      { id: 'modalOptionPersonal', val: 'personal', price: prices.personal, labelId: 'modalPersonalPriceLabel' },
+      { id: 'modalOptionCommercial', val: 'commercial', price: prices.commercial, labelId: 'modalCommercialPriceLabel' },
+      { id: 'modalOptionSelfieBundle', val: 'selfie', price: prices.selfie, labelId: 'modalSelfieBundlePriceLabel' },
+      { id: 'modalOptionFullGallery', val: 'full_gallery', price: prices.full_gallery, labelId: 'modalFullGalleryPriceLabel' }
+    ];
+
+    const available = [];
+    options.forEach(opt => {
+      const el = document.getElementById(opt.id);
+      const label = document.getElementById(opt.labelId);
+      if (opt.price > 0) {
+        if (el) el.style.setProperty('display', 'flex', 'important');
+        if (label) label.textContent = `R${opt.price.toFixed(2)}`;
+        available.push(opt.val);
+      } else {
+        if (el) el.style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    return available;
+  }
+
   // Dynamic License Selection (Matching Client Approved Reference)
   let currentLicenseChoice = 'personal';
   let currentSelectedLicense = 'personal';
 
   function updateModalPrice(type) {
+    const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
+    const prices = getCalculatedPricesForPhoto(photo);
+    const available = updateModalPurchaseOptionsVisibility(prices);
+
+    if (available.length > 0 && !available.includes(type)) {
+      type = available[0];
+    }
+
     currentLicenseChoice = type;
     currentSelectedLicense = type;
-    const photo = (currentEventPhotos && currentEventPhotos[currentPhotoIndex]) ? currentEventPhotos[currentPhotoIndex] : {};
-    const personalPrice = parseFloat(photo.personal_price || 75).toFixed(2);
-    const commercialPrice = parseFloat(photo.commercial_price || 350).toFixed(2);
-    const selfieBundlePrice = (150).toFixed(2);
-    const fullGalleryPrice = (450).toFixed(2);
 
-    let chosenPrice = personalPrice;
-    let buttonLabel = 'Purchase Hi-Res';
-
-    if (type === 'commercial') {
-      chosenPrice = commercialPrice;
-      buttonLabel = 'Purchase Commercial License';
-    } else if (type === 'selfie') {
-      chosenPrice = selfieBundlePrice;
-      buttonLabel = 'Purchase Selfie Bundle (All My Photos)';
-    } else if (type === 'full_gallery') {
-      chosenPrice = fullGalleryPrice;
-      buttonLabel = 'Purchase Complete Gallery Bundle';
-    }
+    const chosenPrice = (prices[type] && prices[type] > 0) ? prices[type].toFixed(2) : (available.length > 0 ? prices[available[0]].toFixed(2) : '0.00');
 
     const actionPriceEl = document.getElementById('modalActionPrice');
     if (actionPriceEl) {
@@ -1550,6 +1627,26 @@
 
     const radio = document.querySelector(`input[name="license_type"][value="${type}"]`);
     if (radio) radio.checked = true;
+
+    // Highlight active selected option border
+    ['modalOptionPersonal', 'modalOptionCommercial', 'modalOptionSelfieBundle', 'modalOptionFullGallery'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.borderColor = '#2b5680';
+        el.style.background = '#0e243a';
+      }
+    });
+    const activeCardId = {
+      'personal': 'modalOptionPersonal',
+      'commercial': 'modalOptionCommercial',
+      'selfie': 'modalOptionSelfieBundle',
+      'full_gallery': 'modalOptionFullGallery'
+    }[type];
+    const activeEl = document.getElementById(activeCardId);
+    if (activeEl) {
+      activeEl.style.borderColor = '#ff8a00';
+      activeEl.style.background = '#143352';
+    }
 
     updateEventAddToCartButtonState();
   }
@@ -1638,19 +1735,14 @@
       copyEl.textContent = `© {{ date('Y') }} ${photographerName} / PhotoX`;
     }
 
-    // Pricing labels
-    const eventBaseStartingPrice = {{ (float) ($event->starting_price ?: 50) }};
-    const personalPrice = parseFloat(photo.personal_price || eventBaseStartingPrice).toFixed(2);
-    const commercialPrice = parseFloat(photo.commercial_price || (personalPrice * 3.5)).toFixed(2);
-    const personalTag = document.getElementById('modalPersonalPriceLabel');
-    if (personalTag) personalTag.textContent = `R${personalPrice}`;
-    const commercialTag = document.getElementById('modalCommercialPriceLabel');
-    if (commercialTag) commercialTag.textContent = `R${commercialPrice}`;
+    // Calculate dynamic license pricing and hide zero/empty options
+    const prices = getCalculatedPricesForPhoto(photo);
+    const availableLicenses = updateModalPurchaseOptionsVisibility(prices);
 
-    // Default to selected license
-    const personalRadio = document.querySelector(`input[name="license_type"][value="${currentLicenseChoice}"]`);
-    if (personalRadio) personalRadio.checked = true;
-    updateModalPrice(currentLicenseChoice || 'personal');
+    if (availableLicenses.length > 0 && !availableLicenses.includes(currentLicenseChoice)) {
+      currentLicenseChoice = availableLicenses[0];
+    }
+    updateModalPrice(currentLicenseChoice);
 
     // Update Nav Buttons visibility (disable if only 1 photo)
     const prevBtn = document.getElementById('modalPrevBtn');
@@ -2382,8 +2474,10 @@
   function quickAddToCart(photoId) {
     let photo = (currentEventPhotos || []).find(p => String(p.id) === String(photoId));
     if (!photo) {
-      photo = { id: photoId, personal_price: 75 };
+      photo = { id: photoId };
     }
+    const prices = getCalculatedPricesForPhoto(photo);
+    const photoPrice = prices.personal > 0 ? prices.personal : eventPricingConfig.startingPrice;
 
     const rawPhotoTitle = (photo.title || '').trim();
     const isPhotoFilename = !rawPhotoTitle 
@@ -2398,7 +2492,7 @@
     const item = {
       id: photo.id,
       title: cleanCartTitle,
-      price: parseFloat(photo.personal_price || 75).toFixed(2),
+      price: photoPrice.toFixed(2),
       licenseType: 'personal',
       licenseName: 'Personal Digital License',
       image: `/protected-photo/${photo.id}`,
@@ -2429,7 +2523,16 @@
   function triggerPurchase() {
     if (!currentEventPhotos || !currentEventPhotos[currentPhotoIndex]) return;
     const currentPhoto = currentEventPhotos[currentPhotoIndex];
+    const prices = getCalculatedPricesForPhoto(currentPhoto);
     const license = currentSelectedLicense || 'personal';
+
+    const chosenPrice = prices[license] || 0;
+    if (chosenPrice <= 0) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ This purchase option is currently unavailable.');
+      }
+      return;
+    }
 
     const licenseNames = {
       'personal': 'Personal Digital License',
@@ -2438,18 +2541,10 @@
       'full_gallery': 'Full Gallery Digital Package'
     };
 
-    const eventBaseStartingPrice = {{ (float) ($event->starting_price ?: 50) }};
-    const prices = {
-      'personal': parseFloat(currentPhoto.personal_price || eventBaseStartingPrice).toFixed(2),
-      'commercial': parseFloat(currentPhoto.commercial_price || (eventBaseStartingPrice * 3.5)).toFixed(2),
-      'selfie': '150.00',
-      'full_gallery': '450.00'
-    };
-
     const item = {
       id: currentPhoto.id,
       title: currentPhoto.title || `Photo #${currentPhoto.id}`,
-      price: prices[license] || eventBaseStartingPrice.toFixed(2),
+      price: chosenPrice.toFixed(2),
       licenseType: license,
       licenseName: licenseNames[license] || 'Personal License',
       image: `/protected-photo/${currentPhoto.id}`,

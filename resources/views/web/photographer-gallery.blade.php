@@ -649,16 +649,39 @@
                     @endif
                   </div>
 
-                  <!-- Tab 2: Upload More Photos -->
+                  <!-- Tab 2: Upload More Photos (Chunked Batch Upload for 500-1000+ Photos) -->
                   <div class="tab-pane fade" id="tabUpload_{{ $gallery->id }}" role="tabpanel">
-                    <form action="{{ route('photographer.gallery.upload_photos', $gallery->id) }}" method="POST" enctype="multipart/form-data">
+                    <form id="uploadMoreForm_{{ $gallery->id }}" onsubmit="handleBatchUploadMore({{ $gallery->id }}, event)">
                       @csrf
                       <div class="p-4 mb-3 text-center rounded bg-light border border-2 border-dashed">
                         <i class="bi bi-cloud-arrow-up text-warning display-5 mb-2 d-block"></i>
                         <h6 class="text-dark fw-bold mb-1">Add More Photos to "{{ $gallery->title }}"</h6>
-                        <p class="text-muted small mb-3">Select JPEG, PNG, or WebP high-resolution photos. Automated watermarks will be applied.</p>
-                        <input type="file" name="photos[]" multiple accept="image/*" class="form-control mb-3" style="max-width: 400px; margin: 0 auto;" required>
-                        <button type="submit" class="btn btn-warning fw-bold text-dark rounded-pill px-4">
+                        <p class="text-muted small mb-3">Upload 50, 100, 500, or 1000+ photos at once (JPG, PNG, WebP). Automatic 15-photo batching &amp; live progress tracking included.</p>
+
+                        <input type="file" id="photosInput_{{ $gallery->id }}" multiple accept="image/*" class="form-control mb-3" style="max-width: 420px; margin: 0 auto;" required onchange="updateSelectedFilesCount({{ $gallery->id }}, this)">
+
+                        <div id="fileCountBadge_{{ $gallery->id }}" class="mb-3 d-none">
+                          <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
+                            <i class="bi bi-check-circle-fill me-1"></i> <span class="count-num">0</span> photos selected
+                          </span>
+                        </div>
+
+                        <!-- Real-time Progress Bar Box (Revealed on upload) -->
+                        <div id="progressBox_{{ $gallery->id }}" class="d-none text-start bg-white p-3 rounded-3 border mb-3 shadow-sm" style="max-width: 520px; margin: 0 auto;">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark small progress-title"><i class="bi bi-arrow-repeat spin me-1 text-warning"></i> Uploading photos...</strong>
+                            <span class="text-warning fw-bold font-monospace progress-pct">0%</span>
+                          </div>
+                          <div class="progress" style="height: 10px; border-radius: 5px; background: #e2e8f0;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning progress-fill" style="width: 0%;"></div>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center text-muted small mt-1">
+                            <span class="progress-batches" style="font-size: 0.75rem;">Batch 0 of 0</span>
+                            <span class="progress-counts" style="font-size: 0.75rem;">0 / 0 photos</span>
+                          </div>
+                        </div>
+
+                        <button type="submit" id="uploadBtn_{{ $gallery->id }}" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm">
                           <i class="bi bi-upload me-2"></i> Upload &amp; Watermark Photos
                         </button>
                       </div>
@@ -795,6 +818,121 @@
       if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
       }
+    }
+
+    function updateSelectedFilesCount(galleryId, input) {
+      const badge = document.getElementById('fileCountBadge_' + galleryId);
+      if (!badge) return;
+      if (input.files && input.files.length > 0) {
+        badge.querySelector('.count-num').textContent = input.files.length;
+        badge.classList.remove('d-none');
+      } else {
+        badge.classList.add('d-none');
+      }
+    }
+
+    function handleBatchUploadMore(galleryId, e) {
+      e.preventDefault();
+      const input = document.getElementById('photosInput_' + galleryId);
+      const submitBtn = document.getElementById('uploadBtn_' + galleryId);
+      const progressBox = document.getElementById('progressBox_' + galleryId);
+      const progressTitle = progressBox.querySelector('.progress-title');
+      const progressPct = progressBox.querySelector('.progress-pct');
+      const progressFill = progressBox.querySelector('.progress-fill');
+      const progressBatches = progressBox.querySelector('.progress-batches');
+      const progressCounts = progressBox.querySelector('.progress-counts');
+
+      if (!input || !input.files || input.files.length === 0) {
+        alert('Please select one or more photos to upload.');
+        return;
+      }
+
+      const files = Array.from(input.files);
+      const totalFiles = files.length;
+      const batchSize = 15;
+      const totalBatches = Math.ceil(totalFiles / batchSize);
+      const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '{{ csrf_token() }}';
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Uploading...';
+      input.disabled = true;
+      progressBox.classList.remove('d-none');
+
+      let uploadedSoFar = 0;
+
+      function uploadBatch(startIndex) {
+        if (startIndex >= totalFiles) {
+          progressFill.style.width = '100%';
+          progressPct.textContent = '100%';
+          progressTitle.innerHTML = '<i class="bi bi-check2-circle text-success me-1"></i> All ' + totalFiles + ' photos uploaded &amp; watermarked!';
+          progressCounts.textContent = `${totalFiles} / ${totalFiles} completed`;
+          setTimeout(() => {
+            window.location.reload();
+          }, 800);
+          return;
+        }
+
+        const endIndex = Math.min(startIndex + batchSize, totalFiles);
+        const batchFiles = files.slice(startIndex, endIndex);
+        const batchNum = Math.floor(startIndex / batchSize) + 1;
+
+        progressTitle.textContent = `Uploading batch ${batchNum} of ${totalBatches}...`;
+        progressBatches.textContent = `Batch ${batchNum} of ${totalBatches}`;
+        progressCounts.textContent = `${uploadedSoFar} / ${totalFiles} photos`;
+
+        const formData = new FormData();
+        formData.append('_token', csrfToken);
+        batchFiles.forEach(f => {
+          formData.append('photos[]', f);
+        });
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/photographer-gallery/${galleryId}/upload-photos`, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Accept', 'application/json');
+
+        xhr.upload.onprogress = function(evt) {
+          if (evt.lengthComputable) {
+            const frac = evt.loaded / evt.total;
+            const currentTotalUploaded = startIndex + (batchFiles.length * frac);
+            const pct = Math.min(98, Math.round((currentTotalUploaded / totalFiles) * 100));
+            progressFill.style.width = pct + '%';
+            progressPct.textContent = pct + '%';
+          }
+        };
+
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            uploadedSoFar = endIndex;
+            const donePct = Math.round((uploadedSoFar / totalFiles) * 100);
+            progressFill.style.width = donePct + '%';
+            progressPct.textContent = donePct + '%';
+            uploadBatch(endIndex);
+          } else {
+            submitBtn.disabled = false;
+            input.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
+            let errDetail = 'HTTP ' + xhr.status;
+            try {
+              const errRes = JSON.parse(xhr.responseText);
+              if (errRes.message) errDetail = errRes.message;
+            } catch(e) {}
+            alert(`Upload error on batch ${batchNum} (${errDetail}). ${uploadedSoFar} photos were saved. You can upload the remaining photos anytime.`);
+          }
+        };
+
+        xhr.onerror = function() {
+          submitBtn.disabled = false;
+          input.disabled = false;
+          submitBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
+          alert(`Network connection error on batch ${batchNum}. ${uploadedSoFar} photos were saved. Please check your connection and resume.`);
+        };
+
+        xhr.send(formData);
+      }
+
+      uploadBatch(0);
     }
   </script>
 </body>

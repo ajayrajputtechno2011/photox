@@ -124,6 +124,75 @@
       background: #ff8a00;
       color: #ffffff;
     }
+    /* Drag & Drop in modal */
+    .drop-clean-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 32px 20px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .drop-clean-box:hover, .drop-clean-box.dragover {
+      border-color: #ff8a00;
+      background: rgba(255, 138, 0, 0.05);
+    }
+    .drop-clean-box i {
+      font-size: 38px;
+      color: #ff8a00;
+      display: block;
+      margin-bottom: 6px;
+    }
+    /* Queue card & items in modal */
+    .queue-clean-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+      text-align: start;
+    }
+    .queue-clean-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+    .queue-clean-thumb {
+      width: 52px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    /* Progress Box in modal */
+    .progress-clean-box {
+      background: #ffffff;
+      border: 1px solid #ff8a00;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      box-shadow: 0 4px 16px rgba(255, 138, 0, 0.12);
+      text-align: start;
+    }
+    .progress-bar-custom {
+      height: 12px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar-fill-custom {
+      height: 100%;
+      background: linear-gradient(90deg, #ff8a00, #ffb03a);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
   </style>
 </head>
 <body class="customer-app dashboard-page photographer-dashboard-page page-photographer-dashboard">
@@ -649,43 +718,65 @@
                     @endif
                   </div>
 
-                  <!-- Tab 2: Upload More Photos (Chunked Batch Upload for 500-1000+ Photos) -->
+                  <!-- Tab 2: Upload More Photos (Drag & Drop + 15-Photo Batch Chunking for 500-1000+ Photos) -->
                   <div class="tab-pane fade" id="tabUpload_{{ $gallery->id }}" role="tabpanel">
-                    <form id="uploadMoreForm_{{ $gallery->id }}" onsubmit="handleBatchUploadMore({{ $gallery->id }}, event)">
-                      @csrf
-                      <div class="p-4 mb-3 text-center rounded bg-light border border-2 border-dashed">
-                        <i class="bi bi-cloud-arrow-up text-warning display-5 mb-2 d-block"></i>
-                        <h6 class="text-dark fw-bold mb-1">Add More Photos to "{{ $gallery->title }}"</h6>
-                        <p class="text-muted small mb-3">Upload 50, 100, 500, or 1000+ photos at once (JPG, PNG, WebP). Automatic 15-photo batching &amp; live progress tracking included.</p>
+                    <!-- Drag & Drop Box -->
+                    <div class="drop-clean-box mb-3" id="dropArea_{{ $gallery->id }}" onclick="document.getElementById('photosInput_{{ $gallery->id }}').click();">
+                      <i class="bi bi-cloud-arrow-up"></i>
+                      <h5 class="fw-bold text-dark mb-1">Drag &amp; Drop photos here to add to "{{ $gallery->title }}"</h5>
+                      <p class="text-muted small mb-3">Support for JPG, PNG, and WebP (select 50, 100, 500, or 1000+ photos at once)</p>
+                      <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-4 text-dark fw-bold">
+                        <i class="bi bi-folder2-open me-1"></i> Browse Files from Computer
+                      </button>
+                    </div>
+                    <input type="file" id="photosInput_{{ $gallery->id }}" multiple accept="image/*" class="d-none" onchange="handleModalFilesSelected({{ $gallery->id }}, this.files)">
 
-                        <input type="file" id="photosInput_{{ $gallery->id }}" multiple accept="image/*" class="form-control mb-3" style="max-width: 420px; margin: 0 auto;" required onchange="updateSelectedFilesCount({{ $gallery->id }}, this)">
-
-                        <div id="fileCountBadge_{{ $gallery->id }}" class="mb-3 d-none">
-                          <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
-                            <i class="bi bi-check-circle-fill me-1"></i> <span class="count-num">0</span> photos selected
+                    <!-- Selected Queue (Previews & Counter) -->
+                    <div class="queue-clean-card d-none mb-3" id="queueCardContainer_{{ $gallery->id }}">
+                      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="fw-bold text-dark fs-6">
+                            <i class="bi bi-collection-play text-warning me-1"></i> Selected Queue:
                           </span>
+                          <span class="badge bg-primary rounded-pill" id="queueCountBadge_{{ $gallery->id }}">0 photos</span>
+                          <span class="text-muted small" id="queueSizeText_{{ $gallery->id }}">· 0 MB</span>
                         </div>
-
-                        <!-- Real-time Progress Bar Box (Revealed on upload) -->
-                        <div id="progressBox_{{ $gallery->id }}" class="d-none text-start bg-white p-3 rounded-3 border mb-3 shadow-sm" style="max-width: 520px; margin: 0 auto;">
-                          <div class="d-flex justify-content-between align-items-center mb-1">
-                            <strong class="text-dark small progress-title"><i class="bi bi-arrow-repeat spin me-1 text-warning"></i> Uploading photos...</strong>
-                            <span class="text-warning fw-bold font-monospace progress-pct">0%</span>
-                          </div>
-                          <div class="progress" style="height: 10px; border-radius: 5px; background: #e2e8f0;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning progress-fill" style="width: 0%;"></div>
-                          </div>
-                          <div class="d-flex justify-content-between align-items-center text-muted small mt-1">
-                            <span class="progress-batches" style="font-size: 0.75rem;">Batch 0 of 0</span>
-                            <span class="progress-counts" style="font-size: 0.75rem;">0 / 0 photos</span>
-                          </div>
-                        </div>
-
-                        <button type="submit" id="uploadBtn_{{ $gallery->id }}" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm">
-                          <i class="bi bi-upload me-2"></i> Upload &amp; Watermark Photos
+                        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0 fw-semibold" onclick="clearModalQueue({{ $gallery->id }})">
+                          <i class="bi bi-trash3 me-1"></i> Clear all
                         </button>
                       </div>
-                    </form>
+                      <div class="queue-list" id="queueListEl_{{ $gallery->id }}" style="max-height: 220px; overflow-y: auto;">
+                        <!-- Injected dynamically -->
+                      </div>
+                    </div>
+
+                    <!-- Live Upload Progress Box (Matching Add Event page) -->
+                    <div class="progress-clean-box d-none mb-3" id="uploadProgressBox_{{ $gallery->id }}">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="spinner-border spinner-border-sm text-warning" role="status"></span>
+                          <strong class="text-dark" id="progressStatusTitle_{{ $gallery->id }}">Uploading photos...</strong>
+                        </div>
+                        <span class="text-warning fw-bold font-monospace fs-5" id="progressPercentText_{{ $gallery->id }}">0%</span>
+                      </div>
+
+                      <div class="progress-bar-custom">
+                        <div class="progress-bar-fill-custom" id="progressBarFill_{{ $gallery->id }}"></div>
+                      </div>
+
+                      <div class="d-flex justify-content-between align-items-center text-muted small mt-1">
+                        <span id="progressLoadedText_{{ $gallery->id }}">Batch 0: 0 MB / 0 MB uploaded</span>
+                        <span id="progressPhotosCountText_{{ $gallery->id }}">0 / 0 photos</span>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end align-items-center gap-2">
+                      <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                      <button type="button" id="uploadStartBtn_{{ $gallery->id }}" class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm" onclick="startModalBatchUpload({{ $gallery->id }})" disabled>
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Start Upload &amp; Watermark
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Tab 3: Edit Gallery Settings & ZebraSnap Toggles -->
@@ -780,9 +871,129 @@
     }
   </script>
   <script>
+    const modalQueues = {};
+
+    function getQueue(galleryId) {
+      if (!modalQueues[galleryId]) {
+        modalQueues[galleryId] = [];
+      }
+      return modalQueues[galleryId];
+    }
+
+    function setupModalDragDrop(galleryId) {
+      const dropArea = document.getElementById('dropArea_' + galleryId);
+      if (!dropArea || dropArea.dataset.dragInit) return;
+      dropArea.dataset.dragInit = 'true';
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropArea.classList.add('dragover');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropArea.classList.remove('dragover');
+        }, false);
+      });
+
+      dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+          handleModalFilesSelected(galleryId, dt.files);
+        }
+      });
+    }
+
+    function handleModalFilesSelected(galleryId, files) {
+      if (!files || files.length === 0) return;
+      const queue = getQueue(galleryId);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith('image/')) {
+          queue.push(file);
+        }
+      }
+      renderModalQueue(galleryId);
+    }
+
+    function renderModalQueue(galleryId) {
+      const queue = getQueue(galleryId);
+      const container = document.getElementById('queueCardContainer_' + galleryId);
+      const list = document.getElementById('queueListEl_' + galleryId);
+      const countBadge = document.getElementById('queueCountBadge_' + galleryId);
+      const sizeText = document.getElementById('queueSizeText_' + galleryId);
+      const startBtn = document.getElementById('uploadStartBtn_' + galleryId);
+
+      if (queue.length === 0) {
+        if (container) container.classList.add('d-none');
+        if (startBtn) startBtn.disabled = true;
+        return;
+      }
+
+      if (container) container.classList.remove('d-none');
+      if (startBtn) startBtn.disabled = false;
+      if (countBadge) countBadge.textContent = `${queue.length} photo${queue.length > 1 ? 's' : ''}`;
+
+      let totalBytes = 0;
+      queue.forEach(f => totalBytes += f.size);
+      const totalMb = (totalBytes / (1024 * 1024)).toFixed(1);
+      if (sizeText) sizeText.textContent = `· Total ${totalMb} MB`;
+
+      if (list) {
+        list.innerHTML = '';
+        const showLimit = Math.min(queue.length, 25);
+        for (let index = 0; index < showLimit; index++) {
+          const file = queue[index];
+          const item = document.createElement('div');
+          item.className = 'queue-clean-item';
+          const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+          const thumbUrl = URL.createObjectURL(file);
+
+          item.innerHTML = `
+            <img src="${thumbUrl}" class="queue-clean-thumb" alt="Preview">
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-bold text-dark text-truncate small" title="${file.name}">${file.name}</div>
+              <div class="text-muted small" style="font-size: 0.75rem;">
+                <span>${sizeMb} MB</span> · <span class="badge bg-light text-secondary border">Ready</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removeModalQueueItem(${galleryId}, ${index})">
+              <i class="bi bi-x-circle fs-5"></i>
+            </button>
+          `;
+          list.appendChild(item);
+        }
+        if (queue.length > showLimit) {
+          const moreNote = document.createElement('div');
+          moreNote.className = 'text-center text-muted small py-2';
+          moreNote.textContent = `...and ${queue.length - showLimit} more photos queued for upload`;
+          list.appendChild(moreNote);
+        }
+      }
+    }
+
+    function removeModalQueueItem(galleryId, index) {
+      const queue = getQueue(galleryId);
+      queue.splice(index, 1);
+      renderModalQueue(galleryId);
+    }
+
+    function clearModalQueue(galleryId) {
+      modalQueues[galleryId] = [];
+      const fileInput = document.getElementById('photosInput_' + galleryId);
+      if (fileInput) fileInput.value = '';
+      renderModalQueue(galleryId);
+    }
+
     function openUploadTab(galleryId) {
       const modalEl = document.getElementById('galleryManageModal_' + galleryId);
       if (!modalEl) return;
+      setupModalDragDrop(galleryId);
       const uploadTabBtn = modalEl.querySelector('[data-bs-target="#tabUpload_' + galleryId + '"]');
       if (uploadTabBtn) {
         if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
@@ -820,53 +1031,41 @@
       }
     }
 
-    function updateSelectedFilesCount(galleryId, input) {
-      const badge = document.getElementById('fileCountBadge_' + galleryId);
-      if (!badge) return;
-      if (input.files && input.files.length > 0) {
-        badge.querySelector('.count-num').textContent = input.files.length;
-        badge.classList.remove('d-none');
-      } else {
-        badge.classList.add('d-none');
-      }
-    }
-
-    function handleBatchUploadMore(galleryId, e) {
-      e.preventDefault();
-      const input = document.getElementById('photosInput_' + galleryId);
-      const submitBtn = document.getElementById('uploadBtn_' + galleryId);
-      const progressBox = document.getElementById('progressBox_' + galleryId);
-      const progressTitle = progressBox.querySelector('.progress-title');
-      const progressPct = progressBox.querySelector('.progress-pct');
-      const progressFill = progressBox.querySelector('.progress-fill');
-      const progressBatches = progressBox.querySelector('.progress-batches');
-      const progressCounts = progressBox.querySelector('.progress-counts');
-
-      if (!input || !input.files || input.files.length === 0) {
-        alert('Please select one or more photos to upload.');
+    function startModalBatchUpload(galleryId) {
+      const queue = getQueue(galleryId);
+      if (!queue || queue.length === 0) {
+        alert('Please drag and drop or browse photos first.');
         return;
       }
 
-      const files = Array.from(input.files);
-      const totalFiles = files.length;
+      const startBtn = document.getElementById('uploadStartBtn_' + galleryId);
+      const progressBox = document.getElementById('uploadProgressBox_' + galleryId);
+      const titleText = document.getElementById('progressStatusTitle_' + galleryId);
+      const percentText = document.getElementById('progressPercentText_' + galleryId);
+      const fill = document.getElementById('progressBarFill_' + galleryId);
+      const loadedText = document.getElementById('progressLoadedText_' + galleryId);
+      const countText = document.getElementById('progressPhotosCountText_' + galleryId);
+      const fileInput = document.getElementById('photosInput_' + galleryId);
+
+      const totalFiles = queue.length;
       const batchSize = 15;
       const totalBatches = Math.ceil(totalFiles / batchSize);
       const csrfMeta = document.querySelector('meta[name="csrf-token"]');
       const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '{{ csrf_token() }}';
 
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Uploading...';
-      input.disabled = true;
+      startBtn.disabled = true;
+      startBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Uploading...';
+      if (fileInput) fileInput.disabled = true;
       progressBox.classList.remove('d-none');
 
       let uploadedSoFar = 0;
 
       function uploadBatch(startIndex) {
         if (startIndex >= totalFiles) {
-          progressFill.style.width = '100%';
-          progressPct.textContent = '100%';
-          progressTitle.innerHTML = '<i class="bi bi-check2-circle text-success me-1"></i> All ' + totalFiles + ' photos uploaded &amp; watermarked!';
-          progressCounts.textContent = `${totalFiles} / ${totalFiles} completed`;
+          fill.style.width = '100%';
+          percentText.textContent = '100%';
+          titleText.innerHTML = '<i class="bi bi-check2-circle text-success me-1"></i> All ' + totalFiles + ' photos uploaded &amp; watermarked!';
+          countText.textContent = `${totalFiles} / ${totalFiles} photos completed`;
           setTimeout(() => {
             window.location.reload();
           }, 800);
@@ -874,12 +1073,11 @@
         }
 
         const endIndex = Math.min(startIndex + batchSize, totalFiles);
-        const batchFiles = files.slice(startIndex, endIndex);
+        const batchFiles = queue.slice(startIndex, endIndex);
         const batchNum = Math.floor(startIndex / batchSize) + 1;
 
-        progressTitle.textContent = `Uploading batch ${batchNum} of ${totalBatches}...`;
-        progressBatches.textContent = `Batch ${batchNum} of ${totalBatches}`;
-        progressCounts.textContent = `${uploadedSoFar} / ${totalFiles} photos`;
+        titleText.textContent = `Uploading batch ${batchNum} of ${totalBatches} (${startIndex + 1}–${endIndex} of ${totalFiles} photos)...`;
+        countText.textContent = `${uploadedSoFar} / ${totalFiles} photos completed`;
 
         const formData = new FormData();
         formData.append('_token', csrfToken);
@@ -897,8 +1095,12 @@
             const frac = evt.loaded / evt.total;
             const currentTotalUploaded = startIndex + (batchFiles.length * frac);
             const pct = Math.min(98, Math.round((currentTotalUploaded / totalFiles) * 100));
-            progressFill.style.width = pct + '%';
-            progressPct.textContent = pct + '%';
+            fill.style.width = pct + '%';
+            percentText.textContent = pct + '%';
+
+            const bLoadedMb = (evt.loaded / (1024 * 1024)).toFixed(1);
+            const bTotalMb = (evt.total / (1024 * 1024)).toFixed(1);
+            loadedText.textContent = `Batch ${batchNum}: ${bLoadedMb} MB of ${bTotalMb} MB uploaded`;
           }
         };
 
@@ -906,13 +1108,13 @@
           if (xhr.status >= 200 && xhr.status < 400) {
             uploadedSoFar = endIndex;
             const donePct = Math.round((uploadedSoFar / totalFiles) * 100);
-            progressFill.style.width = donePct + '%';
-            progressPct.textContent = donePct + '%';
+            fill.style.width = donePct + '%';
+            percentText.textContent = donePct + '%';
             uploadBatch(endIndex);
           } else {
-            submitBtn.disabled = false;
-            input.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
+            startBtn.disabled = false;
+            if (fileInput) fileInput.disabled = false;
+            startBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
             let errDetail = 'HTTP ' + xhr.status;
             try {
               const errRes = JSON.parse(xhr.responseText);
@@ -923,9 +1125,9 @@
         };
 
         xhr.onerror = function() {
-          submitBtn.disabled = false;
-          input.disabled = false;
-          submitBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
+          startBtn.disabled = false;
+          if (fileInput) fileInput.disabled = false;
+          startBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resume Upload';
           alert(`Network connection error on batch ${batchNum}. ${uploadedSoFar} photos were saved. Please check your connection and resume.`);
         };
 
@@ -934,6 +1136,13 @@
 
       uploadBatch(0);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[id^="dropArea_"]').forEach(el => {
+        const gid = el.id.replace('dropArea_', '');
+        setupModalDragDrop(gid);
+      });
+    });
   </script>
 </body>
 </html>

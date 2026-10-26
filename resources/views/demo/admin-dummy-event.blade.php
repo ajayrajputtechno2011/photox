@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
 	<meta charset="UTF-8">
 	<meta content="width=device-width, initial-scale=1" name="viewport">
@@ -158,7 +158,7 @@
 		.metadata-box {
 			padding: 14px;
 			font-size: 0.78rem;
-			color: #94a3b8;
+			color: #cbd5e1 !important;
 			background: #0a1622;
 			border-top: 1px solid #192c3f;
 		}
@@ -168,15 +168,68 @@
 			gap: 8px;
 			margin-bottom: 5px;
 			font-family: 'DM Mono', monospace;
+			color: #cbd5e1 !important;
 		}
 		.metadata-row i {
-			color: #ff8a00;
+			color: #ff8a00 !important;
 			font-size: 0.88rem;
 			flex-shrink: 0;
+		}
+		.metadata-row span {
+			color: #cbd5e1 !important;
+		}
+		.metadata-row.text-muted,
+		.metadata-row.text-muted span {
+			color: #94a3b8 !important;
+		}
+		.metadata-box small,
+		.metadata-box small.text-muted {
+			color: #94a3b8 !important;
 		}
 		.metadata-row strong {
 			color: #e2e8f0;
 			font-weight: 600;
+		}
+
+		/* Price Override Modal Styling */
+		#overridePriceModal .modal-content {
+			background: #0b1a29 !important;
+			color: #f8fafc !important;
+			border: 1px solid #1e3a5f !important;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75) !important;
+		}
+		#overridePriceModal .modal-header {
+			border-bottom: 1px solid #1e3a5f !important;
+		}
+		#overridePriceModal .modal-footer {
+			border-top: 1px solid #1e3a5f !important;
+		}
+		#overridePriceModal .form-label {
+			color: #f8fafc !important;
+			font-weight: 600 !important;
+			font-size: 0.76rem !important;
+			letter-spacing: 0.5px;
+			margin-bottom: 6px;
+		}
+		#overridePriceModal .form-text,
+		#overridePriceModal p,
+		#overridePriceModal .text-muted {
+			color: #94a3b8 !important;
+		}
+		#overridePriceModal .input-group-text {
+			background: #06111c !important;
+			border-color: #1e3a5f !important;
+			color: #f59e0b !important;
+			font-weight: 700;
+		}
+		#overridePriceModal input.form-control {
+			background: #06111c !important;
+			color: #ffffff !important;
+			border-color: #1e3a5f !important;
+		}
+		#overridePriceModal input.form-control:focus {
+			border-color: #ff8a00 !important;
+			box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.25) !important;
 		}
 		.price-pill {
 			display: inline-block;
@@ -277,66 +330,7 @@
 <body>
 	<div class="app-shell">
 		<!-- Admin Sidebar -->
-		<aside class="sidebar" id="sidebar" aria-label="Main navigation">
-			<div class="sidebar-inner">
-				<a class="brand" href="/admin/dashboard" aria-label="PhotoX Admin home"><img class="brand-logo" src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin"></a>
-				<div class="workspace-switcher"><span class="workspace-avatar">PS</span><span class="workspace-copy"><small>Workspace</small><strong>Photo Studio</strong></span><i class="bi bi-chevron-down"></i></div>
-				<a class="dashboard-link nav-link" href="/admin/dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
-				<div class="nav-label nav-label-spaced">Marketplace</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link active" href="/admin/events"><i class="bi bi-calendar-event"></i><span>Events</span></a>
-					<a class="nav-link" href="/admin/galleries"><i class="bi bi-collection"></i><span>Galleries</span></a>
-					<a class="nav-link" href="/admin/images"><i class="bi bi-image"></i><span>Images</span></a>
-					<a class="nav-link" href="/admin/orders"><i class="bi bi-bag-check"></i><span>Orders</span></a>
-					<a class="nav-link" href="/admin/customers"><i class="bi bi-people"></i><span>Customers</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Photographers</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/photographers"><i class="bi bi-camera2"></i><span>Photographers</span></a>
-					<a class="nav-link" href="/admin/memberships"><i class="bi bi-person-vcard"></i><span>Memberships</span></a>
-					<a class="nav-link" href="/admin/commissions"><i class="bi bi-percent"></i><span>Commissions</span></a>
-					<a class="nav-link" href="/admin/payouts"><i class="bi bi-wallet2"></i><span>Payouts</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">AI &amp; Media</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
-					<a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
-					<a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Business</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/payments"><i class="bi bi-credit-card"></i><span>Payments</span></a>
-					<a class="nav-link" href="/admin/coupons-discounts"><i class="bi bi-tags"></i><span>Coupons &amp; Discounts</span></a>
-					<a class="nav-link" href="/admin/sponsors"><i class="bi bi-award"></i><span>Sponsors</span></a>
-					<a class="nav-link" href="/admin/banners"><i class="bi bi-layout-text-window"></i><span>Banners</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Organisations</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
-					<a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
-					<a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Content</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
-					<a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>
-					<a class="nav-link" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-					<a class="nav-link" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
-					<a class="nav-link" href="/admin/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
-					<a class="nav-link" href="/admin/email-templates"><i class="bi bi-envelope-paper"></i><span>Email Templates</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Reporting</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/reports"><i class="bi bi-bar-chart"></i><span>Reports</span></a>
-					<a class="nav-link" href="/admin/banner-analytics"><i class="bi bi-graph-up-arrow"></i><span>Banner Analytics</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">System</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
-					<a class="nav-link" href="/admin/audit-logs"><i class="bi bi-shield-check"></i><span>Audit Logs</span></a>
-				</nav>
-			</div>
-		</aside>
+		@include('admin.partials.sidebar')
 
 		<div class="main-panel">
 			<header class="topbar">
@@ -390,7 +384,7 @@
 					</div>
 				@endif
 
-				@if($errors->any())
+				@if(isset($errors) && $errors->any())
 					<div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">
 						<div class="d-flex align-items-center gap-2 mb-2">
 							<i class="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -431,19 +425,75 @@
 								<span class="badge bg-secondary">{{ $dummyEvents->count() }} Events</span>
 							</div>
 							@if($dummyEvents->isNotEmpty())
-								<form method="GET" action="{{ route('admin.dummy.event') }}">
-									<label class="form-label">Choose Active Event</label>
+								<form method="GET" action="{{ route('admin.dummy.event') }}" id="adminEventFilterForm">
+									<!-- Autocomplete Search & Photographer Selector for 5000+ galleries -->
+									<div class="row g-2 mb-2">
+										<div class="col-sm-6">
+											<label class="form-label small text-muted mb-1"><i class="bi bi-person-badge me-1"></i>Filter by Photographer</label>
+											<select id="filterPhotographerSelect" class="form-select form-select-sm" onchange="filterAdminEventsList()">
+												<option value="">All Photographers ({{ $photographers->count() }})</option>
+												@foreach($photographers as $ph)
+													<option value="{{ $ph->id }}">{{ $ph->name }}</option>
+												@endforeach
+											</select>
+										</div>
+										<div class="col-sm-6">
+											<label class="form-label small text-muted mb-1"><i class="bi bi-search me-1"></i>Search Gallery Autocomplete</label>
+											<input type="text" id="adminEventSearchInput" class="form-control form-control-sm" placeholder="Type gallery or sport..." oninput="filterAdminEventsList()">
+										</div>
+									</div>
+
+									<label class="form-label small text-muted mb-1">Choose Active Event (<span id="visibleEventsCount">{{ $dummyEvents->count() }}</span> shown)</label>
 									<div class="d-flex gap-2">
-										<select name="event_id" class="form-select" onchange="this.form.submit()">
+										<select name="event_id" id="adminEventSelect" class="form-select" onchange="this.form.submit()">
 											@foreach($dummyEvents as $dev)
-												<option value="{{ $dev->id }}" {{ optional($selectedEvent)->id === $dev->id ? 'selected' : '' }}>
-													{{ $dev->title }} ({{ $dev->photos_count }} photos) · {{ $dev->category_name }}
+												<option value="{{ $dev->id }}" 
+													data-photographer-id="{{ $dev->photographer_id }}" 
+													data-photographer-name="{{ strtolower($dev->photographer_name ?? '') }}" 
+													data-title="{{ strtolower($dev->title) }}"
+													data-category="{{ strtolower($dev->category_name ?? '') }}"
+													{{ optional($selectedEvent)->id === $dev->id ? 'selected' : '' }}>
+													{{ $dev->title }} ({{ $dev->photos_count }} photos) · {{ $dev->category_name }} · {{ $dev->photographer_name ?? 'Admin' }}
 												</option>
 											@endforeach
 										</select>
 										<button type="submit" class="btn btn-outline-px">Load</button>
 									</div>
 								</form>
+
+								<script>
+									function filterAdminEventsList() {
+										const photogId = document.getElementById('filterPhotographerSelect').value;
+										const searchVal = document.getElementById('adminEventSearchInput').value.toLowerCase().trim();
+										const select = document.getElementById('adminEventSelect');
+										const options = select.querySelectorAll('option');
+										let visibleCount = 0;
+										let firstVisible = null;
+
+										options.forEach(opt => {
+											const optPhotogId = opt.getAttribute('data-photographer-id');
+											const optTitle = opt.getAttribute('data-title') || '';
+											const optPhotogName = opt.getAttribute('data-photographer-name') || '';
+											const optCategory = opt.getAttribute('data-category') || '';
+
+											let matchPhotog = !photogId || optPhotogId === photogId;
+											let matchSearch = !searchVal || optTitle.includes(searchVal) || optPhotogName.includes(searchVal) || optCategory.includes(searchVal);
+
+											if (matchPhotog && matchSearch) {
+												opt.style.display = '';
+												visibleCount++;
+												if (!firstVisible) firstVisible = opt;
+											} else {
+												opt.style.display = 'none';
+											}
+										});
+
+										document.getElementById('visibleEventsCount').textContent = visibleCount;
+										if (firstVisible && !select.selectedOptions[0]?.style.display === 'none') {
+											// keep current if visible, otherwise select first visible
+										}
+									}
+								</script>
 								@if($selectedEvent)
 									<div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid #1a2c3d;">
 										<div class="d-flex gap-3 align-items-center justify-content-between flex-wrap">
@@ -741,6 +791,22 @@
 										</div>
 									</div>
 
+									<!-- Station / Sub-Album (Folder) -->
+									<div class="mb-3">
+										<label class="form-label d-flex justify-content-between align-items-center">
+											<span><i class="bi bi-folder2-open text-warning me-1"></i> Sub-Album / Station (Folder)</span>
+											<small class="text-white-50">Optional · Populates Gallery Filters</small>
+										</label>
+										<input type="text" name="sub_album" id="subAlbumUploadInput" class="form-control" placeholder="e.g. Start Line, Course Highlights, Finish Line">
+										<div class="d-flex gap-1 mt-1 flex-wrap">
+											<button type="button" class="badge bg-dark border border-secondary text-light py-1 px-2" style="font-size: 0.68rem; cursor: pointer;" onclick="document.getElementById('subAlbumUploadInput').value='Start Line'">+ Start Line</button>
+											<button type="button" class="badge bg-dark border border-secondary text-light py-1 px-2" style="font-size: 0.68rem; cursor: pointer;" onclick="document.getElementById('subAlbumUploadInput').value='Course Highlights'">+ Course Highlights</button>
+											<button type="button" class="badge bg-dark border border-secondary text-light py-1 px-2" style="font-size: 0.68rem; cursor: pointer;" onclick="document.getElementById('subAlbumUploadInput').value='Finish Line'">+ Finish Line</button>
+											<button type="button" class="badge bg-dark border border-secondary text-light py-1 px-2" style="font-size: 0.68rem; cursor: pointer;" onclick="document.getElementById('subAlbumUploadInput').value='Medal Ceremony'">+ Medal Ceremony</button>
+											<button type="button" class="badge bg-dark border border-secondary text-light py-1 px-2" style="font-size: 0.68rem; cursor: pointer;" onclick="document.getElementById('subAlbumUploadInput').value='Crowd & Atmosphere'">+ Crowd &amp; Atmosphere</button>
+										</div>
+									</div>
+
 									<button type="button" id="startUploadBtn" class="btn btn-primary-px w-100 py-2 fw-bold" onclick="startQueueUpload()">
 										<i class="bi bi-shield-lock-fill me-1"></i> Upload Queue &amp; Generate Watermarked Proofs
 									</button>
@@ -837,10 +903,13 @@
 												<div class="metadata-box">
 													<div class="d-flex justify-content-between align-items-start mb-2 pb-1 border-bottom border-secondary">
 														<span class="text-truncate fw-bold text-white" style="max-width: 160px;">{{ $photo->title }}</span>
-														<div>
+														<div class="d-flex align-items-center gap-1 flex-wrap justify-content-end">
 															@if($selectedEvent->allow_individual_sales ?? true)
-																<span class="price-pill personal me-1">Personal: R{{ number_format($photo->personal_price, 0) }}</span>
-																<span class="price-pill commercial">Commercial: R{{ number_format($photo->commercial_price, 0) }}</span>
+																<span class="price-pill personal" id="photoPersonalPrice_{{ $photo->id }}">Personal: R{{ number_format($photo->personal_price, 0) }}</span>
+																<span class="price-pill commercial" id="photoCommercialPrice_{{ $photo->id }}">Commercial: R{{ number_format($photo->commercial_price, 0) }}</span>
+																<button type="button" class="btn btn-sm btn-outline-info py-0 px-2 ms-1" style="font-size: 0.68rem; font-weight: 600;" title="Override pricing for this photo" onclick="openPhotoPriceModal({{ $photo->id }}, '{{ addslashes($photo->title) }}', {{ (float) $photo->personal_price }}, {{ (float) $photo->commercial_price }}, '{{ addslashes($photo->sub_album ?? '') }}')">
+																	<i class="bi bi-pencil-square me-1"></i>Edit Price
+																</button>
 															@else
 																<span class="badge bg-warning text-dark py-1 px-2" style="font-size: 0.68rem; font-weight: 700;">
 																	<i class="bi bi-box-seam-fill me-1"></i> Complete Gallery Only
@@ -1075,6 +1144,10 @@
 				formData.append('event_id', eventId);
 				formData.append('personal_price', personalPrice);
 				formData.append('commercial_price', commercialPrice);
+				const subAlbumVal = document.getElementById('subAlbumUploadInput') ? document.getElementById('subAlbumUploadInput').value.trim() : '';
+				if (subAlbumVal) {
+					formData.append('sub_album', subAlbumVal);
+				}
 				formData.append('_token', csrfToken);
 
 				batchFiles.forEach(file => {
@@ -1141,8 +1214,6 @@
 
 			// Start uploading first batch
 			uploadBatch(0);
-
-			xhr.send(formData);
 		}
 
 		// Switch between Watermarked, Sponsor Corner Logo, and Clean view
@@ -1150,20 +1221,149 @@
 			document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
 			btn.classList.add('active');
 
-			const wmOverlays = document.querySelectorAll('.wm-layer');
+			const mainImgs = document.querySelectorAll('.main-img');
+			const cleanImgs = document.querySelectorAll('.clean-img');
 			const sponsorOverlays = document.querySelectorAll('.sponsor-layer');
 
 			if (mode === 'watermarked') {
-				wmOverlays.forEach(el => el.classList.remove('d-none'));
+				// Show watermarked proof
+				mainImgs.forEach(el => el.classList.remove('d-none'));
+				cleanImgs.forEach(el => el.classList.add('d-none'));
 				sponsorOverlays.forEach(el => el.classList.add('d-none'));
 			} else if (mode === 'sponsor') {
-				wmOverlays.forEach(el => el.classList.add('d-none'));
+				// Show clean image with sponsor logo badge in corner
+				mainImgs.forEach(el => el.classList.add('d-none'));
+				cleanImgs.forEach(el => el.classList.remove('d-none'));
 				sponsorOverlays.forEach(el => el.classList.remove('d-none'));
 			} else if (mode === 'clean') {
-				wmOverlays.forEach(el => el.classList.add('d-none'));
+				// Show 100% clean original image
+				mainImgs.forEach(el => el.classList.add('d-none'));
+				cleanImgs.forEach(el => el.classList.remove('d-none'));
 				sponsorOverlays.forEach(el => el.classList.add('d-none'));
 			}
 		}
+
+		let currentEditingPhotoId = null;
+
+		function openPhotoPriceModal(photoId, title, personalPrice, commercialPrice, subAlbum) {
+			currentEditingPhotoId = photoId;
+			document.getElementById('overridePhotoTitle').textContent = title || ('Photo #' + photoId);
+			document.getElementById('overridePersonalPrice').value = personalPrice || 0;
+			document.getElementById('overrideCommercialPrice').value = commercialPrice || 0;
+			document.getElementById('overrideSubAlbum').value = subAlbum || '';
+			document.getElementById('overridePriceForm').action = '/admin/ops-internal-vault-99/photo/' + photoId + '/update-price';
+			const modalEl = document.getElementById('overridePriceModal');
+			if (modalEl) {
+				const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+				modal.show();
+			}
+		}
+
+		function handleOverridePriceSubmit(e, form) {
+			e.preventDefault();
+			const submitBtn = form.querySelector('button[type="submit"]');
+			const origBtnHtml = submitBtn.innerHTML;
+			submitBtn.disabled = true;
+			submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+			const photoId = currentEditingPhotoId;
+
+			fetch(form.action, {
+				method: 'POST',
+				body: new FormData(form),
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+					'Accept': 'application/json'
+				}
+			})
+			.then(r => r.json())
+			.then(data => {
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = origBtnHtml;
+				if (data.success) {
+					// Update price pills on card immediately
+					const persEl = document.getElementById('photoPersonalPrice_' + photoId);
+					if (persEl) persEl.textContent = 'Personal: R' + Math.round(data.personal_price);
+					const commEl = document.getElementById('photoCommercialPrice_' + photoId);
+					if (commEl) commEl.textContent = 'Commercial: R' + Math.round(data.commercial_price);
+
+					// Close modal
+					const modalEl = document.getElementById('overridePriceModal');
+					const modal = bootstrap.Modal.getInstance(modalEl);
+					if (modal) modal.hide();
+
+					// Success Toast Notification
+					const toastDiv = document.createElement('div');
+					toastDiv.className = 'position-fixed bottom-0 end-0 p-3';
+					toastDiv.style.zIndex = '9999';
+					toastDiv.innerHTML = `
+						<div class="toast show align-items-center text-bg-success border-0 shadow-lg" role="alert">
+							<div class="d-flex">
+								<div class="toast-body fw-bold">
+									<i class="bi bi-check-circle-fill me-2"></i> ${data.message || 'Pricing updated successfully!'}
+								</div>
+								<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+							</div>
+						</div>`;
+					document.body.appendChild(toastDiv);
+					setTimeout(() => toastDiv.remove(), 4000);
+				} else {
+					alert(data.message || 'Error updating price.');
+				}
+			})
+			.catch(err => {
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = origBtnHtml;
+				alert('Could not update price. Please refresh the page or check your admin session.');
+			});
+		}
 	</script>
+
+	<!-- Photo Price & Metadata Override Modal -->
+	<div class="modal fade" id="overridePriceModal" tabindex="-1" aria-labelledby="overridePriceModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content bg-dark text-white border border-secondary shadow-lg">
+				<form id="overridePriceForm" method="POST" action="" onsubmit="handleOverridePriceSubmit(event, this)">
+					@csrf
+					<div class="modal-header border-secondary">
+						<h5 class="modal-title fs-6 fw-bold" id="overridePriceModalLabel">
+							<i class="bi bi-tag-fill text-warning me-2"></i>Override Photo Pricing
+						</h5>
+						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p class="text-white-50 small mb-3">Adjust individual pricing and station/folder for: <strong class="text-warning" id="overridePhotoTitle"></strong></p>
+						<div class="mb-3">
+							<label class="form-label small text-uppercase text-light fw-bold" for="overridePersonalPrice">Personal License Price (ZAR)</label>
+							<div class="input-group">
+								<span class="input-group-text bg-black border-secondary text-warning fw-bold">R</span>
+								<input type="number" step="1" min="0" name="personal_price" id="overridePersonalPrice" class="form-control bg-dark border-secondary text-white fw-bold" required>
+							</div>
+							<div class="form-text text-white-50">Standard high-res personal digital download.</div>
+						</div>
+						<div class="mb-3">
+							<label class="form-label small text-uppercase text-light fw-bold" for="overrideCommercialPrice">Commercial License Price (ZAR)</label>
+							<div class="input-group">
+								<span class="input-group-text bg-black border-secondary text-warning fw-bold">R</span>
+								<input type="number" step="1" min="0" name="commercial_price" id="overrideCommercialPrice" class="form-control bg-dark border-secondary text-white fw-bold">
+							</div>
+							<div class="form-text text-white-50">Commercial / sponsor marketing release (set to 0 if not allowed).</div>
+						</div>
+						<div class="mb-3">
+							<label class="form-label small text-uppercase text-light fw-bold" for="overrideSubAlbum">Sub-Album / Station (Folder)</label>
+							<input type="text" name="sub_album" id="overrideSubAlbum" class="form-control bg-dark border-secondary text-white" placeholder="e.g. Start Line, Finish Line, Main Course">
+							<div class="form-text text-white-50">Used by buyers in the gallery "Filters" dropdown.</div>
+						</div>
+					</div>
+					<div class="modal-footer border-secondary">
+						<button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-sm btn-warning fw-bold px-3">
+							<i class="bi bi-check-lg me-1"></i>Save Price Override
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

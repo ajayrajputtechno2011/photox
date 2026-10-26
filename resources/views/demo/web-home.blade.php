@@ -618,7 +618,7 @@
                   </p>
                   <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
                     <span class="small text-secondary"><i class="bi bi-calendar-event me-1"></i> {{ $creator->events_count ?? $creator->events->count() }} active events</span>
-                    <a href="/photographer-details/{{ $creator->id }}" class="btn btn-sm btn-lime rounded-pill px-3 fw-semibold">
+                    <a href="{{ route('photographers.show', $creator->slug) }}" class="btn btn-sm btn-lime rounded-pill px-3 fw-semibold">
                       View profile <i class="bi bi-arrow-up-right ms-1"></i>
                     </a>
                   </div>
@@ -792,16 +792,6 @@
             </span>
             <h5 class="modal-title fs-6 fw-bold mb-0 text-white" id="modalPhotoTitle">Photo Inspector</h5>
             <span class="badge bg-dark border border-secondary text-warning font-monospace" id="modalIndexCounter">Photo 1 of 1</span>
-
-            <!-- Anti-AI Triangle Blur Live Toggle -->
-            <button type="button" id="toggleAntiAiBlurBtn" class="btn btn-sm btn-outline-warning rounded-pill px-2 py-0 ms-md-2" style="font-size: 0.72rem; height: 26px;" onclick="toggleAntiAiBlur()" title="Toggle Opposing Triangle Anti-AI Blur Mask">
-              <i class="bi bi-shield-slash-fill me-1"></i> Anti-AI Blur: <span id="antiAiBlurStateText" class="fw-bold">ON</span>
-            </button>
-
-            <!-- WaterMotion Live Toggle -->
-            <button type="button" id="toggleWaterMotionBtn" class="btn btn-sm {{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'btn-outline-info' : 'btn-outline-secondary' }} rounded-pill px-2 py-0" style="font-size: 0.72rem; height: 26px;" onclick="toggleWaterMotion()" title="Toggle WaterMotion Dynamic Liquid Glass Lens">
-              <i class="bi bi-droplet-half me-1"></i> WaterMotion: <span id="waterMotionStateText" class="fw-bold">{{ ($watermarkSetting->is_motion_mask_enabled ?? false) ? 'ON' : 'OFF' }}</span>
-            </button>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closePhotoInspectorModal()" aria-label="Close" style="cursor: pointer; opacity: 0.95; z-index: 1056; position: relative;"></button>
         </div>
@@ -845,7 +835,7 @@
 
                 <!-- 2. Interactive Anti-AI Opposing Triangle Blur Mask (Diagonal BD) -->
                 <!-- Renders blurred image ONLY within the clipped triangle, leaving the other triangle 100% crystal clear! -->
-                <div id="antiAiTriangleBlurLayer" class="anti-ai-triangle-blur-wrap active">
+                <div id="antiAiTriangleBlurLayer" class="anti-ai-triangle-blur-wrap {{ ($watermarkSetting->has_anti_ai_lines ?? false) ? 'active' : 'd-none' }}">
                   <img id="modalPhotoImgBlur" 
                        src="" 
                        alt="Anti-AI Blurred Layer" 
@@ -1852,7 +1842,7 @@
     // =========================================================================
     // ANTI-AI OPPOSING TRIANGLE BLUR & WATERMOTION SYSTEM
     // =========================================================================
-    let antiAiBlurEnabled = true;
+    let antiAiBlurEnabled = {{ ($watermarkSetting->has_anti_ai_lines ?? false) ? 'true' : 'false' }};
     let isTopLeftClear = true; // true: Top-Left (ABD) is clear, Bottom-Right (BCD) is blurred
 
     function initAntiAiTriangleBlur() {
@@ -1932,56 +1922,7 @@
       if (tagText) tagText.innerHTML = 'Anti-AI Frosted Half · Hover to Reveal';
     }
 
-    function toggleAntiAiBlur() {
-      antiAiBlurEnabled = !antiAiBlurEnabled;
-      const blurLayer = document.getElementById('antiAiTriangleBlurLayer');
-      const text = document.getElementById('antiAiBlurStateText');
-      const btn = document.getElementById('toggleAntiAiBlurBtn');
-      if (blurLayer) {
-        if (antiAiBlurEnabled) {
-          blurLayer.classList.remove('d-none');
-          blurLayer.classList.add('active');
-          resetAntiAiBlurState();
-          if (text) text.textContent = 'ON';
-          if (btn) {
-            btn.classList.remove('btn-outline-secondary');
-            btn.classList.add('btn-outline-warning');
-          }
-        } else {
-          blurLayer.classList.add('d-none');
-          blurLayer.classList.remove('active');
-          if (text) text.textContent = 'OFF';
-          if (btn) {
-            btn.classList.remove('btn-outline-warning');
-            btn.classList.add('btn-outline-secondary');
-          }
-        }
-      }
-    }
 
-    function toggleWaterMotion() {
-      const layer = document.getElementById('modalWaterMotionLayer');
-      const text = document.getElementById('waterMotionStateText');
-      const btn = document.getElementById('toggleWaterMotionBtn');
-      if (!layer) return;
-
-      const isCurrentlyActive = layer.classList.contains('active');
-      if (isCurrentlyActive) {
-        layer.classList.remove('active');
-        if (text) text.textContent = 'OFF';
-        if (btn) {
-          btn.classList.remove('btn-outline-info');
-          btn.classList.add('btn-outline-secondary');
-        }
-      } else {
-        layer.classList.add('active');
-        if (text) text.textContent = 'ON';
-        if (btn) {
-          btn.classList.remove('btn-outline-secondary');
-          btn.classList.add('btn-outline-info');
-        }
-      }
-    }
 
     // Keyboard navigation (ArrowLeft = Prev, ArrowRight = Next)
     document.addEventListener('keydown', function(e) {

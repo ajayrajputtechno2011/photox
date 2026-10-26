@@ -58,7 +58,7 @@
       </div>
       <nav class="workspace-nav" id="workspaceNav">
         <a class="workspace-nav-link active" href="/photographer-dashboard"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
-        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>12</b></a>
+        <a class="workspace-nav-link" href="/photographer-bookings"><i class="bi bi-calendar-event"></i><span>Events</span><b>{{ $activeGalleries }}</b></a>
         <a class="workspace-nav-link" href="/photographer-gallery"><i class="bi bi-images"></i><span>Gallery</span></a>
         <a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
         <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
@@ -71,7 +71,7 @@
         <i class="bi bi-shield-check"></i>
         <div>
           <strong>Coverage secured</strong>
-          <span>3 client galleries are still pending final delivery.</span>
+          <span>{{ $activeGalleries > 0 ? "{$activeGalleries} client galleries active." : "Ready to upload your first event gallery." }}</span>
         </div>
       </div>
       <form action="{{ route('logout') }}" method="POST" class="mt-3">
@@ -98,8 +98,8 @@
         <div class="summary-grid">
           <div class="summary-card accent">
             <span class="card-label"><i class="bi bi-graph-up-arrow"></i> Revenue</span>
-            <strong>R {{ number_format($totalRevenue, 0) }}</strong>
-            <small><span>estimated sales</span><b>+18.4%</b></small>
+            <strong>R {{ number_format($totalRevenue, 2) }}</strong>
+            <small><span>estimated sales</span><b>{{ $totalRevenue > 0 ? '+18.4%' : 'R 0.00' }}</b></small>
           </div>
           <div class="summary-card">
             <span class="card-label"><i class="bi bi-camera"></i> Photos Uploaded</span>
@@ -177,7 +177,6 @@
             </div>
 
             <div class="gallery-strip">
-            <div class="gallery-strip">
               @forelse($recentGalleries as $rec)
                 <a href="{{ route('events.show', $rec->slug ?: $rec->id) }}" class="gallery-card text-decoration-none">
                   <img src="{{ $rec->cover_image ?: ($rec->photos->first()?->thumbnail_url ?: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $rec->title }}" style="object-fit: cover;">
@@ -190,7 +189,6 @@
                 <p class="text-muted small p-3">No recent uploads found.</p>
               @endforelse
             </div>
-          </div>
 
           <div class="panel">
             <div class="panel-head">
@@ -201,22 +199,10 @@
             </div>
 
             <div class="review-list">
-              <div class="review-item">
-                <div class="review-avatar">LM</div>
-                <div class="review-meta">
-                  <strong>Lebo Mokoena</strong>
-                  <span>School sports event</span>
-                  <div class="stars">★★★★★</div>
-                </div>
-              </div>
-
-              <div class="review-item">
-                <div class="review-avatar">SK</div>
-                <div class="review-meta">
-                  <strong>Sophie Kgomo</strong>
-                  <span>Family portrait set</span>
-                  <div class="stars">★★★★★</div>
-                </div>
+              <div class="p-4 text-center text-muted small">
+                <i class="bi bi-star text-warning fs-3 mb-2 d-block"></i>
+                <strong class="text-white d-block">No client reviews yet</strong>
+                <span style="font-size: 0.8rem;">Customer ratings and feedback on your event photos will appear here after orders are placed.</span>
               </div>
             </div>
           </div>
@@ -233,30 +219,30 @@
 
             <div class="task-list">
               <div class="task-item">
-                <div class="task-icon"><i class="bi bi-upload"></i></div>
+                <div class="task-icon"><i class="bi bi-cloud-arrow-up text-warning"></i></div>
                 <div class="task-text">
-                  <strong>Upload final gallery</strong>
-                  <span>School A Rugby Day</span>
+                  <strong>{{ $activeGalleries > 0 ? 'Upload More Photos' : 'Upload First Gallery' }}</strong>
+                  <span>{{ $activeGalleries > 0 ? 'Add more captures to your live albums' : 'Create an event and upload batch photos' }}</span>
                 </div>
-                <a class="small-cta" href="#">Upload</a>
+                <a class="small-cta" href="/photographer-upload-new">Upload</a>
               </div>
 
               <div class="task-item">
-                <div class="task-icon"><i class="bi bi-credit-card"></i></div>
+                <div class="task-icon"><i class="bi bi-bank text-info"></i></div>
                 <div class="task-text">
-                  <strong>Payout review</strong>
-                  <small>Settlement due 29 Sep</small>
+                  <strong>Banking &amp; EFT Payouts</strong>
+                  <small>{{ !empty($photographer->bank_name) ? ($photographer->bank_name . ' · ' . ucfirst($photographer->account_type ?? 'account')) : 'Configure SA Bank for direct settlement' }}</small>
                 </div>
-                <a class="small-cta" href="#">Review</a>
+                <a class="small-cta" href="/photographer-payouts">Configure</a>
               </div>
 
               <div class="task-item">
-                <div class="task-icon"><i class="bi bi-envelope"></i></div>
+                <div class="task-icon"><i class="bi bi-shield-lock text-success"></i></div>
                 <div class="task-text">
-                  <strong>Respond to client</strong>
-                  <span>3 unread messages</span>
+                  <strong>Watermark Studio</strong>
+                  <span>Custom logos, stamps &amp; Anti-AI proofing</span>
                 </div>
-                <a class="small-cta" href="#">Reply</a>
+                <a class="small-cta" href="/photographer-watermark">Manage</a>
               </div>
             </div>
           </div>
@@ -270,8 +256,8 @@
             </div>
             <div class="summary-card accent" style="margin-bottom: 0;">
               <span class="card-label"><i class="bi bi-wallet2"></i> Available balance</span>
-              <strong>R 18,350</strong>
-              <small><span>Paid this month</span><b>R 8,600</b></small>
+              <strong>R {{ number_format($totalRevenue * 0.85, 2) }}</strong>
+              <small><span>Banking status</span><b>{{ !empty($photographer->bank_name) ? $photographer->bank_name : 'EFT Pending' }}</b></small>
             </div>
           </div>
         </div>
@@ -300,7 +286,7 @@
           labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7'],
           datasets: [{
             label: 'Sales',
-            data: [5, 9, 7, 12, 15, 11, 18],
+            data: @json($weeklySalesData ?? [0, 0, 0, 0, 0, 0, 0]),
             backgroundColor: ['#7cb8ff', '#7cb8ff', '#7cb8ff', '#0b2d5b', '#0b2d5b', '#ff8a00', '#ff8a00'],
             borderRadius: 8,
             borderSkipped: false

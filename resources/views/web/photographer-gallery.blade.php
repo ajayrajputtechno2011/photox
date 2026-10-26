@@ -352,10 +352,10 @@
                       <button type="button" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark" onclick="openUploadTab({{ $gallery->id }})" title="Upload more photos to this event">
                         <i class="bi bi-cloud-arrow-up-fill me-1"></i> + Upload
                       </button>
-                      <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#galleryManageModal_{{ $gallery->id }}" title="Manage Photos &amp; Settings">
+                      <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2" onclick="openPhotosTab({{ $gallery->id }})" title="Manage Photos &amp; Settings">
                         <i class="bi bi-images me-1"></i> Photos
                       </button>
-                      <button type="button" class="btn btn-sm btn-pricing-quick rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#pricingModal_{{ $gallery->id }}" title="Edit Pricing">
+                      <button type="button" class="btn btn-sm btn-pricing-quick rounded-pill px-2" onclick="openPricingModal({{ $gallery->id }})" title="Edit Pricing">
                         <i class="bi bi-currency-dollar"></i>
                       </button>
                       <a href="{{ route('events.show', $gallery->slug ?: $gallery->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-2" title="View Public Gallery">
@@ -438,10 +438,10 @@
                     <button type="button" class="btn btn-sm btn-warning rounded-pill px-3 py-1 fw-bold text-dark" style="font-size: 0.78rem;" onclick="openUploadTab({{ $gallery->id }})" title="Upload more photos to this event">
                       <i class="bi bi-cloud-arrow-up-fill me-1"></i> + Upload
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#galleryManageModal_{{ $gallery->id }}" title="Photos &amp; Settings">
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" style="font-size: 0.78rem;" onclick="openPhotosTab({{ $gallery->id }})" title="Photos &amp; Settings">
                       <i class="bi bi-images me-1"></i> Photos ({{ $gallery->photos_count }})
                     </button>
-                    <button type="button" class="btn btn-sm btn-pricing-quick rounded-pill px-2 py-1" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#pricingModal_{{ $gallery->id }}" title="Edit Pricing">
+                    <button type="button" class="btn btn-sm btn-pricing-quick rounded-pill px-2 py-1" style="font-size: 0.78rem;" onclick="openPricingModal({{ $gallery->id }})" title="Edit Pricing">
                       <i class="bi bi-currency-dollar me-1"></i> Pricing
                     </button>
                     <a href="{{ route('events.show', $gallery->slug ?: $gallery->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1" style="font-size: 0.78rem;" title="View public gallery">
@@ -750,18 +750,51 @@
   </main>
 
   @include('web.partials.footer')
-  <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (typeof bootstrap === 'undefined') {
+      document.write('<script src="{{ asset('js/bootstrap.bundle.min.js') }}"><\/script>');
+    }
+  </script>
   <script>
     function openUploadTab(galleryId) {
       const modalEl = document.getElementById('galleryManageModal_' + galleryId);
       if (!modalEl) return;
       const uploadTabBtn = modalEl.querySelector('[data-bs-target="#tabUpload_' + galleryId + '"]');
       if (uploadTabBtn) {
-        const tab = bootstrap.Tab.getOrCreateInstance(uploadTabBtn);
-        tab.show();
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+          bootstrap.Tab.getOrCreateInstance(uploadTabBtn).show();
+        } else {
+          uploadTabBtn.click();
+        }
       }
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      modal.show();
+      if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+    }
+
+    function openPhotosTab(galleryId) {
+      const modalEl = document.getElementById('galleryManageModal_' + galleryId);
+      if (!modalEl) return;
+      const photosTabBtn = modalEl.querySelector('[data-bs-target="#tabPhotos_' + galleryId + '"]');
+      if (photosTabBtn) {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+          bootstrap.Tab.getOrCreateInstance(photosTabBtn).show();
+        } else {
+          photosTabBtn.click();
+        }
+      }
+      if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+    }
+
+    function openPricingModal(galleryId) {
+      const modalEl = document.getElementById('pricingModal_' + galleryId);
+      if (!modalEl) return;
+      if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
     }
   </script>
 </body>

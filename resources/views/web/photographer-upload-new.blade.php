@@ -539,9 +539,12 @@
     </section>
   </main>
 
-  @include('web.partials.footer')
-
-  <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (typeof bootstrap === 'undefined') {
+      document.write('<script src="{{ asset('js/bootstrap.bundle.min.js') }}"><\/script>');
+    }
+  </script>
   <script>
     // State management for uploaded files
     let fileQueue = [];

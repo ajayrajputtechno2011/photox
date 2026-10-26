@@ -756,8 +756,10 @@
           }
 
           // Step 2: Upload remaining files in batches of 15 (matching Superadmin chunking loop)
-          const personalPriceVal = document.getElementById('personal-price') ? document.getElementById('personal-price').value : '';
-          const commercialPriceVal = document.getElementById('commercial-price') ? document.getElementById('commercial-price').value : '';
+          const personalPriceEl = document.getElementById('personal_price') || document.getElementById('personal-price');
+          const commercialPriceEl = document.getElementById('commercial_price') || document.getElementById('commercial-price');
+          const personalPriceVal = personalPriceEl ? personalPriceEl.value : '';
+          const commercialPriceVal = commercialPriceEl ? commercialPriceEl.value : '';
 
           function uploadBatch(startIndex) {
             if (startIndex >= totalFiles) {
@@ -816,7 +818,17 @@
               } else {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> Resume Upload';
-                alert(`Upload error on batch ${batchNum} (Status ${batchXhr.status}). Your event was saved with ${uploadedSoFar} photos. You can upload the rest anytime from the gallery.`);
+                let batchErr = `Upload error on batch ${batchNum} (Status ${batchXhr.status}).`;
+                try {
+                  const bRes = JSON.parse(batchXhr.responseText);
+                  if (bRes.message) batchErr += '\n' + bRes.message;
+                  if (bRes.errors) {
+                    for (const [k, v] of Object.entries(bRes.errors)) {
+                      batchErr += '\n• ' + (Array.isArray(v) ? v.join(', ') : v);
+                    }
+                  }
+                } catch(e) {}
+                alert(batchErr + `\n\nYour event was saved with ${uploadedSoFar} photos. You can upload the rest anytime from the gallery.`);
               }
             };
 
@@ -836,7 +848,24 @@
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> Create &amp; Upload Album';
           progressBox.classList.add('d-none');
-          alert('Upload error (Status ' + xhr.status + '). Please check form fields or file sizes.');
+          let errorMsg = 'Upload error (Status ' + xhr.status + '). ';
+          try {
+            const errRes = JSON.parse(xhr.responseText);
+            if (errRes.errors) {
+              const msgs = [];
+              for (const [key, errList] of Object.entries(errRes.errors)) {
+                msgs.push((Array.isArray(errList) ? errList.join(', ') : errList));
+              }
+              errorMsg += '\n\n' + msgs.join('\n');
+            } else if (errRes.message) {
+              errorMsg += '\n\n' + errRes.message;
+            }
+          } catch(e) {
+            if (xhr.responseText && xhr.responseText.length < 300) {
+              errorMsg += '\n\n' + xhr.responseText;
+            }
+          }
+          alert(errorMsg);
         }
       };
 

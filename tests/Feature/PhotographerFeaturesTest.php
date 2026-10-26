@@ -8,6 +8,7 @@ use App\Models\EventPhoto;
 use App\Models\User;
 use App\Models\WatermarkSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class PhotographerFeaturesTest extends TestCase
@@ -72,7 +73,7 @@ class PhotographerFeaturesTest extends TestCase
         $photo->refresh();
 
         $this->assertEquals($photo->id, $event->cover_photo_id);
-        $this->assertEquals('/uploads/test-cover.jpg', $event->cover_image);
+        $this->assertStringContainsString('/protected-photo/'.$photo->id, $event->cover_image);
         $this->assertTrue((bool) $photo->is_featured);
     }
 
@@ -155,5 +156,59 @@ class PhotographerFeaturesTest extends TestCase
         $this->assertEquals('sponsor_branded', $saved->post_purchase_mode);
         $this->assertEquals('middle_bottom', $saved->sponsor_placement);
         $this->assertEquals(90, $saved->sponsor_logo_size);
+    }
+
+    public function test_photographer_can_create_event_and_upload_photos_via_json(): void
+    {
+        $category = Category::firstOrCreate(['name' => 'Athletics Test'], ['slug' => 'athletics-test']);
+        $photographer = User::factory()->create(['role' => 'photographer']);
+
+        $photoFile = UploadedFile::fake()->image('test_action.jpg', 800, 600);
+
+        $response = $this->actingAs($photographer)->post(route('photographer.upload.store'), [
+            'title' => 'Cape Town Sprint 2026',
+            'category_id' => $category->id,
+            'location' => 'Cape Town',
+            'event_date' => '2026-10-26',
+            'personal_price' => 85.00,
+            'commercial_price' => 200.00,
+            'photos' => [$photoFile],
+        ], [
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'photos_count' => 1,
+        ]);
+
+        $this->assertDatabaseHas('events', [
+            'title' => 'Cape Town Sprint 2026',
+            'photographer_id' => $photographer->id,
+            'total_photos' => 1,
+        ]);
+
+        $event = Event::where('title', 'Cape Town Sprint 2026')->first();
+
+        // Test Batch 2 (uploadMorePhotos)
+        $batch2File = UploadedFile::fake()->image('batch_two.png', 800, 600);
+        $batchResponse = $this->actingAs($photographer)->post(route('photographer.gallery.upload_photos', $event->id), [
+            'photos' => [$batch2File],
+        ], [
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+        $batchResponse->assertStatus(200);
+        $batchResponse->assertJson([
+            'success' => true,
+            'count' => 1,
+            'total_photos' => 2,
+        ]);
+
+        $event->refresh();
+        $this->assertEquals(2, $event->total_photos);
     }
 }

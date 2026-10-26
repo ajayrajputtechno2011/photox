@@ -118,8 +118,11 @@ class PhotographerPortalController extends Controller
     /**
      * Store a new gallery uploaded by the photographer.
      */
-    public function storeGallery(Request $request): RedirectResponse
+    public function storeGallery(Request $request): RedirectResponse|JsonResponse
     {
+        @ini_set('memory_limit', '1024M');
+        @set_time_limit(300);
+
         if ($redirect = $this->checkPhotographerAccess()) {
             return $redirect;
         }
@@ -128,21 +131,31 @@ class PhotographerPortalController extends Controller
         $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'album_name' => ['nullable', 'string', 'max:255'],
-            'category_id' => ['nullable', 'exists:categories,id'],
+            'category_id' => ['nullable'],
             'category' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'caption' => ['nullable', 'string'],
-            'event_date' => ['nullable', 'date'],
+            'event_date' => ['nullable'],
             'location' => ['nullable', 'string', 'max:255'],
-            'starting_price' => ['nullable', 'string', 'max:50'],
+            'starting_price' => ['nullable'],
+            'personal_price' => ['nullable'],
+            'commercial_price' => ['nullable'],
             'cover_image' => ['nullable', 'string', 'max:1000'],
-            'cover_file' => ['nullable', 'image', 'max:15360'],
+            'cover_file' => ['nullable', 'file', 'max:102400'],
             'status' => ['nullable', 'in:published,draft,archived'],
-            'photos.*' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
+            'photos.*' => ['nullable', 'file', 'max:102400'],
         ]);
 
         $title = $request->input('title') ?: $request->input('album_name');
         if (empty($title)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Event name / Album title is required.',
+                    'errors' => ['title' => ['Event name / Album title is required.']],
+                ], 422);
+            }
+
             return back()->withErrors(['title' => 'Event name is required.'])->withInput();
         }
 
@@ -198,16 +211,10 @@ class PhotographerPortalController extends Controller
         // Process uploaded photos
         $photosCount = 0;
         if ($request->hasFile('photos')) {
-            $uploadDir = public_path('uploads/events/'.$event->id);
-            if (! file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-
             foreach ($request->file('photos') as $idx => $file) {
                 if ($file && $file->isValid()) {
-                    $filename = 'photo_'.time().'_'.$idx.'.'.$file->getClientOriginalExtension();
-                    $file->move($uploadDir, $filename);
-                    $relPath = '/uploads/events/'.$event->id.'/'.$filename;
+                    $path = $file->store('events/'.$event->id, 'public');
+                    $relPath = '/storage/'.$path;
 
                     EventPhoto::create([
                         'event_id' => $event->id,
@@ -607,6 +614,9 @@ class PhotographerPortalController extends Controller
      */
     public function uploadMorePhotos(Request $request, int $id): RedirectResponse|JsonResponse
     {
+        @ini_set('memory_limit', '1024M');
+        @set_time_limit(300);
+
         $photographer = $this->resolvePhotographer();
         $event = Event::where('photographer_id', $photographer->id)->where('id', $id)->first();
         if (! $event) {
@@ -614,7 +624,7 @@ class PhotographerPortalController extends Controller
         }
 
         $request->validate([
-            'photos.*' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:20480'],
+            'photos.*' => ['required', 'file', 'max:102400'],
             'sub_album' => ['nullable', 'string', 'max:100'],
         ]);
 
@@ -624,16 +634,10 @@ class PhotographerPortalController extends Controller
         $subAlbum = trim($request->input('sub_album', '')) ?: null;
         $uploadedCount = 0;
         if ($request->hasFile('photos')) {
-            $uploadDir = public_path('uploads/events/'.$event->id);
-            if (! file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-
             foreach ($request->file('photos') as $idx => $file) {
-                if ($file->isValid()) {
-                    $filename = 'photo_'.time().'_'.$idx.'.'.$file->getClientOriginalExtension();
-                    $file->move($uploadDir, $filename);
-                    $relPath = '/uploads/events/'.$event->id.'/'.$filename;
+                if ($file && $file->isValid()) {
+                    $path = $file->store('events/'.$event->id, 'public');
+                    $relPath = '/storage/'.$path;
 
                     EventPhoto::create([
                         'event_id' => $event->id,

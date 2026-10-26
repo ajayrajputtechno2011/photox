@@ -286,7 +286,7 @@
           labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7'],
           datasets: [{
             label: 'Sales',
-            data: @json($weeklySalesData ?? [0, 0, 0, 0, 0, 0, 0]),
+            data: {!! json_encode(!empty($weeklySalesData) ? $weeklySalesData : [0, 0, 0, 0, 0, 0, 0]) !!},
             backgroundColor: ['#7cb8ff', '#7cb8ff', '#7cb8ff', '#0b2d5b', '#0b2d5b', '#ff8a00', '#ff8a00'],
             borderRadius: 8,
             borderSkipped: false

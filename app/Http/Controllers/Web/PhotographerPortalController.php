@@ -211,24 +211,35 @@ class PhotographerPortalController extends Controller
         // Process uploaded photos
         $photosCount = 0;
         if ($request->hasFile('photos')) {
+            $eventDir = storage_path('app/public/events/'.$event->id);
+            if (! is_dir($eventDir)) {
+                @mkdir($eventDir, 0777, true);
+                @chmod($eventDir, 0777);
+            }
+
             foreach ($request->file('photos') as $idx => $file) {
                 if ($file && $file->isValid()) {
-                    $path = $file->store('events/'.$event->id, 'public');
-                    $relPath = '/storage/'.$path;
+                    try {
+                        $path = $file->store('events/'.$event->id, 'public');
+                        $relPath = '/storage/'.$path;
+                        @chmod(storage_path('app/public/'.$path), 0777);
 
-                    EventPhoto::create([
-                        'event_id' => $event->id,
-                        'photographer_id' => $photographer->id,
-                        'photographer_name' => $photographer->name,
-                        'file_path' => $relPath,
-                        'watermarked_path' => $relPath,
-                        'original_name' => $file->getClientOriginalName(),
-                        'title' => $title.' #'.($idx + 1),
-                        'personal_price' => $personalPrice,
-                        'commercial_price' => $commercialPrice,
-                        'captured_at' => now(),
-                    ]);
-                    $photosCount++;
+                        EventPhoto::create([
+                            'event_id' => $event->id,
+                            'photographer_id' => $photographer->id,
+                            'photographer_name' => $photographer->name,
+                            'file_path' => $relPath,
+                            'watermarked_path' => $relPath,
+                            'original_name' => $file->getClientOriginalName(),
+                            'title' => $title.' #'.($idx + 1),
+                            'personal_price' => $personalPrice,
+                            'commercial_price' => $commercialPrice,
+                            'captured_at' => now(),
+                        ]);
+                        $photosCount++;
+                    } catch (\Throwable $e) {
+                        Log::error('Photographer photo upload failed: '.$e->getMessage());
+                    }
                 }
             }
         }
@@ -634,25 +645,36 @@ class PhotographerPortalController extends Controller
         $subAlbum = trim($request->input('sub_album', '')) ?: null;
         $uploadedCount = 0;
         if ($request->hasFile('photos')) {
+            $eventDir = storage_path('app/public/events/'.$event->id);
+            if (! is_dir($eventDir)) {
+                @mkdir($eventDir, 0777, true);
+                @chmod($eventDir, 0777);
+            }
+
             foreach ($request->file('photos') as $idx => $file) {
                 if ($file && $file->isValid()) {
-                    $path = $file->store('events/'.$event->id, 'public');
-                    $relPath = '/storage/'.$path;
+                    try {
+                        $path = $file->store('events/'.$event->id, 'public');
+                        $relPath = '/storage/'.$path;
+                        @chmod(storage_path('app/public/'.$path), 0777);
 
-                    EventPhoto::create([
-                        'event_id' => $event->id,
-                        'photographer_id' => $photographer->id,
-                        'photographer_name' => $photographer->name,
-                        'file_path' => $relPath,
-                        'watermarked_path' => $relPath,
-                        'original_name' => $file->getClientOriginalName(),
-                        'title' => $event->title.' #'.($event->photos()->count() + 1),
-                        'personal_price' => $personalPrice,
-                        'commercial_price' => $commercialPrice,
-                        'sub_album' => $subAlbum,
-                        'captured_at' => now(),
-                    ]);
-                    $uploadedCount++;
+                        EventPhoto::create([
+                            'event_id' => $event->id,
+                            'photographer_id' => $photographer->id,
+                            'photographer_name' => $photographer->name,
+                            'file_path' => $relPath,
+                            'watermarked_path' => $relPath,
+                            'original_name' => $file->getClientOriginalName(),
+                            'title' => $event->title.' #'.($event->photos()->count() + 1),
+                            'personal_price' => $personalPrice,
+                            'commercial_price' => $commercialPrice,
+                            'sub_album' => $subAlbum,
+                            'captured_at' => now(),
+                        ]);
+                        $uploadedCount++;
+                    } catch (\Throwable $e) {
+                        Log::error('Photographer batch photo upload failed: '.$e->getMessage());
+                    }
                 }
             }
         }

@@ -605,6 +605,9 @@ class PhotographerPortalController extends Controller
             'sub_album' => ['nullable', 'string', 'max:100'],
         ]);
 
+        $personalPrice = $request->filled('personal_price') ? (float) $request->input('personal_price') : (float) ($event->starting_price ?: 75.00);
+        $commercialPrice = $request->filled('commercial_price') ? (float) $request->input('commercial_price') : ($event->commercial_price !== null ? (float) $event->commercial_price : $personalPrice * 2.5);
+
         $subAlbum = trim($request->input('sub_album', '')) ?: null;
         $uploadedCount = 0;
         if ($request->hasFile('photos')) {
@@ -627,8 +630,8 @@ class PhotographerPortalController extends Controller
                         'watermarked_path' => $relPath,
                         'original_name' => $file->getClientOriginalName(),
                         'title' => $event->title.' #'.($event->photos()->count() + 1),
-                        'personal_price' => (float) ($event->starting_price ?: 75.00),
-                        'commercial_price' => ((float) ($event->starting_price ?: 75.00)) * 2.5,
+                        'personal_price' => $personalPrice,
+                        'commercial_price' => $commercialPrice,
                         'sub_album' => $subAlbum,
                         'captured_at' => now(),
                     ]);

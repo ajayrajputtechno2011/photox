@@ -13,74 +13,7 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
-      <div class="sidebar-inner">
-        <a class="brand" href="/admin/dashboard" aria-label="PhotoX Admin home">
-          <img class="brand-logo" src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin" />
-        </a>
-        <div class="workspace-switcher">
-          <span class="workspace-avatar">PS</span>
-          <span class="workspace-copy"><small>Workspace</small><strong>Photo Studio</strong></span>
-          <i class="bi bi-chevron-down"></i>
-        </div>
-        <a class="dashboard-link nav-link" href="/admin/dashboard">
-          <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-        </a>
-        <div class="nav-label nav-label-spaced">Marketplace</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/events"><i class="bi bi-calendar-event"></i><span>Events</span></a>
-          <a class="nav-link" href="/admin/galleries"><i class="bi bi-collection"></i><span>Galleries</span></a>
-          <a class="nav-link" href="/admin/images"><i class="bi bi-image"></i><span>Images</span></a>
-          <a class="nav-link" href="/admin/orders"><i class="bi bi-bag-check"></i><span>Orders</span></a>
-          <a class="nav-link" href="/admin/customers"><i class="bi bi-people"></i><span>Customers</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Photographers</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/photographers"><i class="bi bi-camera2"></i><span>Photographers</span></a>
-          <a class="nav-link" href="/admin/memberships"><i class="bi bi-person-vcard"></i><span>Memberships</span></a>
-          <a class="nav-link active" href="/admin/commissions"><i class="bi bi-percent"></i><span>Commissions</span></a>
-          <a class="nav-link" href="/admin/payouts"><i class="bi bi-wallet2"></i><span>Payouts</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">AI &amp; Media</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
-          <a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
-          <a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Business</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/payments"><i class="bi bi-credit-card"></i><span>Payments</span></a>
-          <a class="nav-link" href="/admin/coupons-discounts"><i class="bi bi-tags"></i><span>Coupons &amp; Discounts</span></a>
-          <a class="nav-link" href="/admin/sponsors"><i class="bi bi-award"></i><span>Sponsors</span></a>
-          <a class="nav-link" href="/admin/banners"><i class="bi bi-layout-text-window"></i><span>Banners</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Organisations</div>
-        <nav class="nav flex-column sidebar-nav">
-<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
-          <a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
-          <a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-</nav>
-        <div class="nav-label nav-label-spaced">Content</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
-          <a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>
-          <a class="nav-link" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-          <a class="nav-link" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
-          <a class="nav-link" href="/admin/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
-          <a class="nav-link" href="/admin/email-templates"><i class="bi bi-envelope-paper"></i><span>Email Templates</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Reporting</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/reports"><i class="bi bi-bar-chart"></i><span>Reports</span></a>
-          <a class="nav-link" href="/admin/banner-analytics"><i class="bi bi-graph-up-arrow"></i><span>Banner Analytics</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">System</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
-          <a class="nav-link" href="/admin/audit-logs"><i class="bi bi-shield-check"></i><span>Audit Logs</span></a>
-        </nav>
-      </div>
-    </aside>
+    @include('admin.partials.sidebar')
 
     <div class="main-panel">
       <header class="topbar">
@@ -138,8 +71,8 @@
                 </span>
               </div>
               <p>Gross marketplace sales</p>
-              <h2>R 84,260</h2>
-              <small>Last 30 days</small>
+              <h2>R {{ number_format($stats['gross_sales'], 2) }}</h2>
+              <small>All completed orders</small>
             </article>
           </div>
           <div class="col-xl-3 col-md-6">
@@ -150,8 +83,8 @@
                 </span>
               </div>
               <p>PhotoX commission</p>
-              <h2>R 12,639</h2>
-              <small>15% configured rate</small>
+              <h2>R {{ number_format($stats['platform_commission'], 2) }}</h2>
+              <small>{{ $stats['commission_rate'] }}% configured platform fee</small>
             </article>
           </div>
           <div class="col-xl-3 col-md-6">
@@ -162,8 +95,8 @@
                 </span>
               </div>
               <p>Photographer earnings</p>
-              <h2>R 71,621</h2>
-              <small>After commission</small>
+              <h2>R {{ number_format($stats['photographer_earnings'], 2) }}</h2>
+              <small>Creator net payout pool</small>
             </article>
           </div>
           <div class="col-xl-3 col-md-6">
@@ -174,8 +107,8 @@
                 </span>
               </div>
               <p>Pending settlement</p>
-              <h2>R 4,200</h2>
-              <small>12 records to settle</small>
+              <h2>R {{ number_format($stats['pending_settlement'], 2) }}</h2>
+              <small>Pending order amount</small>
             </article>
           </div>
         </section>
@@ -186,97 +119,79 @@
               <p class="eyebrow">Financial reconciliation</p>
               <h3>Commission records</h3>
             </div>
-            <button class="create-button" type="button">
-              <i class="bi bi-file-earmark-excel"></i> Export Excel
-            </button>
+            <a href="{{ route('admin.payouts.export') }}" class="create-button text-decoration-none">
+              <i class="bi bi-file-earmark-excel"></i> Export Payouts CSV
+            </a>
           </div>
-          <div class="ops-toolbar">
+          <form method="GET" action="{{ route('admin.commissions.index') }}" class="ops-toolbar">
             <div class="search-field">
               <i class="bi bi-search"></i>
-              <input type="search" placeholder="Search order or photographer..." aria-label="Search commissions" />
+              <input type="search" name="search" value="{{ request('search') }}" placeholder="Search order number or customer..." aria-label="Search commissions" />
             </div>
-            <select class="management-select" aria-label="Filter settlement">
-              <option>All settlements</option>
-              <option>Settled</option>
-              <option>Pending</option>
-            </select>
-          </div>
+            @if(request('search'))
+              <a href="{{ route('admin.commissions.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill">Reset</a>
+            @endif
+          </form>
           <div class="ops-table-wrap">
             <table class="table ops-table">
               <thead>
                 <tr>
                   <th>Order</th>
-                  <th>Photographer</th>
+                  <th>Photographer / Event</th>
                   <th>Gross amount</th>
-                  <th>PhotoX commission</th>
-                  <th>Photographer earnings</th>
+                  <th>PhotoX commission ({{ $commissionRate }}%)</th>
+                  <th>Photographer earnings ({{ 100 - $commissionRate }}%)</th>
                   <th>Settlement</th>
                   <th>Details</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <strong>ORD-84260</strong><br /><small>25 Sep 2026</small>
-                  </td>
-                  <td>Jordan Miller</td>
-                  <td>R 1,240</td>
-                  <td>R 186</td>
-                  <td>R 1,054</td>
-                  <td><span class="ops-pill green">Settled</span></td>
-                  <td>
-                    <a class="row-action" href="/admin/orders" aria-label="Open order">
-                      <i class="bi bi-arrow-up-right"></i>
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>ORD-84259</strong><br /><small>25 Sep 2026</small>
-                  </td>
-                  <td>Sarah Kim</td>
-                  <td>R 860</td>
-                  <td>R 129</td>
-                  <td>R 731</td>
-                  <td><span class="ops-pill green">Settled</span></td>
-                  <td>
-                    <a class="row-action" href="/admin/orders" aria-label="Open order">
-                      <i class="bi bi-arrow-up-right"></i>
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>ORD-84258</strong><br /><small>25 Sep 2026</small>
-                  </td>
-                  <td>Daniel Ross</td>
-                  <td>R 2,450</td>
-                  <td>R 368</td>
-                  <td>R 2,082</td>
-                  <td><span class="ops-pill orange">Pending</span></td>
-                  <td>
-                    <a class="row-action" href="/admin/orders" aria-label="Open order">
-                      <i class="bi bi-arrow-up-right"></i>
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>ORD-84257</strong><br /><small>24 Sep 2026</small>
-                  </td>
-                  <td>Emma Peterson</td>
-                  <td>R 540</td>
-                  <td>R 81</td>
-                  <td>R 459</td>
-                  <td><span class="ops-pill orange">Pending</span></td>
-                  <td>
-                    <a class="row-action" href="/admin/orders" aria-label="Open order">
-                      <i class="bi bi-arrow-up-right"></i>
-                    </a>
-                  </td>
-                </tr>
+                @forelse($orders as $ord)
+                  @php
+                    $firstItem = $ord->items->first();
+                    $photographerName = $firstItem?->event?->photographer?->name ?? 'Platform Marketplace';
+                    $eventTitle = $firstItem?->event?->title ?? 'Photo Purchase';
+                    $gross = (float) $ord->total_amount;
+                    $comm = round($gross * ($commissionRate / 100), 2);
+                    $net = round($gross - $comm, 2);
+                  @endphp
+                  <tr>
+                    <td>
+                      <strong>#{{ $ord->order_number }}</strong><br />
+                      <small class="text-muted">{{ $ord->created_at ? $ord->created_at->format('d M Y') : 'Recent' }}</small>
+                    </td>
+                    <td>
+                      <strong>{{ $photographerName }}</strong><br />
+                      <small class="text-muted">{{ Str::limit($eventTitle, 30) }}</small>
+                    </td>
+                    <td><strong>R {{ number_format($gross, 2) }}</strong></td>
+                    <td><strong class="text-success">R {{ number_format($comm, 2) }}</strong></td>
+                    <td><strong>R {{ number_format($net, 2) }}</strong></td>
+                    <td>
+                      @if(in_array($ord->payment_status, ['paid', 'completed']))
+                        <span class="ops-pill green"><i class="bi bi-check-circle"></i> Paid</span>
+                      @else
+                        <span class="ops-pill orange">Pending</span>
+                      @endif
+                    </td>
+                    <td>
+                      <a class="row-action" href="{{ route('admin.orders.show', $ord->id) }}" title="View Order Details">
+                        <i class="bi bi-arrow-up-right"></i>
+                      </a>
+                    </td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                      No settled commission records found.
+                    </td>
+                  </tr>
+                @endforelse
               </tbody>
             </table>
+          </div>
+          <div class="mt-3">
+            {{ $orders->links() }}
           </div>
         </section>
       </main>

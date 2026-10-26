@@ -13,64 +13,7 @@
 </head>
 <body>
 	<div class="app-shell">
-		<aside class="sidebar" id="sidebar" aria-label="Main navigation">
-      <div class="sidebar-inner">
-		<a class="brand" href="/admin/dashboard" aria-label="PhotoX Admin home"><img class="brand-logo" src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin"></a>
-        <div class="workspace-switcher"><span class="workspace-avatar">PS</span><span class="workspace-copy"><small>Workspace</small><strong>Photo Studio</strong></span><i class="bi bi-chevron-down"></i></div>
-         <a class="dashboard-link nav-link" href="/admin/dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
-        <div class="nav-label nav-label-spaced">Marketplace</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/events"><i class="bi bi-calendar-event"></i><span>Events</span></a>
-          <a class="nav-link" href="/admin/galleries"><i class="bi bi-collection"></i><span>Galleries</span></a>
-          <a class="nav-link" href="/admin/images"><i class="bi bi-image"></i><span>Images</span></a>
-          <a class="nav-link active" href="/admin/orders"><i class="bi bi-bag-check"></i><span>Orders</span></a>
-          <a class="nav-link" href="/admin/customers"><i class="bi bi-people"></i><span>Customers</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Photographers</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/photographers"><i class="bi bi-camera2"></i><span>Photographers</span></a>
-          <a class="nav-link" href="/admin/memberships"><i class="bi bi-person-vcard"></i><span>Memberships</span></a>
-          <a class="nav-link" href="/admin/commissions"><i class="bi bi-percent"></i><span>Commissions</span></a>
-          <a class="nav-link" href="/admin/payouts"><i class="bi bi-wallet2"></i><span>Payouts</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">AI &amp; Media</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
-          <a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
-          <a class="nav-link" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Business</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/payments"><i class="bi bi-credit-card"></i><span>Payments</span></a>
-          <a class="nav-link" href="/admin/coupons-discounts"><i class="bi bi-tags"></i><span>Coupons &amp; Discounts</span></a>
-          <a class="nav-link" href="/admin/sponsors"><i class="bi bi-award"></i><span>Sponsors</span></a>
-          <a class="nav-link" href="/admin/banners"><i class="bi bi-layout-text-window"></i><span>Banners</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Organisations</div>
-        <nav class="nav flex-column sidebar-nav">
-<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
-          <a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
-          <a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-</nav>
-        <div class="nav-label nav-label-spaced">Content</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>
-          <a class="nav-link" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-          <a class="nav-link" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
-          <a class="nav-link" href="/admin/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
-          <a class="nav-link" href="/admin/email-templates"><i class="bi bi-envelope-paper"></i><span>Email Templates</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">Reporting</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/reports"><i class="bi bi-bar-chart"></i><span>Reports</span></a>
-          <a class="nav-link" href="/admin/banner-analytics"><i class="bi bi-graph-up-arrow"></i><span>Banner Analytics</span></a>
-        </nav>
-        <div class="nav-label nav-label-spaced">System</div>
-        <nav class="nav flex-column sidebar-nav">
-          <a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
-          <a class="nav-link" href="/admin/audit-logs"><i class="bi bi-shield-check"></i><span>Audit Logs</span></a>
-        </nav>      </div>
-    </aside>
+		@include('admin.partials.sidebar')
 		<div class="main-panel">
 			<header class="topbar">
 				<div class="d-flex align-items-center gap-3">
@@ -99,21 +42,51 @@
 				<div class="page-intro d-flex align-items-end justify-content-between gap-3 flex-wrap">
 					<div>
 						<p class="eyebrow">Order detail</p>
-						<h1>#PX-2098</h1>
-						<p class="intro-copy">Placed today at 10:12 AM by Nadia Maseko.</p>
+						<h1>#{{ $order->order_number }}</h1>
+						<p class="intro-copy">Placed {{ $order->created_at ? $order->created_at->format('d M Y \a\t h:i A') : 'N/A' }} by {{ $order->customer_name ?: 'Customer' }}.</p>
 					</div>
-					<div class="detail-actions">
-						<a class="btn btn-outline-light" href="/admin/orders"><i class="bi bi-arrow-left"></i> Back to orders</a><button class="btn btn-outline-danger" type="button"><i class="bi bi-arrow-counterclockwise"></i> Refund order</button>
+					<div class="detail-actions d-flex gap-2 align-items-center">
+						<a class="btn btn-outline-light" href="{{ route('admin.orders.index') }}"><i class="bi bi-arrow-left"></i> Back to orders</a>
+						@if($order->payment_status !== 'refunded')
+							<form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Mark this order as refunded?');">
+								@csrf
+								<input type="hidden" name="payment_status" value="refunded">
+								<button class="btn btn-outline-danger" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Mark Refunded</button>
+							</form>
+						@else
+							<form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="d-inline">
+								@csrf
+								<input type="hidden" name="payment_status" value="completed">
+								<button class="btn btn-outline-success" type="submit"><i class="bi bi-check-circle"></i> Restore Paid</button>
+							</form>
+						@endif
 					</div>
 				</div>
+
+				@if(session('success'))
+					<div class="alert alert-success alert-dismissible fade show rounded-3 my-3" role="alert">
+						<i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				@endif
+
 				<section class="ops-hero">
 					<div class="ops-detail-hero">
 						<span class="ops-hero-icon"><i class="bi bi-receipt"></i></span>
 						<div>
-							<h2>Order #PX-2098</h2>
-							<p>Rugby Day · Main Field · 16 items</p>
+							<h2>Order #{{ $order->order_number }}</h2>
+							<p>{{ $order->items->first()?->event?->title ?? 'Digital Photo Purchase' }} · {{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }}</p>
 						</div>
-					</div><span class="ops-pill blue">Processing</span>
+					</div>
+					@if(in_array($order->payment_status, ['paid', 'completed']))
+						<span class="ops-pill green"><i class="bi bi-check-circle"></i> Paid</span>
+					@elseif($order->payment_status === 'pending')
+						<span class="ops-pill blue">Pending</span>
+					@elseif($order->payment_status === 'refunded')
+						<span class="ops-pill orange">Refunded</span>
+					@else
+						<span class="ops-pill red">{{ ucfirst($order->payment_status) }}</span>
+					@endif
 				</section>
 				<div class="ops-grid-2">
 					<section class="ops-panel">
@@ -121,46 +94,75 @@
 							<div>
 								<p class="eyebrow">Purchased items</p>
 								<h3>Gallery and fulfilment</h3>
-							</div><a class="view-link" href="/admin/admin-gallery-detail">Open gallery <i class="bi bi-arrow-up-right"></i></a>
+							</div>
+							@if($order->items->first()?->event_id)
+								<a class="view-link" href="{{ route('events.show', $order->items->first()->event_id) }}" target="_blank">Open gallery <i class="bi bi-arrow-up-right"></i></a>
+							@endif
 						</div>
 						<div class="ops-table-wrap">
 							<table class="table ops-table">
 								<thead>
 									<tr>
-										<th>Item</th>
-										<th>Type</th>
-										<th>Quantity</th>
+										<th>Item / Photo</th>
+										<th>License</th>
+										<th>Event</th>
 										<th>Price</th>
 									</tr>
 								</thead>
 								<tbody>
-									<tr>
-										<td><strong>Rugby Day · Main Field</strong><small>IMG-842910 to IMG-842921</small></td>
-										<td><span class="ops-pill blue">Digital images</span></td>
-										<td><strong>12</strong></td>
-										<td><strong>R 480</strong></td>
-									</tr>
-									<tr>
-										<td><strong>Premium print set</strong><small>A4 matte · delivery included</small></td>
-										<td><span class="ops-pill orange">Prints</span></td>
-										<td><strong>4</strong></td>
-										<td><strong>R 360</strong></td>
-									</tr>
+									@forelse($order->items as $item)
+										<tr>
+											<td>
+												<div class="d-flex align-items-center gap-2">
+													@php
+														$thumbSrc = null;
+														$rawPath = $item->photo?->watermarked_path ?: ($item->photo?->file_path ?: $item->file_path);
+														if ($rawPath) {
+															if (str_starts_with($rawPath, 'http://') || str_starts_with($rawPath, 'https://')) {
+																$thumbSrc = $rawPath;
+															} elseif (str_starts_with($rawPath, '/uploads/')) {
+																$thumbSrc = $rawPath;
+															} else {
+																$thumbSrc = asset('storage/' . ltrim($rawPath, '/'));
+															}
+														}
+													@endphp
+													@if($thumbSrc)
+														<img src="{{ $thumbSrc }}" alt="Photo" class="rounded-2" style="width: 48px; height: 36px; object-fit: cover;" onerror="this.onerror=null; this.src='/logo.png';">
+													@else
+														<div class="rounded-2 bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 36px; font-size: 11px;">PX</div>
+													@endif
+													<div>
+														<strong>{{ $item->title ?: ($item->photo->file_name ?? 'Photo Item #' . $item->id) }}</strong>
+														<br>
+														<small class="text-muted">Digital Download</small>
+													</div>
+												</div>
+											</td>
+											<td><span class="ops-pill blue">{{ ucfirst($item->license_type ?? 'Standard') }}</span></td>
+											<td><small>{{ $item->event?->title ?? 'PhotoX Event' }}</small></td>
+											<td><strong>R {{ number_format($item->price, 2) }}</strong></td>
+										</tr>
+									@empty
+										<tr>
+											<td colspan="4" class="text-center py-3 text-muted">No line items in this order.</td>
+										</tr>
+									@endforelse
 								</tbody>
 							</table>
 						</div>
 						<div class="ops-info-grid">
 							<div class="ops-info-item">
-								<span>Subtotal</span><strong>R 730</strong>
+								<span>Subtotal</span><strong>R {{ number_format($order->total_amount, 2) }}</strong>
 							</div>
 							<div class="ops-info-item">
-								<span>VAT</span><strong>R 110</strong>
+								<span>Payment Gateway</span><strong>{{ strtoupper($order->payment_gateway ?? 'Yoco') }}</strong>
 							</div>
 							<div class="ops-info-item">
-								<span>Delivery</span><strong>R 0</strong>
+								<span>Fulfilment</span><strong>Digital Vault (Instant)</strong>
 							</div>
 							<div class="ops-info-item">
-								<span>Total paid</span><strong>R 840</strong>
+								<span>Total paid</span><strong>R {{ number_format($order->total_amount, 2) }}</strong>
 							</div>
 						</div>
 					</section>
@@ -168,26 +170,35 @@
 						<div class="section-heading">
 							<div>
 								<p class="eyebrow">Customer</p>
-								<h3>Nadia Maseko</h3>
-							</div><span class="ops-avatar">NM</span>
+								<h3>{{ $order->customer_name ?: 'Guest Buyer' }}</h3>
+							</div><span class="ops-avatar">{{ strtoupper(substr($order->customer_name ?: 'CU', 0, 2)) }}</span>
 						</div>
 						<div class="ops-info-grid">
 							<div class="ops-info-item">
-								<span>Email</span><strong>nadia@email.co</strong>
+								<span>Email</span><strong>{{ $order->customer_email }}</strong>
 							</div>
 							<div class="ops-info-item">
-								<span>Phone</span><strong>+27 82 420 1108</strong>
+								<span>Transaction ID</span><strong><small>{{ $order->transaction_id ?: 'Direct Checkout' }}</small></strong>
 							</div>
 							<div class="ops-info-item">
-								<span>Payment method</span><strong>Visa ···· 4821</strong>
+								<span>Payment gateway</span><strong>{{ strtoupper($order->payment_gateway ?? 'Yoco') }}</strong>
 							</div>
 							<div class="ops-info-item">
-								<span>Payment status</span><strong><span class="ops-pill green">Paid</span></strong>
+								<span>Payment status</span>
+								<strong>
+									@if(in_array($order->payment_status, ['paid', 'completed']))
+										<span class="ops-pill green">Paid</span>
+									@else
+										<span class="ops-pill orange">{{ ucfirst($order->payment_status) }}</span>
+									@endif
+								</strong>
 							</div>
 						</div>
-						<div class="detail-actions">
-							<a class="btn btn-outline-light" href="/admin/admin-customer-detail"><i class="bi bi-person"></i> Customer profile</a>
-						</div>
+						@if($order->user_id)
+							<div class="detail-actions">
+								<a class="btn btn-outline-light" href="{{ route('admin.customers.show', $order->user_id) }}"><i class="bi bi-person"></i> Customer profile</a>
+							</div>
+						@endif
 					</aside>
 				</div>
 				<section class="ops-panel mt-3">

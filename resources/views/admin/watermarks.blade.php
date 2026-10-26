@@ -40,60 +40,7 @@
 </head>
 <body>
 	<div class="app-shell">
-		<aside class="sidebar" id="sidebar" aria-label="Main navigation">
-			<div class="sidebar-inner">
-				<a class="brand" href="/admin/dashboard" aria-label="PhotoX Admin home"><img class="brand-logo" src="{{ asset('admin-assets/logo.png') }}" alt="PhotoX Admin"></a>
-				<div class="workspace-switcher"><span class="workspace-avatar">PS</span><span class="workspace-copy"><small>Workspace</small><strong>Photo Studio</strong></span><i class="bi bi-chevron-down"></i></div>
-				<a class="dashboard-link nav-link" href="/admin/dashboard"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
-				<div class="nav-label nav-label-spaced">Marketplace</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/events"><i class="bi bi-calendar-event"></i><span>Events</span></a>
-					<a class="nav-link" href="/admin/galleries"><i class="bi bi-collection"></i><span>Galleries</span></a>
-					<a class="nav-link" href="/admin/images"><i class="bi bi-image"></i><span>Images</span></a>
-					<a class="nav-link" href="/admin/orders"><i class="bi bi-bag-check"></i><span>Orders</span></a>
-					<a class="nav-link" href="/admin/customers"><i class="bi bi-people"></i><span>Customers</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Photographers</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/photographers"><i class="bi bi-camera2"></i><span>Photographers</span></a>
-					<a class="nav-link" href="/admin/memberships"><i class="bi bi-person-vcard"></i><span>Memberships</span></a>
-					<a class="nav-link" href="/admin/commissions"><i class="bi bi-percent"></i><span>Commissions</span></a>
-					<a class="nav-link" href="/admin/payouts"><i class="bi bi-wallet2"></i><span>Payouts</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">AI &amp; Media</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/ai-processing"><i class="bi bi-stars"></i><span>AI Processing</span></a>
-					<a class="nav-link" href="/admin/storage"><i class="bi bi-cloud-arrow-up"></i><span>Storage</span></a>
-					<a class="nav-link active" href="/admin/watermarks"><i class="bi bi-droplet"></i><span>Watermarks</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Business</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/payments"><i class="bi bi-credit-card"></i><span>Payments</span></a>
-					<a class="nav-link" href="/admin/coupons-discounts"><i class="bi bi-tags"></i><span>Coupons &amp; Discounts</span></a>
-					<a class="nav-link" href="/admin/sponsors"><i class="bi bi-award"></i><span>Sponsors</span></a>
-					<a class="nav-link" href="/admin/banners"><i class="bi bi-layout-text-window"></i><span>Banners</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">Organisations</div>
-				<nav class="nav flex-column sidebar-nav">
-<a class="nav-link" href="/admin/categories"><i class="bi bi-tags"></i><span>Categories</span></a>
-					<a class="nav-link" href="/admin/schools"><i class="bi bi-mortarboard"></i><span>Schools</span></a>
-					<a class="nav-link" href="/admin/companies"><i class="bi bi-buildings"></i><span>Companies</span></a>
-</nav>
-				<div class="nav-label nav-label-spaced">Content</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
-					<a class="nav-link" href="/admin/blog"><i class="bi bi-pencil-square"></i><span>Blog</span></a>
-					<a class="nav-link" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-					<a class="nav-link" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
-					<a class="nav-link" href="/admin/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
-				</nav>
-				<div class="nav-label nav-label-spaced">System</div>
-				<nav class="nav flex-column sidebar-nav">
-					<a class="nav-link" href="/admin/settings"><i class="bi bi-sliders2"></i><span>Settings</span></a>
-					<a class="nav-link" href="/admin/audit-logs"><i class="bi bi-shield-check"></i><span>Audit Logs</span></a>
-				</nav>
-			</div>
-		</aside>
+		@include('admin.partials.sidebar')
 
 		<div class="main-panel">
 			<header class="topbar">
@@ -126,7 +73,7 @@
 						<p class="intro-copy">Live interactive laboratory to configure, preview and test watermark overlays across galleries. Prevents unauthorized downloads and inspect-element theft.</p>
 					</div>
 					<div class="d-flex gap-2">
-						<button class="btn btn-primary px-4" type="button" onclick="alert('Watermark settings profile saved successfully!');">
+						<button id="btnSaveWatermark" class="btn btn-primary px-4" type="button" onclick="saveAdminWatermarks()">
 							<i class="bi bi-shield-check me-1"></i> Save Watermark Profile
 						</button>
 					</div>
@@ -263,18 +210,26 @@
 							<div class="pt-2 border-top border-secondary">
 								<label class="watermark-toggle d-flex justify-content-between align-items-center mb-2" style="cursor:pointer;">
 									<span>
+										<strong>Anti-AI Blur &amp; Frosted Shield</strong><br>
+										<small class="text-muted">Dynamic frosted blur mask breaking AI inpainting &amp; unwatermark tools</small>
+									</span>
+									<input id="watermarkAntiAi" type="checkbox" {{ ($setting->has_anti_ai_lines ?? false) ? 'checked' : '' }} style="width: 20px; height: 20px;">
+								</label>
+
+								<label class="watermark-toggle d-flex justify-content-between align-items-center mb-2" style="cursor:pointer;">
+									<span>
 										<strong>Diagonal Tile Pattern</strong><br>
 										<small class="text-muted">Repeats across the entire image to prevent cropping</small>
 									</span>
-									<input id="watermarkTile" type="checkbox" checked style="width: 20px; height: 20px;">
+									<input id="watermarkTile" type="checkbox" {{ ($setting->is_tiled ?? true) ? 'checked' : '' }} style="width: 20px; height: 20px;">
 								</label>
 
 								<label class="watermark-toggle d-flex justify-content-between align-items-center" style="cursor:pointer;">
 									<span>
-										<strong>Glass Motion Protection</strong><br>
-										<small class="text-muted">Subtle animated glimmer effect against screenshot bots</small>
+										<strong>Glass Motion Protection (WaterMotion)</strong><br>
+										<small class="text-muted">Dynamic liquid lens &amp; glimmer effect against screenshot bots</small>
 									</span>
-									<input id="watermarkMotion" type="checkbox" style="width: 20px; height: 20px;">
+									<input id="watermarkMotion" type="checkbox" {{ ($setting->is_motion_mask_enabled ?? false) ? 'checked' : '' }} style="width: 20px; height: 20px;">
 								</label>
 							</div>
 						</div>
@@ -353,6 +308,41 @@
 				if (btnPortrait) btnPortrait.classList.remove('active');
 			}
 			renderWatermark();
+		};
+
+		window.saveAdminWatermarks = function() {
+			const btn = document.getElementById('btnSaveWatermark');
+			const originalHtml = btn.innerHTML;
+			btn.disabled = true;
+			btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+			const formData = new FormData();
+			formData.append('_token', '{{ csrf_token() }}');
+			formData.append('is_watermark_enabled', 1);
+			formData.append('watermark_type', watermarkType || 'logo');
+			formData.append('watermark_text', textInput.value.trim() || 'PhotoX © 2026');
+			formData.append('font_size', sizeInput.value || 25);
+			formData.append('opacity', opacityInput.value || 65);
+			formData.append('rotation', rotationInput.value || -12);
+			formData.append('is_tiled', tileInput.checked ? 1 : 0);
+			formData.append('has_anti_ai_lines', document.getElementById('watermarkAntiAi').checked ? 1 : 0);
+			formData.append('is_motion_mask_enabled', motionInput.checked ? 1 : 0);
+
+			fetch('{{ route("admin.watermarks.save") }}', {
+				method: 'POST',
+				body: formData
+			})
+			.then(r => r.json())
+			.then(data => {
+				btn.disabled = false;
+				btn.innerHTML = originalHtml;
+				alert(data.message || 'Watermark settings profile saved successfully!');
+			})
+			.catch(err => {
+				btn.disabled = false;
+				btn.innerHTML = originalHtml;
+				alert('Error saving watermark settings.');
+			});
 		};
 	})();
 	</script>

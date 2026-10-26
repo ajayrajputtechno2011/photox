@@ -888,7 +888,9 @@
         <a class="workspace-nav-link active" href="/photographer-watermark"><i class="bi bi-shield-lock"></i><span>Watermark Studio</span></a>
         <a class="workspace-nav-link" href="/photographer-earnings"><i class="bi bi-wallet2"></i><span>Earnings</span></a>
         <a class="workspace-nav-link" href="/photographer-payouts"><i class="bi bi-bank"></i><span>Payouts &amp; Bank</span></a>
+        <a class="workspace-nav-link" href="/photographer-messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>
         <a class="workspace-nav-link" href="/photographer-profile"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+        <a class="workspace-nav-link" href="/notifications"><i class="bi bi-bell"></i><span>Notifications</span></a>
       </nav>
       <div class="workspace-side-note">
         <i class="bi bi-shield-shaded text-warning"></i>

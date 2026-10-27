@@ -163,12 +163,12 @@
             <div class="profile-field" style="grid-column: 1 / -1;">
               <span class="field-label">Vanity Storefront Handle / Profile URL <span class="text-danger">*</span></span>
               <div class="input-group mt-1">
-                <span class="input-group-text bg-dark text-warning border-secondary fw-semibold">photox.co.za/@</span>
-                <input class="profile-input form-control text-white border-secondary" name="slug" id="slugInput" type="text" value="{{ old('slug', $photographer->slug) }}" placeholder="your-studio-name" required style="background: rgba(255,255,255,0.06);">
+                <span class="input-group-text fw-semibold" style="background: #f1f5f9; color: #0b2d5b; border: 1px solid rgba(11, 45, 91, .15); border-right: none; font-size: 0.88rem; font-family: 'Space Grotesk', sans-serif;">photox.co.za/@</span>
+                <input class="profile-input form-control" name="slug" id="slugInput" type="text" value="{{ old('slug', $photographer->slug) }}" placeholder="your-studio-name" required style="background: #ffffff !important; color: #0b2d5b !important; border: 1px solid rgba(11, 45, 91, .15) !important; font-size: 0.95rem !important; font-weight: 600 !important;">
               </div>
               <div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
-                <small class="text-muted">
-                  Public Storefront: <strong class="text-warning" id="slugPreviewUrl">{{ url('/' . ($photographer->slug ?? 'your-handle')) }}</strong>
+                <small class="text-muted" style="font-size: 0.85rem;">
+                  Public Storefront: <strong style="color: #0b2d5b;" id="slugPreviewUrl">{{ url('/' . ($photographer->slug ?? 'your-handle')) }}</strong>
                 </small>
                 <div id="slugFeedback" class="small fw-semibold"></div>
               </div>

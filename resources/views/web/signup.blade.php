@@ -133,7 +133,7 @@
           <div class="form-check mt-3">
             <input class="form-check-input @error('terms') is-invalid @enderror" id="terms" name="terms" type="checkbox" required>
             <label class="form-check-label small text-secondary" for="terms">
-              I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">terms of service</a> and <a href="{{ route('privacy') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">privacy policy</a>.
+              I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-primary text-decoration-underline fw-semibold">terms of service</a> and <a href="{{ route('privacy') }}" target="_blank" class="text-primary text-decoration-underline fw-semibold">privacy policy</a>.
             </label>
             @error('terms')
               <div class="invalid-feedback">{{ $message }}</div>

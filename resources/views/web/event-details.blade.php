@@ -29,7 +29,7 @@
     color: #07131f;
   }
 
-  /* 2. Find Your Photos Card (Matching ZebraSnap Screenshot 1) */
+  /* 2. Find Your Photos Card (PhotoX Layout) */
   .find-photos-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -70,7 +70,7 @@
     color: #475569;
   }
 
-  /* 3. Event Gallery Photo Grid (Matching ZebraSnap Screenshot 2 & 4) */
+  /* 3. Event Gallery Photo Grid (PhotoX Layout) */
   .photo-gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -199,7 +199,7 @@
     background: rgba(15, 23, 42, 0.95);
   }
 
-  /* Hover Overlay Controls (Matching ZebraSnap Screenshot 4) */
+  /* Hover Overlay Controls (PhotoX Layout) */
   .card-hover-actions {
     position: absolute;
     inset: 0;
@@ -788,7 +788,7 @@
       </div>
     @endif
 
-    <!-- GALLERY SUBHEADER & VIEW CONTROLS (Matching ZebraSnap Screenshot 2) -->
+    <!-- GALLERY SUBHEADER & VIEW CONTROLS (PhotoX Layout) -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
         <h2 class="h4 fw-bold text-dark mb-0">
@@ -825,7 +825,7 @@
       </div>
     </div>
 
-    <!-- 3. PHOTO GALLERY GRID (Matching ZebraSnap Screenshot 2 & 4) -->
+    <!-- 3. PHOTO GALLERY GRID (PhotoX Layout) -->
     @if($photos->isNotEmpty())
       <div class="photo-gallery-grid" id="eventPhotosGrid">
         @foreach($photos as $photo)
@@ -886,7 +886,7 @@
             <i class="bi bi-flag"></i>
           </button>
 
-          <!-- Hover Overlay Controls (Matching ZebraSnap Screenshot 4) -->
+          <!-- Hover Overlay Controls (PhotoX Layout) -->
           <div class="card-hover-actions">
             @php
               $rawTitle = trim($photo->title ?? '');

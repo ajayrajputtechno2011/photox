@@ -16,7 +16,7 @@
   <script defer src="{{ asset('site-ad.js') }}"></script>
 
   <style>
-    /* Clean Light Theme for Photographer Upload (Matching Customer Dashboard & ZebraSnap) */
+    /* Clean Light Theme for Photographer Upload (Matching PhotoX Creator Studio) */
     body.customer-app {
       background: #f4f7fb !important;
       color: #0b2d5b;
@@ -273,7 +273,7 @@
       </div>
 
       <div class="mb-4">
-        <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 1px;">ZEBRASNAP ALBUM SETUP</span>
+        <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 1px;">PHOTOX ALBUM SETUP</span>
         <h2 class="h3 fw-bold text-dark mb-1">Create Event &amp; Upload Photos</h2>
         <p class="text-muted small mb-0">Set up album pricing, privacy locks, photographer notes, and upload full-resolution photos with live watermarking.</p>
       </div>
@@ -449,12 +449,12 @@
           </div>
         </section>
 
-        <!-- STEP 3: ZebraSnap Extra Settings & Toggles -->
+        <!-- STEP 3: PhotoX Privacy & Access Settings -->
         <section class="clean-panel">
           <div class="section-heading-clean">
             <div>
               <span class="text-uppercase fw-bold text-muted small d-block">Step 3 / 3</span>
-              <h3>Extra Settings &amp; Privacy Toggles (ZebraSnap)</h3>
+              <h3>Privacy &amp; Access Controls</h3>
             </div>
             <span class="badge bg-light text-dark border">Settings</span>
           </div>

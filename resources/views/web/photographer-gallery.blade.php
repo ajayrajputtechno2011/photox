@@ -781,7 +781,7 @@
                     </div>
                   </div>
 
-                  <!-- Tab 3: Edit Gallery Settings & ZebraSnap Toggles -->
+                  <!-- Tab 3: Edit Gallery Settings & PhotoX Toggles -->
                   <div class="tab-pane fade" id="tabSettings_{{ $gallery->id }}" role="tabpanel">
                     <form action="{{ route('photographer.gallery.update', $gallery->id) }}" method="POST">
                       @csrf
@@ -816,9 +816,9 @@
                         </div>
                       </div>
 
-                      <!-- ZebraSnap Extra Settings: Password Protect & Notes -->
+                      <!-- PhotoX Extra Settings: Password Protect & Notes -->
                       <div class="p-3 mb-3 rounded bg-light border">
-                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-lock me-1 text-primary"></i> ZebraSnap Privacy &amp; Access</h6>
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-lock me-1 text-primary"></i> PhotoX Privacy &amp; Access</h6>
 
                         <div class="form-check form-switch mb-2">
                           <input class="form-check-input" type="checkbox" name="is_password_protected" id="editPassCheck_{{ $gallery->id }}" value="1" {{ !empty($gallery->is_password_protected) ? 'checked' : '' }} onchange="document.getElementById('editPassWrap_{{ $gallery->id }}').classList.toggle('d-none', !this.checked);">

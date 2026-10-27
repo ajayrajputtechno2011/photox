@@ -57,6 +57,7 @@
     <nav class="nav flex-column sidebar-nav">
       <a class="nav-link {{ request()->is('admin/page-banners*') ? 'active' : '' }}" href="/admin/page-banners"><i class="bi bi-card-heading"></i><span>Page Banners</span></a>
       <a class="nav-link {{ request()->is('admin/legal-pages*') ? 'active' : '' }}" href="/admin/legal-pages"><i class="bi bi-shield-check"></i><span>Legal &amp; POPIA</span></a>
+      <a class="nav-link {{ request()->is('admin/faqs*') ? 'active' : '' }}" href="/admin/faqs"><i class="bi bi-question-circle"></i><span>FAQs</span></a>
       <a class="nav-link {{ request()->is('admin/news*', 'admin/blog*') ? 'active' : '' }}" href="/admin/news"><i class="bi bi-pencil-square"></i><span>Blog &amp; News</span></a>
       <a class="nav-link {{ request()->is('admin/announcements*') ? 'active' : '' }}" href="/admin/announcements"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
       <a class="nav-link {{ request()->is('admin/messages*') ? 'active' : '' }}" href="/admin/messages"><i class="bi bi-chat-left-text"></i><span>Messages</span></a>

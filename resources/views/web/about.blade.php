@@ -139,6 +139,102 @@
       </div>
     </section>
 
+    {{-- FAQ ACCORDION SECTION (Client Feedback Task 6) --}}
+    <section class="section-wrap" id="faqs" style="background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); padding: 5.5rem 0;">
+      <div class="container-xl" style="max-width: 960px;">
+        <div class="text-center mb-5">
+          <div class="section-kicker" style="color: #ff8a00; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Got Questions?</div>
+          <h2 class="section-title" style="font-size: 2.5rem; font-weight: 800; color: #0b2d5b; margin-top: 0.5rem;">Frequently Asked <em style="font-style: normal; color: #ff8a00;">Questions</em></h2>
+          <p class="text-muted" style="max-width: 650px; margin: 0.75rem auto 0; font-size: 1.05rem;">
+            Everything you need to know about purchasing event photos, finding yourself with AI Selfie Search, digital licenses, and photographer storefronts.
+          </p>
+        </div>
+
+        @if(isset($faqs) && $faqs->isNotEmpty())
+          <div class="accordion custom-faq-accordion" id="aboutFaqAccordion">
+            @foreach($faqs as $index => $faq)
+              @php
+                $catBadge = match($faq->category) {
+                  'general' => 'General',
+                  'selfie_bundles' => 'Selfie Bundle',
+                  'licenses' => 'Digital Licenses',
+                  'orders' => 'Orders &amp; Downloads',
+                  'photographers' => 'Photographers',
+                  default => ucfirst(str_replace('_', ' ', $faq->category))
+                };
+              @endphp
+              <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 14px; overflow: hidden; background: #ffffff;">
+                <h3 class="accordion-header" id="headingFaq{{ $faq->id }}">
+                  <button class="accordion-button {{ $index === 0 ? '' : 'collapsed' }} fw-bold p-4 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq{{ $faq->id }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="collapseFaq{{ $faq->id }}" style="font-size: 1.05rem; background: transparent; box-shadow: none;">
+                    <span class="d-flex align-items-center gap-2 flex-wrap text-start">
+                      <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-2 py-1 small fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">{!! $catBadge !!}</span>
+                      <span>{{ $faq->question }}</span>
+                    </span>
+                  </button>
+                </h3>
+                <div id="collapseFaq{{ $faq->id }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="headingFaq{{ $faq->id }}" data-bs-parent="#aboutFaqAccordion">
+                  <div class="accordion-body px-4 pb-4 pt-0 text-muted" style="line-height: 1.7; font-size: 0.98rem; border-top: 1px solid rgba(0,0,0,0.04); padding-top: 1rem !important;">
+                    {!! nl2br(e($faq->answer)) !!}
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        @else
+          {{-- Fallback default FAQs if DB table is unpopulated --}}
+          <div class="accordion custom-faq-accordion" id="aboutFaqAccordionFallback">
+            <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 14px; overflow: hidden; background: #ffffff;">
+              <h3 class="accordion-header" id="headingFaqFallback1">
+                <button class="accordion-button fw-bold p-4 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaqFallback1" aria-expanded="true" style="font-size: 1.05rem; background: transparent; box-shadow: none;">
+                  <span class="d-flex align-items-center gap-2 flex-wrap text-start">
+                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-2 py-1 small fw-bold" style="font-size: 0.75rem;">Selfie Bundle</span>
+                    <span>How does the Selfie / Athlete Bundle work?</span>
+                  </span>
+                </button>
+              </h3>
+              <div id="collapseFaqFallback1" class="accordion-collapse collapse show" data-bs-parent="#aboutFaqAccordionFallback">
+                <div class="accordion-body px-4 pb-4 pt-0 text-muted" style="line-height: 1.7; font-size: 0.98rem; border-top: 1px solid rgba(0,0,0,0.04); padding-top: 1rem !important;">
+                  Upload a selfie or enter your bib number. Our biometric facial recognition and bib detection AI instantly matches every photo where you appear across the entire event gallery. You can then download all your matched photos together as a single discounted bundle under a Personal Digital License.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 14px; overflow: hidden; background: #ffffff;">
+              <h3 class="accordion-header" id="headingFaqFallback2">
+                <button class="accordion-button collapsed fw-bold p-4 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaqFallback2" aria-expanded="false" style="font-size: 1.05rem; background: transparent; box-shadow: none;">
+                  <span class="d-flex align-items-center gap-2 flex-wrap text-start">
+                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-2 py-1 small fw-bold" style="font-size: 0.75rem;">Licenses</span>
+                    <span>What is the difference between Personal and Commercial licenses?</span>
+                  </span>
+                </button>
+              </h3>
+              <div id="collapseFaqFallback2" class="accordion-collapse collapse" data-bs-parent="#aboutFaqAccordionFallback">
+                <div class="accordion-body px-4 pb-4 pt-0 text-muted" style="line-height: 1.7; font-size: 0.98rem; border-top: 1px solid rgba(0,0,0,0.04); padding-top: 1rem !important;">
+                  A <strong>Personal License</strong> covers personal social media, personal prints, and family keepsakes. A <strong>Commercial License</strong> is required for marketing, brand sponsorships, commercial websites, advertising campaigns, and editorial media. Note: Selfie / Athlete bundles are strictly for Personal License only; commercial licenses must be purchased individually.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 14px; overflow: hidden; background: #ffffff;">
+              <h3 class="accordion-header" id="headingFaqFallback3">
+                <button class="accordion-button collapsed fw-bold p-4 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaqFallback3" aria-expanded="false" style="font-size: 1.05rem; background: transparent; box-shadow: none;">
+                  <span class="d-flex align-items-center gap-2 flex-wrap text-start">
+                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-2 py-1 small fw-bold" style="font-size: 0.75rem;">Orders</span>
+                    <span>How do I receive my purchased digital photos?</span>
+                  </span>
+                </button>
+              </h3>
+              <div id="collapseFaqFallback3" class="accordion-collapse collapse" data-bs-parent="#aboutFaqAccordionFallback">
+                <div class="accordion-body px-4 pb-4 pt-0 text-muted" style="line-height: 1.7; font-size: 0.98rem; border-top: 1px solid rgba(0,0,0,0.04); padding-top: 1rem !important;">
+                  Downloads are delivered instantly upon completing checkout via our secure Yoco payment gateway. You receive direct high-resolution download links on your confirmation screen, via email, and saved forever under your customer account dashboard.
+                </div>
+              </div>
+            </div>
+          </div>
+        @endif
+      </div>
+    </section>
+
     <section class="section-wrap" style="padding-top:0;">
       <div class="container-xl">
         <div class="cta-panel">

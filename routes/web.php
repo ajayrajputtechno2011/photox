@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Web\PhotographerController;
 use App\Http\Controllers\Web\PhotographerController as WebPhotographerController;
 use App\Http\Controllers\Web\PhotographerPortalController;
 use App\Http\Controllers\Web\YocoTestController;
+use App\Models\Faq;
 use App\Models\User;
 use App\Models\WatermarkSetting;
 use Illuminate\Http\Request;
@@ -89,7 +91,9 @@ Route::get('/journal/{slug}', fn ($slug) => redirect("/news/{$slug}", 301));
 
 // About & Contact pages
 Route::get('/about', function () {
-    return view('web.about');
+    $faqs = Faq::where('is_active', true)->orderBy('order')->orderBy('id')->get();
+
+    return view('web.about', compact('faqs'));
 })->name('about');
 Route::get('/about.html', fn () => redirect('/about', 301));
 
@@ -131,6 +135,7 @@ Route::post('/photographer-watermark/save', [PhotographerPortalController::class
 Route::post('/photographer-watermark/reset', [PhotographerPortalController::class, 'resetWatermark'])->name('photographer.watermark.reset');
 Route::get('/photographer-profile', [PhotographerPortalController::class, 'profile'])->name('photographer.profile');
 Route::post('/photographer-profile', [PhotographerPortalController::class, 'updateProfile'])->name('photographer.profile.update');
+Route::get('/photographer-profile/check-slug', [PhotographerPortalController::class, 'checkSlug'])->name('photographer.profile.check-slug');
 Route::get('/photographer-earnings', [PhotographerPortalController::class, 'earnings'])->name('photographer.earnings');
 Route::get('/photographer-bookings', [PhotographerPortalController::class, 'bookings'])->name('photographer.bookings');
 Route::get('/photographer-payouts', [PhotographerPortalController::class, 'payouts'])->name('photographer.payouts');
@@ -406,6 +411,13 @@ Route::prefix('admin')->group(function () {
         // Legal Policies & POPIA Compliance
         Route::get('/legal-pages', [LegalPageController::class, 'index'])->name('admin.legal.index');
         Route::put('/legal-pages/{legalPage}', [LegalPageController::class, 'update'])->name('admin.legal.update');
+
+        // FAQs Content Management
+        Route::get('/faqs', [AdminFaqController::class, 'index'])->name('admin.faqs.index');
+        Route::post('/faqs', [AdminFaqController::class, 'store'])->name('admin.faqs.store');
+        Route::put('/faqs/{faq}', [AdminFaqController::class, 'update'])->name('admin.faqs.update');
+        Route::delete('/faqs/{faq}', [AdminFaqController::class, 'destroy'])->name('admin.faqs.destroy');
+        Route::post('/faqs/{faq}/toggle', [AdminFaqController::class, 'toggle'])->name('admin.faqs.toggle');
 
         // Platform & API Settings Management
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('admin.settings.index');

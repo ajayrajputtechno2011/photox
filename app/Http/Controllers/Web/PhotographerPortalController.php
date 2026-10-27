@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PhotographerPortalController extends Controller
@@ -327,6 +328,62 @@ class PhotographerPortalController extends Controller
     }
 
     /**
+     * Check if a vanity handle/slug is available.
+     */
+    public function checkSlug(Request $request): JsonResponse
+    {
+        $slug = trim($request->query('slug', ''));
+        $photographer = $this->resolvePhotographer();
+
+        if (empty($slug)) {
+            return response()->json(['available' => false, 'message' => 'Handle cannot be empty.']);
+        }
+
+        $cleanSlug = Str::slug($slug);
+
+        if (strlen($cleanSlug) < 2) {
+            return response()->json(['available' => false, 'message' => 'Handle must be at least 2 characters.']);
+        }
+
+        if (strlen($cleanSlug) > 60) {
+            return response()->json(['available' => false, 'message' => 'Handle cannot exceed 60 characters.']);
+        }
+
+        $reserved = [
+            'admin', 'events', 'photographers', 'categories', 'cart', 'checkout', 'login', 'signup',
+            'terms', 'privacy', 'about', 'contact', 'memberships', 'organisations', 'pricing', 'api',
+            'storage', 'css', 'js', 'images', 'uploads', 'fonts', 'orders', 'downloads', 'faqs', 'blog', 'news',
+        ];
+
+        if (in_array(strtolower($cleanSlug), $reserved, true)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'This handle is reserved by the platform. Please choose another.',
+                'slug' => $cleanSlug,
+            ]);
+        }
+
+        $exists = User::where('slug', $cleanSlug)
+            ->when($photographer, fn ($q) => $q->where('id', '!=', $photographer->id))
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'available' => false,
+                'message' => 'This handle is already registered by another photographer.',
+                'slug' => $cleanSlug,
+            ]);
+        }
+
+        return response()->json([
+            'available' => true,
+            'message' => 'Handle is available!',
+            'slug' => $cleanSlug,
+            'url' => url('/'.$cleanSlug),
+        ]);
+    }
+
+    /**
      * Update photographer personal profile and studio settings.
      */
     public function updateProfile(Request $request): RedirectResponse
@@ -339,6 +396,19 @@ class PhotographerPortalController extends Controller
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'required',
+                'string',
+                'min:2',
+                'max:60',
+                'regex:/^[a-zA-Z0-9_\-]+$/',
+                Rule::unique('users', 'slug')->ignore($photographer->id),
+                Rule::notIn([
+                    'admin', 'events', 'photographers', 'categories', 'cart', 'checkout', 'login', 'signup',
+                    'terms', 'privacy', 'about', 'contact', 'memberships', 'organisations', 'pricing', 'api',
+                    'storage', 'css', 'js', 'images', 'uploads', 'fonts', 'orders', 'downloads', 'faqs', 'blog', 'news',
+                ]),
+            ],
             'specialty' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -352,10 +422,17 @@ class PhotographerPortalController extends Controller
             'account_type' => ['nullable', 'string', 'in:cheque,savings,transmission'],
             'payout_method' => ['nullable', 'string', 'max:50'],
             'payout_email' => ['nullable', 'email', 'max:255'],
+        ], [
+            'slug.unique' => 'This storefront handle is already registered by another photographer.',
+            'slug.not_in' => 'This handle is reserved by the platform. Please choose another.',
+            'slug.regex' => 'The handle may only contain letters, numbers, hyphens, and underscores.',
         ]);
+
+        $cleanSlug = Str::slug($request->input('slug'));
 
         $data = [
             'name' => $request->input('name'),
+            'slug' => $cleanSlug,
             'specialty' => $request->input('specialty'),
             'location' => $request->input('location'),
             'phone' => $request->input('phone'),

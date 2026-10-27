@@ -160,6 +160,19 @@
               <span class="field-label">Location / City</span>
               <input class="profile-input" name="location" type="text" value="{{ old('location', $photographer->location ?: 'Cape Town, South Africa') }}">
             </label>
+            <div class="profile-field" style="grid-column: 1 / -1;">
+              <span class="field-label">Vanity Storefront Handle / Profile URL <span class="text-danger">*</span></span>
+              <div class="input-group mt-1">
+                <span class="input-group-text bg-dark text-warning border-secondary fw-semibold">photox.co.za/@</span>
+                <input class="profile-input form-control text-white border-secondary" name="slug" id="slugInput" type="text" value="{{ old('slug', $photographer->slug) }}" placeholder="your-studio-name" required style="background: rgba(255,255,255,0.06);">
+              </div>
+              <div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
+                <small class="text-muted">
+                  Public Storefront: <strong class="text-warning" id="slugPreviewUrl">{{ url('/' . ($photographer->slug ?? 'your-handle')) }}</strong>
+                </small>
+                <div id="slugFeedback" class="small fw-semibold"></div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -247,5 +260,56 @@
   </main>
 
   @include('web.partials.footer')
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const slugInput = document.getElementById('slugInput');
+      const slugPreviewUrl = document.getElementById('slugPreviewUrl');
+      const slugFeedback = document.getElementById('slugFeedback');
+      const baseUrl = "{{ url('/') }}";
+      let debounceTimeout = null;
+
+      if (!slugInput) return;
+
+      slugInput.addEventListener('input', function () {
+        const rawVal = this.value.trim().toLowerCase();
+        // sanitize display
+        const cleanVal = rawVal.replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
+        
+        if (cleanVal) {
+          slugPreviewUrl.textContent = `${baseUrl}/${cleanVal}`;
+        } else {
+          slugPreviewUrl.textContent = `${baseUrl}/your-handle`;
+        }
+
+        clearTimeout(debounceTimeout);
+        if (!cleanVal || cleanVal.length < 2) {
+          slugFeedback.innerHTML = '<span class="text-warning"><i class="bi bi-info-circle me-1"></i>Min 2 characters</span>';
+          return;
+        }
+
+        slugFeedback.innerHTML = '<span class="text-muted"><i class="bi bi-hourglass-split me-1"></i>Checking availability...</span>';
+
+        debounceTimeout = setTimeout(() => {
+          fetch(`{{ route('photographer.profile.check-slug') }}?slug=${encodeURIComponent(cleanVal)}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.available) {
+                slugFeedback.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>${data.message}</span>`;
+                slugInput.classList.remove('is-invalid');
+                slugInput.classList.add('is-valid');
+              } else {
+                slugFeedback.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>${data.message}</span>`;
+                slugInput.classList.remove('is-valid');
+                slugInput.classList.add('is-invalid');
+              }
+            })
+            .catch(() => {
+              slugFeedback.innerHTML = '';
+            });
+        }, 350);
+      });
+    });
+  </script>
 </body>
 </html>

@@ -16,9 +16,9 @@
 | 3 | **Personal License Only Disclaimer on Bundles:** Add explicit line/badge under Selfie/Athlete Bundle and Complete Gallery: *"Personal License Only (Commercial licenses must be bought individually)"* | Event Details & Lightbox Modal (`/event-details/{slug}`) | **Complete** | High | ✅ Ready to Deploy |
 | 4 | **Banners, Ad Spots, Placements & Sizes Audit:** Review all banner slots, ad positions, dimensions, and aspect ratios across the site | Site Banners, Event Details & Lightbox (`banners`, `/events`) | **Pending** | High | ⏳ Pending |
 | 5 | **Homepage Banner Container Fix (Screenshot 1 & 2):** Change the full-width edge-to-edge black bar on Homepage into a clean, contained 1200px rounded card frame with padding (matching Screenshot 2) | Homepage Ad Banner (`index.blade.php`, `site-ad-banner.blade.php`) | **Pending** | High | ⏳ Pending |
-| 6 | **Admin FAQ Manager & About Page Accordion (Screenshot 1):** Add "FAQs" under CONTENT section in Admin Sidebar (`/admin/faqs`) to manage FAQs; render accordion on About page (`/about`) explaining selfie bundles, licenses, etc. | Admin Sidebar & About Page (`/admin/faqs`, `/about`) | **Pending** | High | ⏳ Pending |
+| 6 | **Admin FAQ Manager & About Page Accordion (Screenshot 1):** Add "FAQs" under CONTENT section in Admin Sidebar (`/admin/faqs`) to manage FAQs; render accordion on About page (`/about`) explaining selfie bundles, licenses, etc. | Admin Sidebar & About Page (`/admin/faqs`, `/about`) | **Complete** | High | ✅ Ready to Deploy |
 | 7 | **South African Bank Dropdown & Clear Default Bank Details (Screenshot):** Restore the Bank Name selection dropdown; REMOVE all hardcoded fake account numbers/branch codes so fields start clean/empty | Photographer Payouts (`/photographer-payouts`, `/photographer-profile`) | **Complete** | High | ✅ Ready to Deploy |
-| 8 | **Photographer Vanity Handle / Slug (`@handle`) with Unique Validation:** Allow photographer to set their profile handle in Creator Studio and validate uniqueness before saving | Photographer Profile (`/photographer-profile`, `PhotographerPortalController`) | **Pending** | High | ⏳ Pending |
+| 8 | **Photographer Vanity Handle / Slug (`@handle`) with Unique Validation:** Allow photographer to set their profile handle in Creator Studio and validate uniqueness before saving | Photographer Profile (`/photographer-profile`, `PhotographerPortalController`) | **Complete** | High | ✅ Ready to Deploy |
 | 9 | **Watermark Studio Access Restricted by Membership Tier (Gated on Free Tier):** Watermark Studio must not be active by default on Free tier; controlled via membership tier settings with upgrade prompt | Watermark Studio & Memberships (`/photographer-watermark`, `/memberships`) | **Pending** | High | ⏳ Pending |
 | 10 | **Default Fallback Logo to Official PhotoX Logo & Disabled State Fix:** Replace `swirl_logo.png` fallback with official PhotoX logo; when watermark is disabled for an account, respect the disabled state cleanly | Watermark Studio (`/photographer-watermark`, `DemoController`, `web.php`) | **Complete** | Critical | ✅ Ready to Deploy |
 | 11 | **Fix Hardcoded "Aiden Daniels" in Top Navbar & Account Dropdown (Screenshot):** Replace all static "Aiden Daniels" and "aiden@photosouth.com" with dynamic authenticated user data (`Auth::user()`) | Site Header & Photographer Navbars (`header.blade.php`, `photographer-*.blade.php`) | **Complete** | Critical | ✅ Ready to Deploy |
@@ -80,7 +80,7 @@
 - **Client Note / Visual Reference:**
   - Add **`FAQs`** under `CONTENT` section of Admin Sidebar (`/admin/faqs`).
   - Render dynamic FAQ accordion dropdown on the **About page** (`/about`) explaining features, selfie bundles, licenses, and downloads.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -94,7 +94,7 @@
 
 ### Task 8: Photographer Vanity Handle (`@handle` / Unique Slug Validation)
 - **Client Note:** *"Also the option where the photographer chooses their profile page @samplephotographer is not there, but I know it's in admin - we need to check that a page name is not already registered before they can save."*
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 

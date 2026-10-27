@@ -159,7 +159,7 @@
               </div>
             </div>
 
-            <div class="yoco-badge-box">
+            <div class="yoco-badge-box" id="yocoBadgeBox">
               <div class="d-flex align-items-center gap-3">
                 <i class="bi bi-shield-lock-fill fs-2 text-primary"></i>
                 <div>
@@ -170,17 +170,28 @@
               <span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill font-monospace">ACTIVE</span>
             </div>
 
+            <div class="yoco-badge-box d-none" id="freeOrderBadgeBox" style="border-color: #22c55e; background: #f0fdf4;">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-gift-fill fs-2 text-success"></i>
+                <div>
+                  <strong class="d-block text-success">100% Free / Discount Covered</strong>
+                  <small class="text-muted">No payment required. Yoco gateway bypassed.</small>
+                </div>
+              </div>
+              <span class="badge bg-success text-white px-3 py-2 rounded-pill font-monospace">FREE ORDER</span>
+            </div>
+
             <div class="form-check mt-4">
               <input class="form-check-input" id="termsCheck" name="terms" type="checkbox" required checked>
               <label class="form-check-label small text-secondary" for="termsCheck">
-                I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">terms of service</a> &amp; <a href="{{ route('privacy') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">privacy policy</a>, and understand digital photos are delivered immediately after successful payment.
+                I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-primary text-decoration-underline fw-semibold">terms of service</a> &amp; <a href="{{ route('privacy') }}" target="_blank" class="text-primary text-decoration-underline fw-semibold">privacy policy</a>, and understand digital photos are delivered immediately after successful payment.
               </label>
             </div>
 
             <button class="btn btn-lime rounded-pill px-5 py-3 fw-bold w-100 mt-4 d-flex align-items-center justify-content-center gap-2 shadow-sm" id="btnSubmitPayment" type="submit">
-              <span>Pay Securely with Yoco &bull;</span>
+              <span id="btnPayText">Pay Securely with Yoco &bull; </span>
               <span id="btnPayAmount">R75.00</span>
-              <i class="bi bi-arrow-right"></i>
+              <i class="bi bi-arrow-right" id="btnPayIcon"></i>
             </button>
           </section>
         </form>
@@ -387,7 +398,10 @@
       const discountDisplay = document.getElementById('discountAmountDisplay');
       const totalDisplay = document.getElementById('checkoutTotalDisplay');
       const btnPayAmount = document.getElementById('btnPayAmount');
+      const btnPayText = document.getElementById('btnPayText');
       const amountInput = document.getElementById('checkoutAmountInput');
+      const yocoBadgeBox = document.getElementById('yocoBadgeBox');
+      const freeOrderBadgeBox = document.getElementById('freeOrderBadgeBox');
 
       if (currentDiscount > 0) {
         discountRow.classList.remove('d-none');
@@ -398,8 +412,28 @@
       }
 
       totalDisplay.textContent = `R${finalTotal.toFixed(2)}`;
-      btnPayAmount.textContent = `R${finalTotal.toFixed(2)}`;
       amountInput.value = finalTotal.toFixed(2);
+
+      // If final amount is R0.00, bypass Yoco and switch to Instant Free Download
+      if (finalTotal <= 0) {
+        if (yocoBadgeBox) yocoBadgeBox.classList.add('d-none');
+        if (freeOrderBadgeBox) freeOrderBadgeBox.classList.remove('d-none');
+        if (btnPayText) btnPayText.innerHTML = '<i class="bi bi-download me-1"></i> Claim Free Photos (Instant Download)';
+        if (btnPayAmount) btnPayAmount.textContent = '';
+      } else {
+        if (yocoBadgeBox) yocoBadgeBox.classList.remove('d-none');
+        if (freeOrderBadgeBox) freeOrderBadgeBox.classList.add('d-none');
+        if (btnPayText) btnPayText.innerHTML = 'Pay Securely with Yoco &bull; ';
+        if (btnPayAmount) btnPayAmount.textContent = `R${finalTotal.toFixed(2)}`;
+      }
     }
+
+    document.getElementById('checkoutForm')?.addEventListener('submit', function() {
+      const amt = parseFloat(document.getElementById('checkoutAmountInput')?.value || '0');
+      if (amt <= 0) {
+        localStorage.removeItem('photox_cart');
+        localStorage.removeItem('cart');
+      }
+    });
   </script>
 @endsection

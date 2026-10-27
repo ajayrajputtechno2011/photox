@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\CustomerSavedEvent;
 use App\Models\CustomerSavedPhoto;
 use App\Models\Event;
@@ -200,7 +201,7 @@ class CustomerPortalController extends Controller
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email'],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:0'],
             'cart_items' => ['nullable', 'string'],
         ]);
 
@@ -231,8 +232,45 @@ class CustomerPortalController extends Controller
 
         if (! empty($cartItems)) {
             foreach ($cartItems as $item) {
-                $photoId = $item['id'] ?? null;
+                $rawId = (string) ($item['id'] ?? '');
+                $eventId = null;
+                $photoId = null;
+
+                if (str_starts_with($rawId, 'gallery_')) {
+                    $eventId = (int) str_replace('gallery_', '', $rawId);
+                } elseif (is_numeric($rawId)) {
+                    $photoId = (int) $rawId;
+                }
+
+                $licenseType = $item['licenseType'] ?? ($item['license_type'] ?? 'personal');
+                $isFullGallery = ($licenseType === 'full_gallery') || ! empty($item['is_complete_gallery']) || ! empty($eventId);
+
                 $photo = $photoId ? EventPhoto::find($photoId) : null;
+                if (! $eventId && $photo?->event_id) {
+                    $eventId = $photo->event_id;
+                }
+
+                // If purchasing full complete gallery bundle, attach all photos from that event
+                if ($isFullGallery && $eventId) {
+                    $allEventPhotos = EventPhoto::where('event_id', $eventId)->get();
+                    if ($allEventPhotos->isNotEmpty()) {
+                        foreach ($allEventPhotos as $idx => $ePhoto) {
+                            OrderItem::create([
+                                'order_id' => $order->id,
+                                'user_id' => $user?->id,
+                                'event_photo_id' => $ePhoto->id,
+                                'event_id' => $ePhoto->event_id,
+                                'title' => $ePhoto->title ?: 'Gallery Photo #'.($idx + 1),
+                                'price' => ($idx === 0) ? (float) ($item['price'] ?? 450.00) : 0.00,
+                                'file_path' => $ePhoto->file_path,
+                                'license_type' => 'full_gallery',
+                            ]);
+                        }
+
+                        continue;
+                    }
+                }
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'user_id' => $user?->id,
@@ -241,21 +279,53 @@ class CustomerPortalController extends Controller
                     'title' => $photo?->title ?: ($item['title'] ?? 'Purchased Photo'),
                     'price' => (float) ($item['price'] ?? $photo?->personal_price ?? 75.00),
                     'file_path' => $photo?->file_path ?: ($item['image'] ?? null),
-                    'license_type' => $item['licenseType'] ?? 'personal',
+                    'license_type' => $licenseType,
                 ]);
             }
         } elseif ($request->filled('photo_id')) {
             $photo = EventPhoto::find($request->input('photo_id'));
-            OrderItem::create([
-                'order_id' => $order->id,
-                'user_id' => $user?->id,
-                'event_photo_id' => $photo?->id,
-                'event_id' => $photo?->event_id,
-                'title' => $photo?->title ?: 'Purchased Photo',
-                'price' => (float) ($photo?->personal_price ?: $amountInRands),
-                'file_path' => $photo?->file_path,
-                'license_type' => 'personal',
+            $licenseType = $request->input('license_type', 'personal');
+
+            if ($licenseType === 'full_gallery' && $photo?->event_id) {
+                $allEventPhotos = EventPhoto::where('event_id', $photo->event_id)->get();
+                if ($allEventPhotos->isNotEmpty()) {
+                    foreach ($allEventPhotos as $idx => $ePhoto) {
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'user_id' => $user?->id,
+                            'event_photo_id' => $ePhoto->id,
+                            'event_id' => $ePhoto->event_id,
+                            'title' => $ePhoto->title ?: 'Gallery Photo #'.($idx + 1),
+                            'price' => ($idx === 0) ? $amountInRands : 0.00,
+                            'file_path' => $ePhoto->file_path,
+                            'license_type' => 'full_gallery',
+                        ]);
+                    }
+                }
+            } else {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'user_id' => $user?->id,
+                    'event_photo_id' => $photo?->id,
+                    'event_id' => $photo?->event_id,
+                    'title' => $photo?->title ?: 'Purchased Photo',
+                    'price' => (float) ($photo?->personal_price ?: $amountInRands),
+                    'file_path' => $photo?->file_path,
+                    'license_type' => $licenseType,
+                ]);
+            }
+        }
+
+        // If total is R0.00 (e.g. 100% coupon discount or free gallery), bypass Yoco payment gateway completely
+        if ($amountInRands <= 0) {
+            $order->update([
+                'payment_status' => 'completed',
+                'payment_gateway' => 'free_coupon',
+                'transaction_id' => 'FREE-'.strtoupper(Str::random(10)),
             ]);
+
+            return redirect()->to(url('/orders-downloads?status=success&order_id='.$order->id.'&amount=0.00&email='.urlencode($customerEmail)))
+                ->with('success', 'Order completed successfully! Your photos are unlocked and ready to download.');
         }
 
         $secretKey = config('services.yoco.secret_key', 'sk_test_43f7c7607L9OKx8167446f29392a');
@@ -321,7 +391,7 @@ class CustomerPortalController extends Controller
                 if ($order && $order->payment_status !== 'completed') {
                     $order->update([
                         'payment_status' => 'completed',
-                        'transaction_id' => 'yoco_'.Str::random(12),
+                        'transaction_id' => $order->transaction_id ?: 'yoco_'.Str::random(12),
                     ]);
                 }
             } elseif ($amount) {
@@ -334,7 +404,7 @@ class CustomerPortalController extends Controller
                 if ($pendingOrder) {
                     $pendingOrder->update([
                         'payment_status' => 'completed',
-                        'transaction_id' => 'yoco_'.Str::random(12),
+                        'transaction_id' => $pendingOrder->transaction_id ?: 'yoco_'.Str::random(12),
                     ]);
                 }
             }
@@ -346,19 +416,90 @@ class CustomerPortalController extends Controller
 
         $purchasedPhotos = $user->orderItems()
             ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
-            ->with(['photo.event'])
+            ->with(['photo.event', 'order'])
             ->latest()
             ->get();
 
         $orders = $user->orders()
             ->where('payment_status', 'completed')
-            ->with('items')
-            ->latest()
+            ->with(['items.photo.event'])
+            ->latest('created_at')
             ->get();
+
+        // Build sorted purchase groups (by Order / Date, newest first)
+        $purchaseGroups = collect();
+
+        if ($orders->isNotEmpty()) {
+            foreach ($orders as $order) {
+                $orderItems = $order->items;
+                if ($orderItems->isNotEmpty()) {
+                    $purchaseGroups->push((object) [
+                        'type' => 'order',
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'date' => $order->created_at ? $order->created_at->format('d M Y') : 'Recent',
+                        'raw_date' => $order->created_at ? $order->created_at->format('Y-m-d') : '',
+                        'time' => $order->created_at ? $order->created_at->format('H:i') : '',
+                        'items_count' => $orderItems->count(),
+                        'total_amount' => $order->total_amount,
+                        'items' => $orderItems,
+                        'download_zip_url' => route('orders.download.zip', ['order_id' => $order->id]),
+                    ]);
+                }
+            }
+        }
+
+        // Include any order items not tied to an order (e.g. legacy/direct records)
+        $orderItemIdsHandled = $orders->flatMap->items->pluck('id')->toArray();
+        $unlinkedItems = $purchasedPhotos->whereNotIn('id', $orderItemIdsHandled);
+        if ($unlinkedItems->isNotEmpty()) {
+            $unlinkedByDate = $unlinkedItems->groupBy(function ($item) {
+                return $item->created_at ? $item->created_at->format('Y-m-d') : 'Recent';
+            });
+            foreach ($unlinkedByDate as $dateKey => $items) {
+                $firstItem = $items->first();
+                $formattedDate = $firstItem->created_at ? $firstItem->created_at->format('d M Y') : 'Recent';
+                $purchaseGroups->push((object) [
+                    'type' => 'date',
+                    'order_id' => null,
+                    'order_number' => null,
+                    'date' => $formattedDate,
+                    'raw_date' => $dateKey,
+                    'time' => $firstItem->created_at ? $firstItem->created_at->format('H:i') : '',
+                    'items_count' => $items->count(),
+                    'total_amount' => $items->sum('price'),
+                    'items' => $items,
+                    'download_zip_url' => route('orders.download.zip', ['date' => $dateKey]),
+                ]);
+            }
+        }
+
+        // Fallback: If purchaseGroups is empty but purchasedPhotos has items, group purchasedPhotos by date
+        if ($purchaseGroups->isEmpty() && $purchasedPhotos->isNotEmpty()) {
+            $byDate = $purchasedPhotos->groupBy(function ($item) {
+                return $item->created_at ? $item->created_at->format('Y-m-d') : 'Recent';
+            });
+            foreach ($byDate as $dateKey => $items) {
+                $firstItem = $items->first();
+                $formattedDate = $firstItem->created_at ? $firstItem->created_at->format('d M Y') : 'Recent';
+                $purchaseGroups->push((object) [
+                    'type' => 'date',
+                    'order_id' => null,
+                    'order_number' => null,
+                    'date' => $formattedDate,
+                    'raw_date' => $dateKey,
+                    'time' => $firstItem->created_at ? $firstItem->created_at->format('H:i') : '',
+                    'items_count' => $items->count(),
+                    'total_amount' => $items->sum('price'),
+                    'items' => $items,
+                    'download_zip_url' => route('orders.download.zip', ['date' => $dateKey]),
+                ]);
+            }
+        }
 
         $samplePhotos = null;
 
-        return view('web.orders-downloads', compact('user', 'status', 'amount', 'purchasedPhotos', 'samplePhotos', 'orders'));
+        return view('web.orders-downloads', compact('user', 'status', 'amount', 'purchasedPhotos', 'samplePhotos', 'orders', 'purchaseGroups'));
     }
 
     /**
@@ -372,8 +513,66 @@ class CustomerPortalController extends Controller
 
         $user = Auth::user();
 
+        $orderId = $request->input('order_id');
+        $dateParam = $request->input('date');
         $photoIds = $request->input('photos');
-        if ($photoIds) {
+
+        $zipFileName = 'PhotoX_Purchased_Photos_'.date('Ymd_His').'.zip';
+
+        if ($orderId) {
+            $order = Order::where('id', $orderId)
+                ->where('user_id', $user->id)
+                ->where('payment_status', 'completed')
+                ->firstOrFail();
+
+            $orderPhotoIds = $order->items()->pluck('event_photo_id')->filter()->unique()->toArray();
+
+            $galleryEventIds = $order->items()
+                ->where(function ($q) {
+                    $q->where('license_type', 'full_gallery')
+                        ->orWhere('title', 'LIKE', '%Complete Gallery%');
+                })
+                ->pluck('event_id')
+                ->filter()
+                ->unique()
+                ->toArray();
+
+            if (! empty($galleryEventIds)) {
+                $extraIds = EventPhoto::whereIn('event_id', $galleryEventIds)->pluck('id')->toArray();
+                $orderPhotoIds = array_unique(array_merge($orderPhotoIds, $extraIds));
+            }
+
+            $photos = EventPhoto::whereIn('id', $orderPhotoIds)->get();
+            $zipFileName = 'PhotoX_Order_'.$order->order_number.'_'.($order->created_at ? $order->created_at->format('Ymd') : date('Ymd')).'.zip';
+        } elseif ($dateParam) {
+            $datePhotoIds = $user->orderItems()
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+                ->whereDate('created_at', $dateParam)
+                ->pluck('event_photo_id')
+                ->filter()
+                ->unique()
+                ->toArray();
+
+            $galleryEventIds = $user->orderItems()
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+                ->whereDate('created_at', $dateParam)
+                ->where(function ($q) {
+                    $q->where('license_type', 'full_gallery')
+                        ->orWhere('title', 'LIKE', '%Complete Gallery%');
+                })
+                ->pluck('event_id')
+                ->filter()
+                ->unique()
+                ->toArray();
+
+            if (! empty($galleryEventIds)) {
+                $extraIds = EventPhoto::whereIn('event_id', $galleryEventIds)->pluck('id')->toArray();
+                $datePhotoIds = array_unique(array_merge($datePhotoIds, $extraIds));
+            }
+
+            $photos = EventPhoto::whereIn('id', $datePhotoIds)->get();
+            $zipFileName = 'PhotoX_Purchases_'.str_replace('-', '', $dateParam).'.zip';
+        } elseif ($photoIds) {
             $ids = is_array($photoIds) ? $photoIds : explode(',', $photoIds);
             // Must strictly only allow photos that the user has completed orders for!
             $allowedPhotoIds = $user->orderItems()
@@ -381,6 +580,22 @@ class CustomerPortalController extends Controller
                 ->whereIn('event_photo_id', $ids)
                 ->pluck('event_photo_id')
                 ->toArray();
+
+            $galleryEventIds = $user->orderItems()
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+                ->where(function ($q) {
+                    $q->where('license_type', 'full_gallery')
+                        ->orWhere('title', 'LIKE', '%Complete Gallery%');
+                })
+                ->pluck('event_id')
+                ->filter()
+                ->unique()
+                ->toArray();
+
+            if (! empty($galleryEventIds)) {
+                $extraIds = EventPhoto::whereIn('event_id', $galleryEventIds)->whereIn('id', $ids)->pluck('id')->toArray();
+                $allowedPhotoIds = array_unique(array_merge($allowedPhotoIds, $extraIds));
+            }
 
             $photos = EventPhoto::whereIn('id', $allowedPhotoIds)->get();
         } else {
@@ -391,6 +606,22 @@ class CustomerPortalController extends Controller
                 ->filter()
                 ->unique()
                 ->toArray();
+
+            $galleryEventIds = $user->orderItems()
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+                ->where(function ($q) {
+                    $q->where('license_type', 'full_gallery')
+                        ->orWhere('title', 'LIKE', '%Complete Gallery%');
+                })
+                ->pluck('event_id')
+                ->filter()
+                ->unique()
+                ->toArray();
+
+            if (! empty($galleryEventIds)) {
+                $extraIds = EventPhoto::whereIn('event_id', $galleryEventIds)->pluck('id')->toArray();
+                $userPhotoIds = array_unique(array_merge($userPhotoIds, $extraIds));
+            }
 
             if (! empty($userPhotoIds)) {
                 $photos = EventPhoto::whereIn('id', $userPhotoIds)->get();
@@ -469,13 +700,38 @@ class CustomerPortalController extends Controller
             })
             ->first();
 
+        $filePath = null;
+        $cleanTitle = 'Photo';
+        $photoId = $id;
+
         if (! $orderItem) {
-            return back()->with('error', 'You have not purchased this photo or access has expired.');
+            $photo = EventPhoto::find($id);
+            if ($photo && $photo->event_id) {
+                $hasGalleryOrder = $user->orderItems()
+                    ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+                    ->where(function ($q) {
+                        $q->where('license_type', 'full_gallery')
+                            ->orWhere('title', 'LIKE', '%Complete Gallery%');
+                    })
+                    ->where('event_id', $photo->event_id)
+                    ->exists();
+
+                if ($hasGalleryOrder) {
+                    $filePath = $photo->file_path;
+                    $cleanTitle = $photo->title ? Str::slug($photo->title) : 'Photo';
+                    $photoId = $photo->id;
+                }
+            }
+
+            if (! $filePath) {
+                return back()->with('error', 'You have not purchased this photo or access has expired.');
+            }
+        } else {
+            $filePath = $orderItem->file_path;
+            $photoId = $orderItem->photo?->id ?? $orderItem->event_photo_id ?? $id;
+            $cleanTitle = $orderItem->title ? Str::slug($orderItem->title) : 'Photo';
         }
 
-        $filePath = $orderItem->file_path;
-        $photoId = $orderItem->photo?->id ?? $orderItem->event_photo_id ?? $id;
-        $cleanTitle = $orderItem->title ? Str::slug($orderItem->title) : 'Photo';
         $fileName = 'PhotoX_'.$photoId.'_'.$cleanTitle.'.jpg';
 
         // 1. Local file on server disk
@@ -519,12 +775,40 @@ class CustomerPortalController extends Controller
         $savedCount = $user->savedPhotos()->count();
         $photos = $user->savedPhotos()->with('event')->latest('customer_saved_photos.created_at')->paginate(12);
 
+        // Fetch user's purchased clean photos (including full galleries)
+        $purchasedPhotoIds = $user->orderItems()
+            ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+            ->pluck('event_photo_id')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $galleryEventIds = $user->orderItems()
+            ->whereHas('order', fn ($q) => $q->where('payment_status', 'completed'))
+            ->where(function ($q) {
+                $q->where('license_type', 'full_gallery')
+                    ->orWhere('title', 'LIKE', '%Complete Gallery%');
+            })
+            ->pluck('event_id')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        if (! empty($galleryEventIds)) {
+            $extraIds = EventPhoto::whereIn('event_id', $galleryEventIds)->pluck('id')->toArray();
+            $purchasedPhotoIds = array_unique(array_merge($purchasedPhotoIds, $extraIds));
+        }
+
+        $purchasedPhotos = ! empty($purchasedPhotoIds)
+            ? EventPhoto::whereIn('id', $purchasedPhotoIds)->with('event')->latest()->get()
+            : collect();
+
         $samplePhotos = null;
-        if ($photos->isEmpty()) {
+        if ($photos->isEmpty() && $purchasedPhotos->isEmpty()) {
             $samplePhotos = EventPhoto::with('event')->latest()->take(12)->get();
         }
 
-        return view('web.my-photos', compact('user', 'photos', 'samplePhotos', 'savedCount'));
+        return view('web.my-photos', compact('user', 'photos', 'samplePhotos', 'savedCount', 'purchasedPhotos'));
     }
 
     /**
@@ -651,6 +935,109 @@ class CustomerPortalController extends Controller
             'flagged' => true,
             'photo_id' => $photo->id,
             'message' => 'Photo #'.$photo->id.' has been reported for review. Thank you for keeping PhotoX safe.',
+        ]);
+    }
+
+    /**
+     * Validate and calculate coupon discount / volume bundles at checkout.
+     */
+    public function validateCoupon(Request $request): JsonResponse
+    {
+        $code = strtoupper(trim($request->input('code', '')));
+        $itemCount = (int) $request->input('item_count', 1);
+        $subtotal = (float) $request->input('subtotal', 0.00);
+
+        // Auto volume bundle check if code is empty or checking for volume
+        if (empty($code)) {
+            if ($itemCount >= 5) {
+                $bundleCoupon = Coupon::where('type', 'bundle_volume')
+                    ->where('is_active', true)
+                    ->where('min_items', '<=', $itemCount)
+                    ->orderByDesc('discount_value')
+                    ->first();
+
+                if ($bundleCoupon) {
+                    $discount = $bundleCoupon->calculateDiscount($itemCount, $subtotal);
+                    $finalTotal = max(0.00, $subtotal - $discount);
+
+                    return response()->json([
+                        'valid' => true,
+                        'is_auto_bundle' => true,
+                        'code' => $bundleCoupon->code,
+                        'title' => $bundleCoupon->title,
+                        'type' => $bundleCoupon->type,
+                        'discount_amount' => $discount,
+                        'discount_formatted' => 'R '.number_format($discount, 2),
+                        'final_total' => $finalTotal,
+                        'final_formatted' => 'R '.number_format($finalTotal, 2),
+                        'message' => "🎉 Volume Bundle Applied: {$bundleCoupon->title} (Saved R ".number_format($discount, 2).')',
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'valid' => false,
+                'message' => 'Please enter a coupon code.',
+            ], 422);
+        }
+
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (! $coupon) {
+            return response()->json([
+                'valid' => false,
+                'message' => "Coupon code '{$code}' was not found.",
+            ], 404);
+        }
+
+        if (! $coupon->is_active) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This promo coupon is currently inactive.',
+            ], 422);
+        }
+
+        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This promo code has expired.',
+            ], 422);
+        }
+
+        if ($coupon->max_uses !== null && $coupon->used_count >= $coupon->max_uses) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This promo code has reached its maximum redemptions.',
+            ], 422);
+        }
+
+        if ($coupon->min_items > 0 && $itemCount < $coupon->min_items) {
+            return response()->json([
+                'valid' => false,
+                'message' => "This coupon requires a minimum of {$coupon->min_items} photos in your cart.",
+            ], 422);
+        }
+
+        if ($coupon->min_order_amount > 0 && $subtotal < (float) $coupon->min_order_amount) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This coupon requires a minimum cart total of R '.number_format($coupon->min_order_amount, 2).'.',
+            ], 422);
+        }
+
+        $discountAmount = $coupon->calculateDiscount($itemCount, $subtotal);
+        $finalTotal = max(0.00, $subtotal - $discountAmount);
+
+        return response()->json([
+            'valid' => true,
+            'code' => $coupon->code,
+            'title' => $coupon->title,
+            'type' => $coupon->type,
+            'discount_amount' => $discountAmount,
+            'discount_formatted' => 'R '.number_format($discountAmount, 2),
+            'final_total' => $finalTotal,
+            'final_formatted' => 'R '.number_format($finalTotal, 2),
+            'message' => "Coupon '{$coupon->code}' applied successfully! Saved R ".number_format($discountAmount, 2),
         ]);
     }
 }

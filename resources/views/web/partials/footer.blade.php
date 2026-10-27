@@ -50,6 +50,7 @@
             <li class="mb-2"><a href="{{ url('/signup') }}" class="footer-nav-link">Join PhotoX</a></li>
           @endif
           <li class="mb-2"><a href="{{ url('/about') }}" class="footer-nav-link">About Us</a></li>
+          <li class="mb-2"><a href="{{ url('/about#faqs') }}" class="footer-nav-link">FAQs</a></li>
           <li class="mb-2"><a href="{{ url('/contact') }}" class="footer-nav-link">Support & Contact</a></li>
         </ul>
       </div>

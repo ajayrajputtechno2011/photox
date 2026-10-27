@@ -11,29 +11,63 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('admin-assets/css/style.css') }}" rel="stylesheet">
   <style>
+    /* Table Responsive & Text Auto-wrap */
+    .ops-table-wrap {
+      overflow-x: visible !important;
+      width: 100% !important;
+    }
+    .faq-table {
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      table-layout: fixed !important;
+      margin: 0 !important;
+    }
+    .faq-table th,
+    .faq-table td {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      vertical-align: top !important;
+    }
+    .faq-table th {
+      white-space: nowrap !important;
+      padding: 12px 10px !important;
+      font-size: 0.75rem !important;
+      letter-spacing: 0.05em !important;
+      text-transform: uppercase !important;
+      color: #94a3b8 !important;
+    }
+    .faq-table td {
+      padding: 16px 10px !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
     .faq-title {
-      color: #ffffff;
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin-bottom: 0.35rem;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 0.98rem !important;
+      margin-bottom: 0.45rem !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.4 !important;
     }
     .faq-snippet {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      color: #cbd5e1 !important;
+      font-size: 0.88rem !important;
+      line-height: 1.6 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      display: block !important;
     }
     .faq-cat-badge {
       font-size: 0.72rem;
       font-weight: 700;
-      padding: 0.35rem 0.75rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 999px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       display: inline-block;
+      white-space: nowrap;
     }
     .cat-general { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
     .cat-selfie_bundles { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
@@ -215,14 +249,14 @@
 
           {{-- Table --}}
           <div class="ops-table-wrap">
-            <table class="table ops-table align-middle">
+            <table class="table ops-table faq-table">
               <thead>
                 <tr>
-                  <th style="width: 70px;" class="text-center">Order</th>
-                  <th>Question &amp; Answer</th>
-                  <th style="width: 180px;">Category</th>
-                  <th style="width: 120px;" class="text-center">Status</th>
-                  <th style="width: 160px;" class="text-end pe-3">Actions</th>
+                  <th style="width: 55px;" class="text-center">#</th>
+                  <th style="width: 50%;">Question &amp; Answer</th>
+                  <th style="width: 15%;">Category</th>
+                  <th style="width: 14%;" class="text-center">Status</th>
+                  <th style="width: 16%;" class="text-end pe-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,21 +302,24 @@
                         </button>
                       </form>
                     </td>
-                    <td class="text-end pe-3">
-                      <button class="btn btn-sm btn-outline-light rounded-pill px-3 me-1 edit-faq-btn"
-                        data-id="{{ $faq->id }}"
-                        data-question="{{ $faq->question }}"
-                        data-answer="{{ $faq->answer }}"
-                        data-category="{{ $faq->category }}"
-                        data-order="{{ $faq->order }}"
-                        data-is-active="{{ $faq->is_active ? '1' : '0' }}">
-                        <i class="bi bi-pencil-square me-1"></i> Edit
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger rounded-pill px-2 delete-faq-btn"
-                        data-id="{{ $faq->id }}"
-                        data-question="{{ $faq->question }}">
-                        <i class="bi bi-trash"></i>
-                      </button>
+                    <td class="text-end pe-2 text-nowrap">
+                      <div class="d-inline-flex align-items-center gap-1 justify-content-end">
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3 edit-faq-btn"
+                          data-id="{{ $faq->id }}"
+                          data-question="{{ $faq->question }}"
+                          data-answer="{{ $faq->answer }}"
+                          data-category="{{ $faq->category }}"
+                          data-order="{{ $faq->order }}"
+                          data-is-active="{{ $faq->is_active ? '1' : '0' }}">
+                          <i class="bi bi-pencil-square me-1"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill px-2 delete-faq-btn"
+                          data-id="{{ $faq->id }}"
+                          data-question="{{ $faq->question }}"
+                          title="Delete FAQ">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 @empty

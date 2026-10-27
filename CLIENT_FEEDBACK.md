@@ -50,7 +50,7 @@
 - **Client Note / Visual Reference:**
   - When event sales rule is "Sell Complete Gallery ONLY", the lightbox purchase modal in `/event-details/{slug}` must **completely hide** Options 1, 2, and 3 (Personal Single, Commercial Single, Selfie Bundle).
   - ONLY Option 4: **Buy Complete Gallery (All Photos)** should be shown and auto-selected.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -59,7 +59,7 @@
 - **Required Behavior:**
   - Add clear notice under Selfie Bundle and Complete Gallery stating:  
     `Personal License Only (Commercial licenses must be purchased individually)`
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -88,7 +88,7 @@
 - **Client Note / Visual Reference:**
   - Convert `Bank Name` into a clean **Select Dropdown** of major SA banks.
   - **Remove hardcoded default values:** Do NOT pre-fill fake test data (like `1014829034` or `051001`). Fields must start empty.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -109,14 +109,14 @@
 - **Required Behavior:**
   - Replace all `swirl_logo.png` fallbacks with the **official PhotoX default logo** (`/logo.png`).
   - When the watermark toggle is disabled (`is_watermark_enabled = false`), the live canvas and generated proofs must respect that state.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
 ### Task 11: Fix Hardcoded "Aiden Daniels" in Top Navbar & Account Dropdown
 - **Client Note / Visual Reference:**
   - Statically displays `Aiden Daniels` / `aiden@photosouth.com` instead of the active `Auth::user()`.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -184,7 +184,7 @@
 - **Required Behavior:**
   - Keep the banner in the main dashboard content area.
   - Remove the awkward banner from the bottom of the photographer sidebar.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 
@@ -196,7 +196,7 @@
   - Turn "terms" into a clickable link: `<a href="/terms" target="_blank" class="text-primary text-decoration-underline">terms</a>`
   - Turn "privacy policy" into a clickable link: `<a href="/privacy" target="_blank" class="text-primary text-decoration-underline">privacy policy</a>`
   - Apply on both `signup.blade.php` and `checkout.blade.php`.
-- **Status:** **Pending**
+- **Status:** **Complete** (Implemented & Deployed to Live VPS)
 
 ---
 

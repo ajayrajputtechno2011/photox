@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CommissionController as AdminCommissionController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
+use App\Http\Controllers\Admin\MessageController as AdminMessageController;
+use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\OrganisationController as AdminOrganisationController;
 use App\Http\Controllers\Admin\PageBannerController as AdminPageBannerController;
 use App\Http\Controllers\Admin\PhotographerController as AdminPhotographerController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
@@ -15,11 +21,16 @@ use App\Http\Controllers\Admin\WatermarkController;
 use App\Http\Controllers\Admin\WatermarkController as AdminWatermarkController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\EmailTestController;
+use App\Http\Controllers\Web\ContactController as WebContactController;
 use App\Http\Controllers\Web\CustomerPortalController;
 use App\Http\Controllers\Web\EmailVerificationController;
 use App\Http\Controllers\Web\EventController as WebEventController;
 use App\Http\Controllers\Web\LegalController;
 use App\Http\Controllers\Web\MembershipController as WebMembershipController;
+use App\Http\Controllers\Web\NewsController as WebNewsController;
+use App\Http\Controllers\Web\OrganisationProfileController;
+use App\Http\Controllers\Web\PhotographerController;
 use App\Http\Controllers\Web\PhotographerController as WebPhotographerController;
 use App\Http\Controllers\Web\PhotographerPortalController;
 use App\Http\Controllers\Web\YocoTestController;
@@ -29,6 +40,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// Live Email & SMTP Testing Tool
+Route::match(['get', 'post'], '/test-email', [EmailTestController::class, 'index'])->name('email.tester');
+Route::match(['get', 'post'], '/admin/email-tester', [EmailTestController::class, 'index'])->name('admin.email.tester');
+
 // Home page (Direct clean Events & Galleries Marketplace as requested by client)
 Route::get('/', [WebEventController::class, 'index'])->name('home');
 Route::get('/home', [WebEventController::class, 'index'])->name('home.preview');
@@ -37,11 +52,15 @@ Route::get('/api/load-more-photos', [DemoController::class, 'apiLoadMorePhotos']
 
 // Dynamic Explore & Events routes
 Route::get('/events', [WebEventController::class, 'index'])->name('events.index');
+Route::get('/quick-search', [WebEventController::class, 'quickSearch'])->name('quick.search');
+Route::get('/api/quick-search', [WebEventController::class, 'quickSearch']);
 Route::get('/events.html', function () {
     return redirect('/events', 301);
 });
 Route::get('/event-details', [WebEventController::class, 'show'])->name('events.details');
 Route::get('/event-details/{slug}', [WebEventController::class, 'show'])->name('events.show');
+Route::post('/event/{id}/notify', [WebEventController::class, 'subscribeNotification'])->name('event.notify');
+Route::post('/event/{id}/unlock', [WebEventController::class, 'unlockPassword'])->name('event.unlock');
 Route::get('/event-details.html', function () {
     return redirect('/event-details', 301);
 });
@@ -53,14 +72,20 @@ Route::get('/membership.html', function () {
 });
 
 // News, Articles & Journal
-Route::get('/news', function () {
-    return view('web.blog');
-})->name('news');
+Route::get('/news', [WebNewsController::class, 'index'])->name('news');
+Route::get('/news/{slug}', [WebNewsController::class, 'show'])->name('news.show');
 Route::get('/news.html', fn () => redirect('/news', 301));
+
+// Schools & Companies Public Profile Pages & Custom Vanity URLs
+Route::get('/school/{slug}', [OrganisationProfileController::class, 'show'])->name('school.show');
+Route::get('/company/{slug}', [OrganisationProfileController::class, 'show'])->name('company.show');
+Route::get('/{type}/{slug}', [OrganisationProfileController::class, 'show'])->whereIn('type', ['school', 'company'])->name('organisation.profile');
 Route::get('/blog', fn () => redirect('/news', 301))->name('blog');
 Route::get('/blog.html', fn () => redirect('/news', 301));
+Route::get('/blog/{slug}', fn ($slug) => redirect("/news/{$slug}", 301));
 Route::get('/journal', fn () => redirect('/news', 301));
 Route::get('/journal.html', fn () => redirect('/news', 301));
+Route::get('/journal/{slug}', fn ($slug) => redirect("/news/{$slug}", 301));
 
 // About & Contact pages
 Route::get('/about', function () {
@@ -68,9 +93,8 @@ Route::get('/about', function () {
 })->name('about');
 Route::get('/about.html', fn () => redirect('/about', 301));
 
-Route::get('/contact', function () {
-    return view('web.contact');
-})->name('contact');
+Route::get('/contact', [WebContactController::class, 'index'])->name('contact');
+Route::post('/contact', [WebContactController::class, 'store'])->name('contact.store');
 Route::get('/contact.html', fn () => redirect('/contact', 301));
 
 // Legal & POPIA Compliance Policies
@@ -85,14 +109,11 @@ Route::get('/legal/{slug}', [LegalController::class, 'show'])->name('legal.show'
 Route::get('/photographers', [WebPhotographerController::class, 'index'])->name('photographers.index');
 Route::get('/photographers.html', fn () => redirect('/photographers', 301));
 Route::get('/photographer-details', [WebPhotographerController::class, 'show'])->name('photographers.details');
-Route::get('/photographer-details/{id}', [WebPhotographerController::class, 'show'])->name('photographers.show');
+Route::get('/photographer-details/{id}', [WebPhotographerController::class, 'show'])->name('photographers.legacy');
 Route::get('/photographer-details.html', function () {
     return redirect('/photographer-details', 301);
 });
 Route::get('/@{username}', [WebPhotographerController::class, 'show'])->name('photographers.at_username');
-Route::get('/{username}', [WebPhotographerController::class, 'show'])
-    ->where('username', '^(aidendaniels|jordanmiller|sarahkim|michaeladams|siphodlamini|danieljacobs|aiden-daniels|jordan-miller|sarah-kim|michael-adams|sipho-dlamini|daniel-jacobs)$')
-    ->name('photographers.vanity');
 
 // Dynamic Photographer Portal routes (Dashboard, Upload, Galleries, Profile, Earnings, Bookings)
 Route::get('/photographer-dashboard', [PhotographerPortalController::class, 'dashboard'])->name('photographer.dashboard');
@@ -103,6 +124,7 @@ Route::post('/photographer-gallery/{id}/update', [PhotographerPortalController::
 Route::post('/photographer-gallery/{id}/upload-photos', [PhotographerPortalController::class, 'uploadMorePhotos'])->name('photographer.gallery.upload_photos');
 Route::delete('/photographer-gallery/photo/{id}', [PhotographerPortalController::class, 'deletePhoto'])->name('photographer.gallery.photo.delete');
 Route::post('/photographer-gallery/photo/{id}/set-cover', [PhotographerPortalController::class, 'setCoverPhoto'])->name('photographer.gallery.photo.cover');
+Route::post('/photographer-gallery/photo/{id}/update-price', [PhotographerPortalController::class, 'updatePhotoPrice'])->name('photographer.gallery.photo.price');
 Route::delete('/photographer-gallery/{id}', [PhotographerPortalController::class, 'destroyGallery'])->name('photographer.gallery.destroy');
 Route::get('/photographer-watermark', [PhotographerPortalController::class, 'watermarkStudio'])->name('photographer.watermark');
 Route::post('/photographer-watermark/save', [PhotographerPortalController::class, 'saveWatermark'])->name('photographer.watermark.save');
@@ -113,6 +135,25 @@ Route::get('/photographer-earnings', [PhotographerPortalController::class, 'earn
 Route::get('/photographer-bookings', [PhotographerPortalController::class, 'bookings'])->name('photographer.bookings');
 Route::get('/photographer-payouts', [PhotographerPortalController::class, 'payouts'])->name('photographer.payouts');
 Route::post('/photographer-payouts', [PhotographerPortalController::class, 'updatePayouts'])->name('photographer.payouts.update');
+
+// Direct Studio Endpoints & Aliases (accessible with or without /admin prefix)
+Route::match(['get', 'post'], '/ops-internal-vault-99/photo/{id}/update-price', [DemoController::class, 'adminUpdatePhotoPrice']);
+Route::match(['get', 'post'], '/admin/ops-internal-vault-99/photo/{id}/update-price', [DemoController::class, 'adminUpdatePhotoPrice']);
+Route::post('/ops-internal-vault-99/photo/{id}/set-cover', [DemoController::class, 'adminSetCoverPhoto']);
+Route::delete('/ops-internal-vault-99/photo/{id}', [DemoController::class, 'adminDeletePhoto']);
+Route::post('/ops-internal-vault-99/event/{id}/update', [DemoController::class, 'adminEventUpdate']);
+Route::match(['get', 'post'], '/event-studio/photo/{id}/update-price', [DemoController::class, 'adminUpdatePhotoPrice']);
+Route::post('/event-studio/photo/{id}/set-cover', [DemoController::class, 'adminSetCoverPhoto']);
+Route::get('/ops-internal-vault-99', [DemoController::class, 'adminEvent']);
+
+// Resilience: catch typo ops-internal-internal-vault-99 and redirect to studio
+Route::any('/ops-internal-internal-vault-99{path?}', function ($path = null) {
+    if (preg_match('#photo/(\d+)#', (string) $path, $m)) {
+        return redirect('/admin/ops-internal-vault-99/photo/'.$m[1].'/update-price');
+    }
+
+    return redirect('/admin/ops-internal-vault-99');
+})->where('path', '.*');
 
 // Dynamic Customer Portal routes (Cart, Dashboard, Profile, Checkout, Orders, Saved, My Photos)
 Route::get('/cart', [CustomerPortalController::class, 'cart'])->name('cart');
@@ -129,6 +170,7 @@ Route::get('/saved-events', [CustomerPortalController::class, 'savedEvents'])->n
 Route::post('/api/photos/{id}/toggle-save', [CustomerPortalController::class, 'toggleSavePhoto'])->name('customer.photo.toggle_save');
 Route::post('/api/events/{id}/toggle-save', [CustomerPortalController::class, 'toggleSaveEvent'])->name('customer.event.toggle_save');
 Route::post('/api/photos/{id}/flag', [CustomerPortalController::class, 'flagPhoto'])->name('customer.photo.flag');
+Route::post('/api/validate-coupon', [CustomerPortalController::class, 'validateCoupon'])->name('api.coupon.validate');
 
 // Public demo links show "Work in Progress"
 Route::get('/watermark-studio-demo', function () {
@@ -223,7 +265,7 @@ Route::prefix('admin')->group(function () {
                 'opacity' => 65,
                 'rotation' => -12,
                 'is_tiled' => true,
-                'logo_path' => '/uploads/watermarks/swirl_logo.png',
+                'logo_path' => '/logo.png',
                 'logo_size' => 45,
                 'both_layout' => 'fotto_style',
                 'both_gap' => 8,
@@ -259,6 +301,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/ops-internal-vault-99/upload-photos', [DemoController::class, 'adminUploadPhotos'])->name('admin.dummy.photos.upload');
     Route::delete('/ops-internal-vault-99/photo/{id}', [DemoController::class, 'adminDeletePhoto'])->name('admin.dummy.photo.delete');
     Route::post('/ops-internal-vault-99/photo/{id}/set-cover', [DemoController::class, 'adminSetCoverPhoto'])->name('admin.dummy.photo.cover');
+    Route::post('/ops-internal-vault-99/photo/{id}/update-price', [DemoController::class, 'adminUpdatePhotoPrice'])->name('admin.dummy.photo.price');
     Route::post('/ops-internal-vault-99/event/{id}/update', [DemoController::class, 'adminEventUpdate'])->name('admin.dummy.event.update');
     Route::delete('/ops-internal-vault-99/{id}', [DemoController::class, 'adminDeleteEvent'])->name('admin.dummy.event.delete');
     Route::post('/ops-internal-vault-99/reapply-watermarks', [DemoController::class, 'reapplyWatermarks'])->name('admin.dummy.photos.reapply');
@@ -281,7 +324,7 @@ Route::prefix('admin')->group(function () {
                 'opacity' => 65,
                 'rotation' => -12,
                 'is_tiled' => true,
-                'logo_path' => '/uploads/watermarks/swirl_logo.png',
+                'logo_path' => '/logo.png',
                 'logo_size' => 45,
                 'both_layout' => 'fotto_style',
                 'both_gap' => 8,
@@ -336,9 +379,25 @@ Route::prefix('admin')->group(function () {
         Route::get('/sports', fn () => redirect()->route('admin.categories.index'))->name('admin.sports.index');
 
         // Commissions & Payments
-        Route::get('/commissions', fn () => view('admin.commissions'))->name('admin.commissions.index');
+        Route::get('/commissions', [AdminCommissionController::class, 'index'])->name('admin.commissions.index');
         Route::get('/payments', fn () => view('admin.payments'))->name('admin.payments.index');
         Route::get('/notifications', fn () => view('admin.notifications'))->name('admin.notifications.index');
+
+        // Coupons & Discounts Management
+        Route::get('/coupons-discounts', [AdminCouponController::class, 'index'])->name('admin.coupons.index');
+        Route::post('/coupons-discounts', [AdminCouponController::class, 'store'])->name('admin.coupons.store');
+        Route::put('/coupons-discounts/{id}', [AdminCouponController::class, 'update'])->name('admin.coupons.update');
+        Route::post('/coupons-discounts/{id}/toggle', [AdminCouponController::class, 'toggle'])->name('admin.coupons.toggle');
+        Route::delete('/coupons-discounts/{id}', [AdminCouponController::class, 'destroy'])->name('admin.coupons.destroy');
+        Route::get('/coupons', fn () => redirect()->route('admin.coupons.index'));
+
+        // Schools & Companies Management
+        Route::get('/schools', fn (Request $r) => app(AdminOrganisationController::class)->index($r, 'school'))->name('admin.schools.index');
+        Route::get('/companies', fn (Request $r) => app(AdminOrganisationController::class)->index($r, 'company'))->name('admin.companies.index');
+        Route::post('/organisations', [AdminOrganisationController::class, 'store'])->name('admin.organisations.store');
+        Route::put('/organisations/{id}', [AdminOrganisationController::class, 'update'])->name('admin.organisations.update');
+        Route::post('/organisations/{id}/toggle', [AdminOrganisationController::class, 'toggle'])->name('admin.organisations.toggle');
+        Route::delete('/organisations/{id}', [AdminOrganisationController::class, 'destroy'])->name('admin.organisations.destroy');
 
         // Page Banners & Heroes Content Management
         Route::get('/page-banners', [AdminPageBannerController::class, 'index'])->name('admin.page-banners.index');
@@ -390,6 +449,31 @@ Route::prefix('admin')->group(function () {
         Route::post('/customers/{id}/toggle-status', [AdminCustomerController::class, 'toggleStatus'])->name('admin.customers.toggle');
         Route::delete('/customers/{id}', [AdminCustomerController::class, 'destroy'])->name('admin.customers.destroy');
 
+        // Order Management
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
+        Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
+        Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
+        Route::get('/order-detail', fn () => redirect()->route('admin.orders.index'));
+        Route::get('/order-detail/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.detail');
+
+        // Contact Enquiries & Messages
+        Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages.index');
+        Route::get('/messages/{id}', [AdminMessageController::class, 'show'])->name('admin.messages.show');
+        Route::post('/messages/{id}/toggle', [AdminMessageController::class, 'toggleStatus'])->name('admin.messages.toggle');
+        Route::delete('/messages/{id}', [AdminMessageController::class, 'destroy'])->name('admin.messages.destroy');
+        Route::get('/enquiries', fn () => redirect()->route('admin.messages.index'));
+
+        // News & Articles Management
+        Route::get('/news', [AdminNewsController::class, 'index'])->name('admin.news.index');
+        Route::post('/news', [AdminNewsController::class, 'store'])->name('admin.news.store');
+        Route::post('/news/upload-inline', [AdminNewsController::class, 'uploadInlineImage'])->name('admin.news.inline_upload');
+        Route::get('/news/{id}/data', [AdminNewsController::class, 'show'])->name('admin.news.data');
+        Route::put('/news/{id}', [AdminNewsController::class, 'update'])->name('admin.news.update');
+        Route::post('/news/{id}/toggle', [AdminNewsController::class, 'toggleStatus'])->name('admin.news.toggle');
+        Route::delete('/news/{id}', [AdminNewsController::class, 'destroy'])->name('admin.news.destroy');
+        Route::get('/blog', fn () => redirect()->route('admin.news.index'));
+        Route::get('/articles', fn () => redirect()->route('admin.news.index'));
+
         // Fallback for remaining admin pages
         Route::get('/{page}', function ($page) {
             if ($page === 'add-photographer' && view()->exists('admin.add-photograper')) {
@@ -421,7 +505,7 @@ Route::get('/client-test-dummy', fn () => redirect()->route('admin.client.test.d
 Route::get('/client_test', fn () => redirect()->route('admin.client.test.dummy'));
 Route::get('/client-test', fn () => redirect()->route('admin.client.test.dummy'));
 
-// Dynamic route for clean public web views (no extension)
+// Dynamic route for clean public web views & photographer vanity profiles (e.g. /affies, /anton-demo)
 Route::get('/{page}', function ($page) {
     if (view()->exists("web.{$page}")) {
         return view("web.{$page}");
@@ -429,5 +513,6 @@ Route::get('/{page}', function ($page) {
     if (view()->exists($page)) {
         return view($page);
     }
-    abort(404);
-})->where('page', '^[a-zA-Z0-9_\-\/]+$');
+
+    return app(PhotographerController::class)->show(request(), $page);
+})->where('page', '^[a-zA-Z0-9_\-\@]+$')->name('photographers.show');

@@ -173,7 +173,7 @@
             <div class="form-check mt-4">
               <input class="form-check-input" id="termsCheck" name="terms" type="checkbox" required checked>
               <label class="form-check-label small text-secondary" for="termsCheck">
-                I agree to PhotoX terms and understand digital photos are delivered immediately after successful payment.
+                I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">terms of service</a> &amp; <a href="{{ route('privacy') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">privacy policy</a>, and understand digital photos are delivered immediately after successful payment.
               </label>
             </div>
 
@@ -200,6 +200,30 @@
               <!-- Dynamically populated from cart -->
             </div>
 
+            <!-- Promo Code / Coupon Section -->
+            <div class="p-3 my-3 bg-light rounded-3 border">
+              <label class="form-label small fw-bold text-uppercase text-secondary mb-1">
+                <i class="bi bi-tag-fill text-warning me-1"></i> Promo Code / Coupon
+              </label>
+              <div class="input-group input-group-sm">
+                <input type="text" id="couponCodeInput" class="form-control" placeholder="e.g. PHOTOX30" style="text-transform: uppercase;">
+                <button type="button" class="btn btn-dark fw-bold px-3" id="btnApplyCoupon" onclick="applyCouponCode()">Apply</button>
+              </div>
+              <div id="couponMessage" class="small mt-2 d-none"></div>
+            </div>
+
+            <!-- Pricing Breakdown -->
+            <div class="summary-breakdown my-2 pt-2 border-top">
+              <div class="d-flex justify-content-between text-muted small mb-1">
+                <span>Subtotal</span>
+                <span id="checkoutSubtotalDisplay">R75.00</span>
+              </div>
+              <div class="d-flex justify-content-between text-success small mb-1 d-none" id="discountRow">
+                <span id="discountLabel"><i class="bi bi-check-circle-fill me-1"></i>Discount</span>
+                <strong id="discountAmountDisplay">-R0.00</strong>
+              </div>
+            </div>
+
             <div class="summary-total-box">
               <span>Grand Total</span>
               <span id="checkoutTotalDisplay">R75.00</span>
@@ -219,6 +243,10 @@
   </main>
 
   <script>
+    let currentSubtotal = 0;
+    let currentDiscount = 0;
+    let currentItemCount = 0;
+
     document.addEventListener('DOMContentLoaded', function() {
       let cart = [];
       try {
@@ -231,9 +259,9 @@
         cart = [];
       }
 
-      // If cart has items, render them
       const listContainer = document.getElementById('checkoutItemsList');
       const countLabel = document.getElementById('summaryItemsCountLabel');
+      const subtotalDisplay = document.getElementById('checkoutSubtotalDisplay');
       const totalDisplay = document.getElementById('checkoutTotalDisplay');
       const btnPayAmount = document.getElementById('btnPayAmount');
       const amountInput = document.getElementById('checkoutAmountInput');
@@ -258,7 +286,6 @@
           `;
         });
       } else {
-        // Fallback demo photo so checkout is always testable
         total = 75.0;
         html = `
           <div class="summary-item-row">
@@ -273,11 +300,106 @@
       }
 
       listContainer.innerHTML = html;
-      countLabel.textContent = `${cart.length || 1} photo${(cart.length || 1) === 1 ? '' : 's'} selected`;
+      currentItemCount = cart.length || 1;
+      currentSubtotal = total;
+      countLabel.textContent = `${currentItemCount} photo${currentItemCount === 1 ? '' : 's'} selected`;
+      subtotalDisplay.textContent = `R${total.toFixed(2)}`;
       totalDisplay.textContent = `R${total.toFixed(2)}`;
       btnPayAmount.textContent = `R${total.toFixed(2)}`;
       amountInput.value = total.toFixed(2);
       itemsInput.value = JSON.stringify(cart);
+
+      // Automatic check for Volume Bundle (5+ photos = 10% discount)
+      if (currentItemCount >= 5) {
+        fetch('/api/validate-coupon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({
+            code: '',
+            item_count: currentItemCount,
+            subtotal: currentSubtotal
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid && data.discount_amount > 0) {
+            applyDiscountToUI(data.discount_amount, data.title || '5+ Photos Volume Bundle (10% Off)', data.message);
+          }
+        })
+        .catch(() => {});
+      }
     });
+
+    function applyCouponCode() {
+      const codeInput = document.getElementById('couponCodeInput');
+      const code = (codeInput.value || '').trim().toUpperCase();
+      const msgEl = document.getElementById('couponMessage');
+
+      if (!code) {
+        msgEl.className = 'small mt-2 text-danger';
+        msgEl.textContent = 'Please enter a coupon code.';
+        msgEl.classList.remove('d-none');
+        return;
+      }
+
+      msgEl.className = 'small mt-2 text-muted';
+      msgEl.textContent = 'Checking coupon...';
+      msgEl.classList.remove('d-none');
+
+      fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+          code: code,
+          item_count: currentItemCount,
+          subtotal: currentSubtotal
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.valid) {
+          applyDiscountToUI(data.discount_amount, `${data.code} (${data.title})`, data.message);
+          msgEl.className = 'small mt-2 text-success fw-bold';
+          msgEl.textContent = data.message;
+        } else {
+          msgEl.className = 'small mt-2 text-danger';
+          msgEl.textContent = data.message || 'Invalid coupon code.';
+        }
+      })
+      .catch(err => {
+        msgEl.className = 'small mt-2 text-danger';
+        msgEl.textContent = 'Failed to validate coupon. Please try again.';
+      });
+    }
+
+    function applyDiscountToUI(discount, label, message) {
+      currentDiscount = parseFloat(discount) || 0;
+      const finalTotal = Math.max(0, currentSubtotal - currentDiscount);
+
+      const discountRow = document.getElementById('discountRow');
+      const discountLabel = document.getElementById('discountLabel');
+      const discountDisplay = document.getElementById('discountAmountDisplay');
+      const totalDisplay = document.getElementById('checkoutTotalDisplay');
+      const btnPayAmount = document.getElementById('btnPayAmount');
+      const amountInput = document.getElementById('checkoutAmountInput');
+
+      if (currentDiscount > 0) {
+        discountRow.classList.remove('d-none');
+        discountLabel.innerHTML = `<i class="bi bi-tag-fill me-1 text-success"></i> ${label}`;
+        discountDisplay.textContent = `-R${currentDiscount.toFixed(2)}`;
+      } else {
+        discountRow.classList.add('d-none');
+      }
+
+      totalDisplay.textContent = `R${finalTotal.toFixed(2)}`;
+      btnPayAmount.textContent = `R${finalTotal.toFixed(2)}`;
+      amountInput.value = finalTotal.toFixed(2);
+    }
   </script>
 @endsection

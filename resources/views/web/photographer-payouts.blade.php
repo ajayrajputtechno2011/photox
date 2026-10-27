@@ -184,7 +184,7 @@
               <select name="bank_name" id="bank_name" class="form-select" onchange="autoFillBranchCode(this)">
                 <option value="">Select your bank...</option>
                 @foreach($saBanks as $bank => $code)
-                  <option value="{{ $bank }}" data-branch="{{ $code }}" {{ old('bank_name', $photographer->bank_name ?: 'Standard Bank') === $bank ? 'selected' : '' }}>
+                  <option value="{{ $bank }}" data-branch="{{ $code }}" {{ old('bank_name', $photographer->bank_name) === $bank ? 'selected' : '' }}>
                     {{ $bank }} (Branch: {{ $code }})
                   </option>
                 @endforeach
@@ -194,24 +194,25 @@
 
             <div class="col-md-6">
               <label class="form-label text-muted small" for="account_holder_name">Account Holder Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="account_holder_name" name="account_holder_name" value="{{ old('account_holder_name', $photographer->account_holder_name ?: $photographer->name) }}" placeholder="e.g. Aiden Daniels" required>
+              <input type="text" class="form-control" id="account_holder_name" name="account_holder_name" value="{{ old('account_holder_name', $photographer->account_holder_name ?: $photographer->name) }}" placeholder="e.g. Legal Name on Account" required>
               <small class="text-muted">Must match the legal account name with your financial institution.</small>
             </div>
 
             <div class="col-md-4">
               <label class="form-label text-muted small" for="account_number">Account Number <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="account_number" name="account_number" value="{{ old('account_number', $photographer->account_number ?: '1014829034') }}" placeholder="e.g. 1014829034" required>
+              <input type="text" class="form-control" id="account_number" name="account_number" value="{{ old('account_number', $photographer->account_number) }}" placeholder="e.g. Account number" required>
             </div>
 
             <div class="col-md-4">
               <label class="form-label text-muted small" for="branch_code">Branch Code <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="branch_code" name="branch_code" value="{{ old('branch_code', $photographer->branch_code ?: '051001') }}" placeholder="Universal 6-digit branch code" required>
+              <input type="text" class="form-control" id="branch_code" name="branch_code" value="{{ old('branch_code', $photographer->branch_code) }}" placeholder="Universal 6-digit branch code" required>
             </div>
 
             <div class="col-md-4">
               <label class="form-label text-muted small" for="account_type">Account Type <span class="text-danger">*</span></label>
               <select name="account_type" id="account_type" class="form-select">
-                <option value="cheque" {{ old('account_type', $photographer->account_type ?: 'cheque') === 'cheque' ? 'selected' : '' }}>Cheque / Current Account</option>
+                <option value="">Select account type...</option>
+                <option value="cheque" {{ old('account_type', $photographer->account_type) === 'cheque' ? 'selected' : '' }}>Cheque / Current Account</option>
                 <option value="savings" {{ old('account_type', $photographer->account_type) === 'savings' ? 'selected' : '' }}>Savings Account</option>
                 <option value="transmission" {{ old('account_type', $photographer->account_type) === 'transmission' ? 'selected' : '' }}>Transmission Account</option>
               </select>

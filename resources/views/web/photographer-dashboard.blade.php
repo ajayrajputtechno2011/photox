@@ -85,6 +85,10 @@
       <div class="workspace-view active">
         @include('web.partials.popia-verification-banner')
 
+        <div class="mb-4">
+          @include('web.partials.site-ad-banner')
+        </div>
+
         <div class="workspace-view-header">
           <div>
             <span class="eyebrow-blue">OVERVIEW</span>

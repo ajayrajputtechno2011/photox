@@ -36,7 +36,7 @@
                 <input {{ old('account-type', $defaultAccountType) === 'member' ? 'checked' : '' }} name="account-type" type="radio" value="member">
                 <span class="signup-choice-content">
                   <i class="bi bi-person-heart"></i>
-                  <strong>PhotoX member</strong>
+                  <strong>Customer</strong>
                   <small>Free to join. Browse and buy photos.</small>
                 </span>
               </label>
@@ -63,35 +63,59 @@
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
 
-          <fieldset class="signup-tiers mt-4" id="photographerTiers" {{ old('account-type', $defaultAccountType) === 'photographer' ? '' : 'hidden' }}>
+          <fieldset class="signup-tiers mt-4" id="photographerTiers" {{ old('account-type', $defaultAccountType ?? 'member') === 'photographer' ? '' : 'hidden' }}>
             <legend>Choose your photographer membership tier</legend>
             <p class="signup-section-help">Photographers can choose a membership plan for their creator workspace.</p>
             <div class="tier-grid">
-              <label class="tier-card">
-                <input {{ old('photographer-tier', 'starter') === 'starter' ? 'checked' : '' }} name="photographer-tier" type="radio" value="starter">
-                <span class="tier-card-content">
-                  <span class="tier-name">Starter</span>
-                  <strong>Free</strong>
-                  <small>Basic portfolio and booking enquiries.</small>
-                </span>
-              </label>
-              <label class="tier-card tier-card-featured">
-                <input {{ old('photographer-tier') === 'pro' ? 'checked' : '' }} name="photographer-tier" type="radio" value="pro">
-                <span class="tier-card-content">
-                  <span class="tier-name">Pro</span>
-                  <strong>R 299 <small>/ month</small></strong>
-                  <small>More gallery space</small>
-                </span>
-                <b class="tier-badge">Popular</b>
-              </label>
-              <label class="tier-card">
-                <input {{ old('photographer-tier') === 'studio' ? 'checked' : '' }} name="photographer-tier" type="radio" value="studio">
-                <span class="tier-card-content">
-                  <span class="tier-name">Studio</span>
-                  <strong>R 599 <small>/ month</small></strong>
-                  <small>Unlimited galleries</small>
-                </span>
-              </label>
+              @if(isset($publicTiers) && $publicTiers->isNotEmpty())
+                @foreach($publicTiers as $tier)
+                  @php
+                    $isDefaultSelected = old('photographer-tier', 'starter') === $tier->slug;
+                    $isFeatured = (bool) $tier->is_featured;
+                    $priceFormatted = ((float) $tier->monthly_price > 0)
+                      ? 'R ' . number_format($tier->monthly_price, 0) . ' <small>/ month</small>'
+                      : 'Free';
+                    $subtext = $tier->storage_limit ?: ($tier->tagline ?: 'Creator workspace');
+                  @endphp
+                  <label class="tier-card {{ $isFeatured ? 'tier-card-featured' : '' }}">
+                    <input {{ $isDefaultSelected ? 'checked' : '' }} name="photographer-tier" type="radio" value="{{ $tier->slug }}">
+                    <span class="tier-card-content">
+                      <span class="tier-name">{{ $tier->name }}</span>
+                      <strong>{!! $priceFormatted !!}</strong>
+                      <small>{{ $subtext }}</small>
+                    </span>
+                    @if($isFeatured)
+                      <b class="tier-badge">Popular</b>
+                    @endif
+                  </label>
+                @endforeach
+              @else
+                <label class="tier-card">
+                  <input checked name="photographer-tier" type="radio" value="starter">
+                  <span class="tier-card-content">
+                    <span class="tier-name">Starter</span>
+                    <strong>Free</strong>
+                    <small>Basic portfolio and booking enquiries.</small>
+                  </span>
+                </label>
+                <label class="tier-card">
+                  <input name="photographer-tier" type="radio" value="standard">
+                  <span class="tier-card-content">
+                    <span class="tier-name">Standard</span>
+                    <strong>R 199 <small>/ month</small></strong>
+                    <small>25,000 Photos</small>
+                  </span>
+                </label>
+                <label class="tier-card tier-card-featured">
+                  <input name="photographer-tier" type="radio" value="pro">
+                  <span class="tier-card-content">
+                    <span class="tier-name">Pro</span>
+                    <strong>R 399 <small>/ month</small></strong>
+                    <small>50,000 Photos</small>
+                  </span>
+                  <b class="tier-badge">Popular</b>
+                </label>
+              @endif
             </div>
           </fieldset>
 
@@ -109,7 +133,7 @@
           <div class="form-check mt-3">
             <input class="form-check-input @error('terms') is-invalid @enderror" id="terms" name="terms" type="checkbox" required>
             <label class="form-check-label small text-secondary" for="terms">
-              I agree to the PhotoX terms and privacy policy.
+              I agree to the PhotoX <a href="{{ route('terms') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">terms of service</a> and <a href="{{ route('privacy') }}" target="_blank" class="text-white text-decoration-underline fw-semibold">privacy policy</a>.
             </label>
             @error('terms')
               <div class="invalid-feedback">{{ $message }}</div>

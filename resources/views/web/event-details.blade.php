@@ -1258,6 +1258,7 @@
                             <span class="badge bg-warning text-dark px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">FLAT RATE</span>
                           </div>
                           <small style="font-size: 0.76rem; color: #cbd5e1;">All your matched photos from bib/selfie search (1 or 100+)</small>
+                          <small class="d-block text-warning fw-semibold mt-1" style="font-size: 0.72rem;"><i class="bi bi-info-circle me-1"></i>Personal License Only (Commercial licenses must be bought individually)</small>
                         </div>
                       </div>
                       <span class="fs-6 fw-bold text-info" id="modalSelfieBundlePriceLabel">R150.00</span>
@@ -1273,6 +1274,7 @@
                             <span class="badge bg-success text-white px-2 py-0" style="font-size: 0.65rem; font-weight: 700;">ALL PHOTOS</span>
                           </div>
                           <small style="font-size: 0.76rem; color: #cbd5e1;">Instant high-res bundle of all captures in this event</small>
+                          <small class="d-block text-warning fw-semibold mt-1" style="font-size: 0.72rem;"><i class="bi bi-info-circle me-1"></i>Personal License Only (Commercial licenses must be bought individually)</small>
                         </div>
                       </div>
                       <span class="fs-6 fw-bold text-warning" id="modalFullGalleryPriceLabel">R450.00</span>
@@ -1527,17 +1529,29 @@
     $eventCommercialPriceVal = (float) ($event->commercial_price ?? 0);
     $eventSelfieBundlePriceVal = (float) ($event->selfie_bundle_price ?? 0);
     $eventFullGalleryPriceVal = (float) ($event->full_gallery_price ?? 0);
+    $eventAllowIndividualSales = (bool) ($event->allow_individual_sales ?? true);
   @endphp
 
   const eventPricingConfig = {
     startingPrice: {{ $eventStartingPriceVal }},
     commercialPrice: {{ $eventCommercialPriceVal }},
     selfieBundlePrice: {{ $eventSelfieBundlePriceVal }},
-    fullGalleryPrice: {{ $eventFullGalleryPriceVal }}
+    fullGalleryPrice: {{ $eventFullGalleryPriceVal }},
+    allowIndividualSales: {{ $eventAllowIndividualSales ? 'true' : 'false' }}
   };
 
   function getCalculatedPricesForPhoto(photo) {
     photo = photo || {};
+
+    // 0. If "Sell Complete Gallery ONLY" mode is active, HIDE single & selfie bundle purchases!
+    if (!eventPricingConfig.allowIndividualSales) {
+      return {
+        personal: 0,
+        commercial: 0,
+        selfie: 0,
+        full_gallery: eventPricingConfig.fullGalleryPrice > 0 ? eventPricingConfig.fullGalleryPrice : 450
+      };
+    }
 
     // 1. Personal License (Single Photo)
     let personal = 0;

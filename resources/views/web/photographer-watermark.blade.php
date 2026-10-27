@@ -1196,7 +1196,7 @@
                   <label class="fw-bold small text-white-50 d-block mb-2">Photographer Logo</label>
                   <div class="d-flex align-items-center gap-3">
                     <div class="wm-logo-box">
-                      <img id="logoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" alt="Watermark Logo">
+                      <img id="logoThumbPreview" src="{{ asset($setting->logo_path ?? 'logo.png') }}" alt="Watermark Logo">
                     </div>
                     <div>
                       <button type="button" class="btn btn-sm btn-outline-warning fw-bold rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
@@ -1236,7 +1236,7 @@
                   <label class="fw-bold small text-white-50 d-block mb-2">Photographer Logo</label>
                   <div class="d-flex align-items-center gap-3">
                     <div class="wm-logo-box" style="width: 85px; height: 55px; background: rgba(255,255,255,0.06); border-radius: 8px;">
-                      <img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Watermark Logo">
+                      <img id="bothLogoThumbPreview" src="{{ asset($setting->logo_path ?? 'logo.png') }}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Watermark Logo">
                     </div>
                     <div>
                       <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="document.getElementById('logoFileInput').click();">
@@ -1620,7 +1620,7 @@
                 <!-- Big Central Brand Watermark -->
                 <div class="wm-fotto-center-box" id="fottoCenterBox">
                   <div id="fottoCenterContent" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
-                    <img id="fottoCenterLogo" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-height: 55px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Watermark Logo">
+                    <img id="fottoCenterLogo" src="{{ asset($setting->logo_path ?? 'logo.png') }}" style="max-height: 55px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Watermark Logo">
                     <div class="wm-fotto-center-title" id="fottoCenterTitle">{{ $setting->watermark_text ?? $photographer->name }}</div>
                   </div>
                 </div>
@@ -1639,7 +1639,7 @@
                   <circle cx="50%" cy="50%" r="90" stroke="rgba(255,138,0,0.5)" stroke-width="2" fill="none" stroke-dasharray="6 4" />
                 </svg>
                 <div class="wm-double-cross-center" id="doubleCrossCenterBox">
-                  <img id="doubleCrossLogo" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-height: 48px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Watermark Logo">
+                  <img id="doubleCrossLogo" src="{{ asset($setting->logo_path ?? 'logo.png') }}" style="max-height: 48px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Watermark Logo">
                   <div class="fw-bold font-monospace text-uppercase" id="doubleCrossTitle" style="color: #ff8a00; font-size: 26px; letter-spacing: 0.1em; text-shadow: 0 2px 10px rgba(0,0,0,0.9);">{{ $setting->watermark_text ?? $photographer->name }}</div>
                   <small class="badge bg-dark border border-warning text-warning mt-1" style="font-size: 9px; letter-spacing: 0.15em;">OFFICIAL PROOF</small>
                 </div>
@@ -1656,7 +1656,7 @@
                   <rect width="100%" height="100%" fill="url(#hexPattern)" />
                 </svg>
                 <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg); text-align: center;" id="hexMeshCenterBox">
-                  <img id="hexMeshLogo" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-height: 52px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Logo">
+                  <img id="hexMeshLogo" src="{{ asset($setting->logo_path ?? 'logo.png') }}" style="max-height: 52px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Logo">
                   <div class="fw-bold font-monospace text-uppercase" id="hexMeshTitle" style="color: #ff8a00; font-size: 32px; letter-spacing: 0.08em; text-shadow: 0 3px 12px rgba(0,0,0,0.9);">{{ $setting->watermark_text ?? $photographer->name }}</div>
                 </div>
               </div>
@@ -1670,7 +1670,7 @@
                 <div style="position: absolute; top: 22px; left: 26px; font-size: 11px; font-weight: 700; color: #ff8a00; letter-spacing: 0.1em;" id="quadCornerTextTL">PHOTOX PROOF</div>
                 <div style="position: absolute; bottom: 22px; right: 26px; font-size: 11px; font-weight: 700; color: #ff8a00; letter-spacing: 0.1em;" id="quadCornerTextBR">DO NOT COPY</div>
                 <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center;" id="quadCenterBox">
-                  <img id="quadCenterLogo" src="{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}" style="max-height: 50px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Logo">
+                  <img id="quadCenterLogo" src="{{ asset($setting->logo_path ?? 'logo.png') }}" style="max-height: 50px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); display: none;" alt="Logo">
                   <div class="fw-bold font-monospace text-uppercase" id="quadCenterTitle" style="color: #ff8a00; font-size: 30px; letter-spacing: 0.08em; text-shadow: 0 3px 12px rgba(0,0,0,0.9);">{{ $setting->watermark_text ?? $photographer->name }}</div>
                 </div>
               </div>
@@ -1779,7 +1779,7 @@
     else if (rawColor === 'monochrome') watermarkColor = '#1e293b';
     else if (rawColor && rawColor !== 'orange') watermarkColor = rawColor.startsWith('#') ? rawColor : ('#' + rawColor);
     
-    let logoUrl = "{{ asset($setting->logo_path ?? 'uploads/watermarks/swirl_logo.png') }}";
+    let logoUrl = "{{ asset($setting->logo_path ?? 'logo.png') }}";
     let uploadedLogoFile = null;
 
     let sponsorLogoUrl = "{{ asset($setting->sponsor_logo_path ?? 'uploads/watermarks/sample_sponsor_badge.svg') }}";

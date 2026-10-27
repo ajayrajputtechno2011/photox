@@ -34,11 +34,14 @@
           <a class="header-cart" href="/cart" aria-label="Open cart"><i class="bi bi-cart3"></i><span>0</span></a>
           <button class="icon-button notification-button" aria-label="Notifications"><i class="bi bi-bell"></i><span>1</span></button>
           <div class="account-menu">
-            <button class="profile-trigger" aria-label="Open account menu"><span class="avatar">AD</span><span class="d-none d-sm-inline">Aiden Daniels</span><i class="bi bi-chevron-down"></i></button>
+            <button class="profile-trigger" aria-label="Open account menu"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 2)) }}</span><span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Creator' }}</span><i class="bi bi-chevron-down"></i></button>
             <div class="account-dropdown" role="menu">
-              <div class="account-dropdown-user"><span class="avatar">AD</span><div><strong>Aiden Daniels</strong><small>aiden@photosouth.com</small></div></div>
-              <a href="/photographer-profile" role="menuitem"><i class="bi bi-person"></i> Profile & settings</a>
-              <a href="/" role="menuitem"><i class="bi bi-box-arrow-left"></i> Log out</a>
+              <div class="account-dropdown-user"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 2)) }}</span><div><strong>{{ Auth::user()->name ?? 'Creator' }}</strong><small>{{ Auth::user()->email ?? '' }}</small></div></div>
+              <a href="{{ url('/photographer-profile') }}" role="menuitem"><i class="bi bi-person"></i> Profile &amp; settings</a>
+              <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="dropdown-item text-danger py-2 w-100 text-start border-0 bg-transparent px-3"><i class="bi bi-box-arrow-left me-2"></i> Log out</button>
+              </form>
             </div>
           </div>
         </div>
@@ -189,25 +192,39 @@
           </div>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label text-muted small">Bank Name</label>
-              <input type="text" class="form-control" name="bank_name" value="{{ old('bank_name', $photographer->bank_name ?: 'Standard Bank') }}" placeholder="e.g. Standard Bank, FNB, Capitec, ABSA">
+              <label class="form-label text-muted small" for="bank_name">Bank Name</label>
+              <select name="bank_name" id="bank_name" class="form-select" onchange="if(this.selectedOptions[0].dataset.branch){document.getElementById('branch_code').value=this.selectedOptions[0].dataset.branch;}">
+                <option value="">Select your bank...</option>
+                <option value="Standard Bank" data-branch="051001" {{ old('bank_name', $photographer->bank_name) === 'Standard Bank' ? 'selected' : '' }}>Standard Bank (051001)</option>
+                <option value="First National Bank (FNB)" data-branch="250655" {{ old('bank_name', $photographer->bank_name) === 'First National Bank (FNB)' ? 'selected' : '' }}>First National Bank (FNB) (250655)</option>
+                <option value="Absa Bank" data-branch="632005" {{ old('bank_name', $photographer->bank_name) === 'Absa Bank' ? 'selected' : '' }}>Absa Bank (632005)</option>
+                <option value="Nedbank" data-branch="198765" {{ old('bank_name', $photographer->bank_name) === 'Nedbank' ? 'selected' : '' }}>Nedbank (198765)</option>
+                <option value="Capitec Bank" data-branch="470010" {{ old('bank_name', $photographer->bank_name) === 'Capitec Bank' ? 'selected' : '' }}>Capitec Bank (470010)</option>
+                <option value="Investec Bank" data-branch="580105" {{ old('bank_name', $photographer->bank_name) === 'Investec Bank' ? 'selected' : '' }}>Investec Bank (580105)</option>
+                <option value="TymeBank" data-branch="678910" {{ old('bank_name', $photographer->bank_name) === 'TymeBank' ? 'selected' : '' }}>TymeBank (678910)</option>
+                <option value="Discovery Bank" data-branch="679000" {{ old('bank_name', $photographer->bank_name) === 'Discovery Bank' ? 'selected' : '' }}>Discovery Bank (679000)</option>
+                <option value="African Bank" data-branch="430000" {{ old('bank_name', $photographer->bank_name) === 'African Bank' ? 'selected' : '' }}>African Bank (430000)</option>
+                <option value="Bidvest Bank" data-branch="462005" {{ old('bank_name', $photographer->bank_name) === 'Bidvest Bank' ? 'selected' : '' }}>Bidvest Bank (462005)</option>
+                <option value="Other Bank" data-branch="" {{ old('bank_name', $photographer->bank_name) === 'Other Bank' ? 'selected' : '' }}>Other Bank</option>
+              </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label text-muted small">Account Holder Name</label>
-              <input type="text" class="form-control" name="account_holder_name" value="{{ old('account_holder_name', $photographer->account_holder_name ?: $photographer->name) }}" placeholder="Legal name on account">
+              <label class="form-label text-muted small" for="account_holder_name">Account Holder Name</label>
+              <input type="text" class="form-control" id="account_holder_name" name="account_holder_name" value="{{ old('account_holder_name', $photographer->account_holder_name) }}" placeholder="e.g. Legal Name on Account">
             </div>
             <div class="col-md-4">
-              <label class="form-label text-muted small">Account Number</label>
-              <input type="text" class="form-control" name="account_number" value="{{ old('account_number', $photographer->account_number ?: '1014829034') }}" placeholder="Account number">
+              <label class="form-label text-muted small" for="account_number">Account Number</label>
+              <input type="text" class="form-control" id="account_number" name="account_number" value="{{ old('account_number', $photographer->account_number) }}" placeholder="e.g. Account number">
             </div>
             <div class="col-md-4">
-              <label class="form-label text-muted small">Branch Code</label>
-              <input type="text" class="form-control" name="branch_code" value="{{ old('branch_code', $photographer->branch_code ?: '051001') }}" placeholder="6-digit branch code">
+              <label class="form-label text-muted small" for="branch_code">Branch Code</label>
+              <input type="text" class="form-control" id="branch_code" name="branch_code" value="{{ old('branch_code', $photographer->branch_code) }}" placeholder="e.g. 6-digit branch code">
             </div>
             <div class="col-md-4">
-              <label class="form-label text-muted small">Account Type</label>
-              <select name="account_type" class="form-select">
-                <option value="cheque" {{ old('account_type', $photographer->account_type ?: 'cheque') === 'cheque' ? 'selected' : '' }}>Cheque / Current</option>
+              <label class="form-label text-muted small" for="account_type">Account Type</label>
+              <select name="account_type" id="account_type" class="form-select">
+                <option value="">Select account type...</option>
+                <option value="cheque" {{ old('account_type', $photographer->account_type) === 'cheque' ? 'selected' : '' }}>Cheque / Current</option>
                 <option value="savings" {{ old('account_type', $photographer->account_type) === 'savings' ? 'selected' : '' }}>Savings</option>
                 <option value="transmission" {{ old('account_type', $photographer->account_type) === 'transmission' ? 'selected' : '' }}>Transmission</option>
               </select>

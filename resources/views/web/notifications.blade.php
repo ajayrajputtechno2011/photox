@@ -33,10 +33,10 @@
 					<a class="header-cart" href="/cart" aria-label="Open cart"><i class="bi bi-cart3"></i><span>0</span></a>
 					<a href="/notifications" class="icon-button notification-button active" aria-label="Notifications"><i class="bi bi-bell"></i><span>3</span></a>
 					<div class="account-menu">
-						<button aria-label="Open account menu" class="profile-trigger"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}</span><span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Aiden Daniels' }}</span><i class="bi bi-chevron-down"></i></button>
+						<button aria-label="Open account menu" class="profile-trigger"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</span><span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'User' }}</span><i class="bi bi-chevron-down"></i></button>
 						<div class="account-dropdown" role="menu">
-							<div class="account-dropdown-user"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}</span><div><strong>{{ Auth::user()->name ?? 'Aiden Daniels' }}</strong><small>{{ Auth::user()->email ?? 'aiden@photosouth.com' }}</small></div></div>
-							<a href="/photographer-profile"><i class="bi bi-person"></i> Profile & settings</a>
+							<div class="account-dropdown-user"><span class="avatar">{{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 2)) }}</span><div><strong>{{ Auth::user()->name ?? 'User' }}</strong><small>{{ Auth::user()->email ?? '' }}</small></div></div>
+							<a href="/profile-settings"><i class="bi bi-person"></i> Profile & settings</a>
 							<form action="{{ route('logout') }}" method="POST" class="d-inline">
 								@csrf
 								<button type="submit" class="dropdown-item text-danger py-2 w-100 text-start border-0 bg-transparent px-3"><i class="bi bi-box-arrow-left me-2"></i> Log out</button>

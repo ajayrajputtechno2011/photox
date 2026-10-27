@@ -47,7 +47,7 @@ class DemoController extends Controller
                 'rotation' => -12,
                 'is_tiled' => true,
                 'watermark_pattern' => 'tile',
-                'logo_path' => '/uploads/watermarks/swirl_logo.png',
+                'logo_path' => '/logo.png',
                 'logo_size' => 45,
                 'both_layout' => 'fotto_style',
                 'both_gap' => 8,
@@ -468,9 +468,7 @@ class DemoController extends Controller
     public function resolveWatermarkSetting(?int $photographerId = null): WatermarkSetting
     {
         if ($photographerId) {
-            $creatorSetting = WatermarkSetting::where('user_id', $photographerId)
-                ->where('is_watermark_enabled', true)
-                ->first();
+            $creatorSetting = WatermarkSetting::where('user_id', $photographerId)->first();
             if ($creatorSetting) {
                 return $creatorSetting;
             }
@@ -489,6 +487,7 @@ class DemoController extends Controller
                     'rotation' => -12,
                     'is_tiled' => true,
                     'watermark_pattern' => 'fotto_pro',
+                    'logo_path' => '/logo.png',
                 ]
             );
     }
@@ -620,6 +619,14 @@ class DemoController extends Controller
         $photographerId = $photo->photographer_id ?? ($photo->event ? $photo->event->photographer_id : null);
         $setting = $this->resolveWatermarkSetting($photographerId);
 
+        // If watermark is explicitly disabled for this photographer, save clean preview without watermark
+        if ($setting && ! $setting->is_watermark_enabled) {
+            imagejpeg($im, $targetPath, 85);
+            imagedestroy($im);
+
+            return $targetPath;
+        }
+
         $pattern = $setting->watermark_pattern ?? 'fotto_pro';
         $type = $setting->watermark_type ?? 'logo';
         $text = ! empty($setting->watermark_text) ? $setting->watermark_text : 'PhotoX';
@@ -675,7 +682,7 @@ class DemoController extends Controller
             }
         }
         if (! $logoPath) {
-            $fallback = public_path('uploads/watermarks/swirl_logo.png');
+            $fallback = public_path('logo.png');
             if (file_exists($fallback)) {
                 $logoPath = $fallback;
             }
